@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>SiteFlow — Dự án</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('siteflow-theme');
+    if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+})();
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
+  --text:#161A22; --text-muted:#6B7280;
+  --primary:#2F5DA8; --primary-tint:#E8EEFB;
+  --attendance:#0E8A82; --attendance-tint:#E1F5F2;
+  --finance:#B7791F; --finance-tint:#FBF1DC;
+  --danger:#C0392B; --danger-tint:#FBEBE9;
+  --success:#1E8E5A; --success-tint:#E7F6EE;
+  --qs:#6D4FC2; --qs-tint:#EEE9FB;
+  --game:#C2185B; --game-tint:#FBE7EF;
+  --wiki:#8A5A44; --wiki-tint:#F3E9E3;
+  --project:#3D4FC4; --project-tint:#E9EAFB;
+  --sales:#C2621A; --sales-tint:#FBEADC;
+}
+html[data-theme="dark"]{
+  --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
+  --text:#E7E9EE; --text-muted:#98A0B3;
+  --primary:#6C9BEA; --primary-tint:#1E2A42;
+  --attendance:#3FC2B6; --attendance-tint:#123330;
+  --finance:#E0AC4F; --finance-tint:#3A2E14;
+  --danger:#E0685A; --danger-tint:#3A211E;
+  --success:#4FC585; --success-tint:#15301F;
+  --qs:#A796E8; --qs-tint:#2A2247;
+  --game:#F17FA8; --game-tint:#3A1D28;
+  --wiki:#D6A588; --wiki-tint:#3A2A20;
+  --project:#8B96E8; --project-tint:#242A4A;
+  --sales:#E8A268; --sales-tint:#3A2814;
+}
+*{box-sizing:border-box;}
+body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:#cbd1da; border-radius:5px;}
+
+.app-sidebar{transition:width .18s ease;}
+.app-sidebar.collapsed{width:76px !important;}
+.app-sidebar.collapsed .brand{flex-direction:column !important; gap:8px !important;}
+.app-sidebar.collapsed .word{display:none !important;}
+.app-sidebar.collapsed a, .app-sidebar.collapsed .navitem{justify-content:center !important; padding-left:0 !important; padding-right:0 !important;}
+.app-sidebar.collapsed .nav-label{display:none !important;}
+.app-sidebar.collapsed .navbadge{display:none !important;}
+.app-sidebar.collapsed .who{justify-content:center !important; padding-left:0 !important;}
+.app-sidebar.collapsed .who-info{display:none !important;}
+.sidebar-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; margin-left:auto;}
+.sidebar-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.sidebar-collapse-btn svg{transition:transform .18s ease;}
+.app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
+.app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
+.app-sidebar.collapsed .navbadge-dot{display:block;}
+.app-sidebar a{position:relative;}
+
+.proj-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px;}
+.proj-tab.active{background:var(--project-tint); color:var(--project); font-weight:600;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field label{font-size:12px; font-weight:600; color:var(--text-muted);}
+.field input, .field select, .field textarea{
+  padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt);
+  color:var(--text); font-size:13px;
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--project);}
+.init-card{display:flex; align-items:center; gap:12px; background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:12px 14px;}
+.flow-node{display:flex; flex-direction:column; align-items:center; gap:8px; flex:1;}
+.flow-circle{width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+
+  <!-- SIDEBAR -->
+  <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
+    <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+      </div>
+      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <a href="dashboard.html" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </a>
+      <div class="navitem" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(61,79,196,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--project);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Dự án</span>
+      </div>
+      <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Chat</span>
+        <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
+        <span class="navbadge-dot"></span>
+      </a>
+      <a href="gantt.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+        <span class="nav-label">Quản lý dự án</span>
+      </a>
+      <a href="cham-cong.html" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <span class="nav-label">Chấm công</span>
+      </a>
+      <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <span class="nav-label">Tài chính</span>
+      </a>
+      <a href="qs.html" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <span class="nav-label">QS</span>
+      </a>
+      <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="nav-label">Wiki</span>
+      </a>
+    </div>
+    <div style="flex: 1;"></div>
+    <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
+      <div class="who-info" style="min-width: 0;">
+        <div style="color: #FFFFFF; font-weight: 600; font-size: 13px;">Trần Anh</div>
+        <div style="color: #7C8399; font-size: 11.5px;">Quản lý dự án</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+
+    <div style="height: 64px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 12px;">
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--project-tint); color: var(--project); display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <span style="font-size: 14.5px; font-weight: 700;">Dự án</span>
+      <span style="font-size: 12px; color: var(--text-muted);">Điểm khởi đầu — dữ liệu dự án được phân phối tới QS, Tiến độ, Chấm công, Tài chính &amp; Nhiệm vụ</span>
+      <span style="flex: 1;"></span>
+      <button id="themeToggle" title="Chuyển giao diện sáng/tối" style="width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+
+    <div style="height: 52px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 4px;">
+      <button class="proj-tab active" data-tab="list">Danh sách dự án</button>
+      <button class="proj-tab" data-tab="create">Thiết lập thi công</button>
+      <button class="proj-tab" data-tab="detail">Chi tiết &amp; luồng dữ liệu</button>
+    </div>
+
+    <div style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden;">
+
+      <!-- ================= TAB: DANH SÁCH DỰ ÁN ================= -->
+      <div class="proj-panel" data-panel="list" style="display: flex; flex-direction: column; gap: 16px;">
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="position: relative; width: 280px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Tìm dự án, khách hàng..." style="width: 100%; padding: 8px 10px 8px 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text); font-size: 12.5px;">
+          </div>
+          <a href="kinh-doanh.html" style="display: flex; align-items: center; gap: 6px; background: var(--sales); color: #fff; padding: 9px 15px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm cơ hội mới (Kinh doanh)
+          </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng dự án</div>
+            <div id="kpiTotalProjects" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; margin-top: 6px;">4</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang thi công</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 24px; margin-top: 6px; color: var(--primary);">2</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Bản nháp</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 24px; margin-top: 6px; color: var(--text-muted);">1</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng ngân sách quản lý</div>
+            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; margin-top: 6px; color: var(--gold, var(--finance));">21.6 tỷ</div>
+          </div>
+        </div>
+
+        <div id="projectListCard" style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+          <div class="mono" style="display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+            <span>Dự án</span><span>Khách hàng</span><span>Loại hình</span><span>Ngân sách</span><span>Tiến độ</span><span>PM</span><span>Trạng thái</span>
+          </div>
+
+          <div class="proj-row" data-goto="detail" style="display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--border); cursor: pointer;">
+            <span style="font-size: 13.5px; font-weight: 700;">Chung cư Riverside — Giai đoạn 2</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Công ty CP Đầu tư Riverside</span>
+            <span style="font-size: 12.5px;">Chung cư</span>
+            <span class="mono" style="font-size: 12.5px;">8.50 tỷ</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="flex: 1; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 58%; height: 100%; border-radius: 4px; background: var(--primary);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">58%</span></div>
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700;">TA</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 11px; font-weight: 600; justify-self: start;">Đang thi công</span>
+          </div>
+
+          <div class="proj-row" style="display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--border); cursor: pointer;">
+            <span style="font-size: 13.5px; font-weight: 700;">Nhà phố Lô B12 — KDC Bình Chánh</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Anh Quang Huy</span>
+            <span style="font-size: 12.5px;">Nhà phố</span>
+            <span class="mono" style="font-size: 12.5px;">2.10 tỷ</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="flex: 1; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 27%; height: 100%; border-radius: 4px; background: var(--game);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">27%</span></div>
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700;">TA</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 11px; font-weight: 600; justify-self: start;">Đang thi công</span>
+          </div>
+
+          <div class="proj-row" style="display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--border); cursor: pointer;">
+            <span style="font-size: 13.5px; font-weight: 700;">Biệt thự Song lập — Thảo Điền</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Chị Minh Thư</span>
+            <span style="font-size: 12.5px;">Biệt thự</span>
+            <span class="mono" style="font-size: 12.5px; color: var(--text-muted);">6.80 tỷ (dự kiến)</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="flex: 1; height: 6px; border-radius: 4px; background: var(--surface-alt);"></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">0%</span></div>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Chưa gán</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 11px; font-weight: 600; justify-self: start;">Bản nháp</span>
+          </div>
+
+          <div class="proj-row" style="display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; align-items: center; padding: 13px 4px; cursor: pointer;">
+            <span style="font-size: 13.5px; font-weight: 700;">Văn phòng cho thuê — Q3</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Cty TNHH ABC Logistics</span>
+            <span style="font-size: 12.5px;">Văn phòng</span>
+            <span class="mono" style="font-size: 12.5px;">4.20 tỷ</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="flex: 1; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 100%; height: 100%; border-radius: 4px; background: var(--success);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">100%</span></div>
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700;">TA</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Hoàn tất</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB: THIẾT LẬP THI CÔNG ================= -->
+      <div class="proj-panel" data-panel="create" style="display: none; flex-direction: column; gap: 16px; max-width: 880px;">
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px;">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">Thiết lập thi công cho dự án</h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 18px;">Việc tạo hồ sơ khách hàng mới nay thuộc mục <a href="kinh-doanh.html" style="color: var(--sales); font-weight: 600;">Kinh doanh</a>. Khi một cơ hội được chuyển vào cột "Dự án (Thiết kế)" hoặc "Dự án (Thi công)" ở đó, dự án sẽ tự xuất hiện bên dưới để bạn bổ nhiệm nhân sự &amp; khởi tạo dữ liệu vận hành.</p>
+
+          <div class="field" style="margin-bottom: 16px;">
+            <label>Chọn dự án cần thiết lập *</label>
+            <select id="setupProjectSelect">
+              <option>Chung cư Riverside — Giai đoạn 2</option>
+              <option>Nhà phố Lô B12 — KDC Bình Chánh</option>
+              <option>Văn phòng cho thuê — Q3</option>
+            </select>
+          </div>
+
+          <div style="height: 1px; background: var(--border); margin: 4px 0 18px;"></div>
+          <h4 style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 14px;">Bổ nhiệm nhân sự phụ trách</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="field"><label>Chỉ huy trưởng / PM công trường</label>
+              <select><option>Trần Anh</option><option>Nguyễn Đức Anh</option><option>— Chưa gán —</option></select>
+            </div>
+            <div class="field"><label>Đội thi công phụ trách</label>
+              <select><option>Đội thi công A</option><option>Đội thi công B</option><option>Đội thi công C</option><option>— Chưa gán —</option></select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="field"><label>Giám sát an toàn lao động</label><input type="text" placeholder="VD: Vũ Thị Diệu"></div>
+            <div class="field"><label>Phụ trách mua hàng &amp; cung ứng</label><input type="text" placeholder="VD: Cao Nhật Tân"></div>
+          </div>
+
+          <div style="height: 1px; background: var(--border); margin: 4px 0 18px;"></div>
+          <h4 style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 14px;">Kế hoạch khởi công</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="field"><label>Ngày khởi công thực tế</label><input type="text" placeholder="dd/mm/yyyy"></div>
+            <div class="field"><label>Ngân sách được duyệt</label><input type="text" placeholder="VD: 2.500.000.000"></div>
+          </div>
+          <div class="field"><label>Ghi chú bàn giao từ Kinh doanh</label><textarea rows="3" placeholder="Yêu cầu đặc biệt từ khách hàng, lưu ý về mặt bằng..."></textarea></div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--project); border-radius: 14px; padding: 20px 24px;">
+          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">Sau khi lưu, dữ liệu vận hành sẽ được khởi tạo tới</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px;">Không cần nhập lại thông tin khách hàng hay địa điểm ở từng module.</p>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--qs-tint); color: var(--qs); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">QS</div><div style="font-size:11px; color:var(--text-muted);">Tạo hồ sơ bóc tách trống</div></div>
+            </div>
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">Tiến độ</div><div style="font-size:11px; color:var(--text-muted);">Khung Gantt mẫu theo loại hình</div></div>
+            </div>
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--attendance-tint); color: var(--attendance); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">Chấm công</div><div style="font-size:11px; color:var(--text-muted);">Địa điểm công trường từ địa chỉ</div></div>
+            </div>
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--finance-tint); color: var(--finance); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">Tài chính</div><div style="font-size:11px; color:var(--text-muted);">Ngân sách trống theo dự kiến</div></div>
+            </div>
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--game-tint); color: var(--game); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M17 4H7v4a5 5 0 0 0 10 0V4z"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">Nhiệm vụ</div><div style="font-size:11px; color:var(--text-muted);">Gán quy trình game hoá theo loại hình</div></div>
+            </div>
+            <div class="init-card">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+              <div><div style="font-weight:600; font-size:12.5px;">Chat</div><div style="font-size:11px; color:var(--text-muted);">Tạo nhóm chat dự án tự động</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button data-goto="list" style="border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 10px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer;">Huỷ</button>
+          <button id="createProjectBtn" style="border: none; background: var(--project); color: #fff; padding: 10px 20px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer;">Lưu thiết lập &amp; bắt đầu thi công</button>
+        </div>
+      </div>
+
+      <!-- ================= TAB: CHI TIẾT & LUỒNG DỮ LIỆU ================= -->
+      <div class="proj-panel" data-panel="detail" style="display: none; flex-direction: column; gap: 16px;">
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; display: flex; justify-content: space-between; gap: 20px;">
+          <div style="display: flex; gap: 16px;">
+            <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--project-tint); color: var(--project); display: flex; align-items: center; justify-content: center; flex: none;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18"/><path d="M6 12h12M6 8h12M6 16h12"/></svg>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="font-family: 'Sora'; font-weight: 800; font-size: 18px;">Chung cư Riverside — Giai đoạn 2</div>
+                <span style="padding: 3px 9px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 11px; font-weight: 600;">Đang thi công</span>
+              </div>
+              <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px;">Khu đô thị Riverside, Quận 7, TP.HCM · Khởi công 01/09/2026</div>
+              <div style="display: flex; gap: 18px; margin-top: 10px; font-size: 12.5px;">
+                <span><span style="color: var(--text-muted);">Khách hàng: </span><strong>Công ty CP Đầu tư Riverside</strong></span>
+                <span><span style="color: var(--text-muted);">Liên hệ: </span><strong>Ông Nguyễn Văn Bình</strong></span>
+                <span class="mono"><span style="color: var(--text-muted);">SĐT: </span>0909 123 456</span>
+                <span class="mono"><span style="color: var(--text-muted);">Email: </span>contact@riverside-invest.vn</span>
+              </div>
+            </div>
+          </div>
+          <div style="text-align: right; flex: none;">
+            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px;">8.50 tỷ</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">Ngân sách · PM: Trần Anh</div>
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 26px 24px 22px;">
+          <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 20px; text-align: center;">Luồng phân phối dữ liệu từ dự án</h3>
+
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="flow-circle" style="background: var(--project); color: #fff; width: 60px; height: 60px; border-radius: 16px;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div style="font-size: 12px; font-weight: 700; margin-top: 6px;">Dự án Riverside GĐ2</div>
+            <div style="width: 2px; height: 22px; background: var(--border); margin-top: 6px;"></div>
+            <div style="width: 100%; max-width: 1040px; height: 2px; background: var(--border);"></div>
+
+            <div style="display: flex; justify-content: space-between; width: 100%; max-width: 1040px; margin-top: 0;">
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--sales-tint); color: var(--sales);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">Kinh doanh</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">Đã chốt từ pipeline<br>Giá trị 8.5 tỷ</div>
+                <a href="kinh-doanh.html" style="font-size: 11px; color: var(--sales); font-weight: 600; text-decoration: none;">Mở Kinh doanh ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--qs-tint); color: var(--qs);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">QS</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">4 dự án con<br>64,9tr đã bóc tách</div>
+                <a href="qs.html" style="font-size: 11px; color: var(--qs); font-weight: 600; text-decoration: none;">Mở QS ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--primary-tint); color: var(--primary);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">Quản lý dự án</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">58% hoàn thành<br>17 công việc</div>
+                <a href="gantt.html" style="font-size: 11px; color: var(--primary); font-weight: 600; text-decoration: none;">Mở Quản lý dự án ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--attendance-tint); color: var(--attendance);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">HR</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">128/150 có mặt<br>3 địa điểm</div>
+                <a href="cham-cong.html" style="font-size: 11px; color: var(--attendance); font-weight: 600; text-decoration: none;">Mở HR ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--finance-tint); color: var(--finance);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">Tài chính</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">Chi 5.2 / 8.5 tỷ<br>1 hoá đơn quá hạn</div>
+                <a href="tai-chinh.html" style="font-size: 11px; color: var(--finance); font-weight: 600; text-decoration: none;">Mở Tài chính ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--primary-tint); color: var(--primary);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">Chat</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">Nhóm Riverside GĐ2<br>24 thành viên</div>
+                <a href="chat.html#g1" style="font-size: 11px; color: var(--primary); font-weight: 600; text-decoration: none;">Mở nhóm chat ›</a>
+              </div>
+              <div class="flow-node">
+                <div style="width: 2px; height: 20px; background: var(--border);"></div>
+                <div class="flow-circle" style="background: var(--surface-alt); color: var(--text-muted);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M17 4H7v4a5 5 0 0 0 10 0V4z"/></svg></div>
+                <div style="font-size: 12px; font-weight: 700;">Nhiệm vụ</div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center;">Chưa gán riêng<br>(mẫu: Lô B12)</div>
+                <a href="nhiem-vu.html" style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-decoration: none;">Xem mẫu ›</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goToTab(name){
+  document.querySelectorAll('.proj-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab')===name));
+  document.querySelectorAll('.proj-panel').forEach(p => { p.style.display = (p.getAttribute('data-panel')===name) ? 'flex' : 'none'; });
+}
+document.querySelectorAll('.proj-tab').forEach(btn => btn.addEventListener('click', () => goToTab(btn.getAttribute('data-tab'))));
+document.querySelectorAll('[data-goto]').forEach(el => el.addEventListener('click', () => goToTab(el.getAttribute('data-goto'))));
+
+document.getElementById('createProjectBtn').addEventListener('click', function(){
+  goToTab('list');
+});
+
+/* ===================== Đồng bộ dự án từ Kinh doanh (localStorage) ===================== */
+(function(){
+  let synced = [];
+  try{ synced = JSON.parse(localStorage.getItem('siteflow-synced-projects') || '[]'); }catch(e){ synced = []; }
+  if(synced.length === 0) return;
+
+  const card = document.getElementById('projectListCard');
+  synced.forEach(p => {
+    const isThiCong = p.stage === 'thi-cong';
+    const row = document.createElement('div');
+    row.className = 'proj-row';
+    row.style.cssText = 'display: grid; grid-template-columns: 1.8fr 1.4fr 1fr 1fr 1.2fr 0.9fr 1fr; gap: 10px; align-items: center; padding: 13px 4px; border-top: 1px solid var(--border); cursor: pointer;';
+    row.innerHTML = `
+      <span style="font-size: 13.5px; font-weight: 700; display:flex; align-items:center; gap:7px;">${p.name}<span style="padding:2px 7px; border-radius:20px; background:var(--sales-tint); color:var(--sales); font-size:9.5px; font-weight:700; white-space:nowrap;">Từ Kinh doanh</span></span>
+      <span style="font-size: 12.5px; color: var(--text-muted);">${p.client}</span>
+      <span style="font-size: 12.5px;">—</span>
+      <span class="mono" style="font-size: 12.5px;">${p.value.toFixed(1).replace(/\.0$/,'')} tỷ</span>
+      <div style="display: flex; align-items: center; gap: 6px;"><div style="flex: 1; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: ${isThiCong?8:0}%; height: 100%; border-radius: 4px; background: var(--primary);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">${isThiCong?'8%':'0%'}</span></div>
+      <span style="font-size: 11.5px; color: var(--text-muted);">Chưa gán</span>
+      <span style="padding: 3px 9px; border-radius: 999px; background: ${isThiCong?'var(--primary-tint)':'var(--qs-tint)'}; color: ${isThiCong?'var(--primary)':'var(--qs)'}; font-size: 11px; font-weight: 600; justify-self: start;">${isThiCong?'Đang thi công':'Thiết kế'}</span>
+    `;
+    row.addEventListener('click', () => goToTab('create'));
+    card.appendChild(row);
+  });
+
+  const kpiEl = document.getElementById('kpiTotalProjects');
+  if(kpiEl) kpiEl.textContent = String(4 + synced.length);
+})();
+
+function updateThemeIcon(theme){
+  document.getElementById('themeIconMoon').style.display = theme==='dark' ? 'none' : 'block';
+  document.getElementById('themeIconSun').style.display = theme==='dark' ? 'block' : 'none';
+}
+updateThemeIcon(document.documentElement.getAttribute('data-theme') || 'light');
+document.getElementById('themeToggle').onclick = function(){
+  var cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+  var next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{ localStorage.setItem('siteflow-theme', next); }catch(e){}
+  updateThemeIcon(next);
+};
+
+(function(){
+  try{
+    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){
+      document.getElementById('appSidebar').classList.add('collapsed');
+    }
+  }catch(e){}
+})();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var sb = document.getElementById('appSidebar');
+  var collapsed = sb.classList.toggle('collapsed');
+  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+});
+</script>
+</body>
+</html>

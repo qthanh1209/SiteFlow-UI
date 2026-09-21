@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>SiteFlow — Dashboard</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('siteflow-theme');
+    if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+})();
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
+  --text:#161A22; --text-muted:#6B7280;
+  --primary:#2F5DA8; --primary-tint:#E8EEFB;
+  --attendance:#0E8A82; --attendance-tint:#E1F5F2;
+  --finance:#B7791F; --finance-tint:#FBF1DC;
+  --danger:#C0392B; --danger-tint:#FBEBE9;
+  --success:#1E8E5A; --success-tint:#E7F6EE;
+}
+html[data-theme="dark"]{
+  --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
+  --text:#E7E9EE; --text-muted:#98A0B3;
+  --primary:#6C9BEA; --primary-tint:#1E2A42;
+  --attendance:#3FC2B6; --attendance-tint:#123330;
+  --finance:#E0AC4F; --finance-tint:#3A2E14;
+  --danger:#E0685A; --danger-tint:#3A211E;
+  --success:#4FC585; --success-tint:#15301F;
+}
+body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+a{color:var(--primary);} a:hover{color:#1F4585;}
+.app-sidebar{transition:width .18s ease;}
+.app-sidebar.collapsed{width:76px !important;}
+.app-sidebar.collapsed .brand{flex-direction:column !important; gap:8px !important;}
+.app-sidebar.collapsed .word{display:none !important;}
+.app-sidebar.collapsed a, .app-sidebar.collapsed .navitem{justify-content:center !important; padding-left:0 !important; padding-right:0 !important;}
+.app-sidebar.collapsed .nav-label{display:none !important;}
+.app-sidebar.collapsed .navbadge{display:none !important;}
+.navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
+.app-sidebar.collapsed .navbadge-dot{display:block;}
+.app-sidebar.collapsed .who{justify-content:center !important; padding-left:0 !important;}
+.app-sidebar.collapsed .who-info{display:none !important;}
+.sidebar-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; margin-left:auto;}
+.sidebar-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.sidebar-collapse-btn svg{transition:transform .18s ease;}
+.app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
+.app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 960px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+
+  <!-- SIDEBAR -->
+  <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
+    <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+      </div>
+      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <div class="navitem" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(47,93,168,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--primary);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </div>
+      <a href="kinh-doanh.html" class="navitem" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </a>
+      <a href="du-an.html" class="navitem" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Dự án</span>
+      </a>
+      <a href="chat.html" class="navitem" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent; position: relative;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Chat</span>
+        <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
+        <span class="navbadge-dot"></span>
+      </a>
+      <a href="gantt.html" class="navitem" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+        <span class="nav-label">Quản lý dự án</span>
+      </a>
+      <a href="cham-cong.html" class="navitem" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <span class="nav-label">Chấm công</span>
+      </a>
+      <a href="tai-chinh.html" class="navitem" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <span class="nav-label">Tài chính</span>
+      </a>
+      <a href="qs.html" class="navitem" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <span class="nav-label">QS</span>
+      </a>
+      <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="nav-label">Wiki</span>
+      </a>
+      <div class="navitem" title="Báo cáo" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,14 21,5"/></svg>
+        <span class="nav-label">Báo cáo</span>
+      </div>
+      <div class="navitem" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.2" fill="#12161F"/><line x1="4" y1="14" x2="20" y2="14"/><circle cx="15" cy="14" r="2.2" fill="#12161F"/><line x1="4" y1="21" x2="20" y2="21"/><circle cx="11" cy="21" r="2.2" fill="#12161F"/></svg>
+        <span class="nav-label">Cài đặt</span>
+      </div>
+    </div>
+
+    <div style="flex: 1;"></div>
+
+    <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
+      <div class="who-info" style="min-width: 0;">
+        <div style="color: #FFFFFF; font-weight: 600; font-size: 13px;">Trần Anh</div>
+        <div style="color: #7C8399; font-size: 11.5px;">Quản lý dự án</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+
+    <!-- TOPBAR -->
+    <div style="height: 72px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; box-sizing: border-box; background: var(--surface);">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer;">
+        <div style="font-weight: 600; font-size: 14px;">Chung cư Riverside · Giai đoạn 2</div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 9px; background: var(--surface-alt); width: 220px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="color: var(--text-muted); font-size: 13px;">Tìm công việc, hồ sơ...</span>
+        </div>
+        <div style="position: relative;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z"/><path d="M9.5 17.5a2.5 2.5 0 0 0 5 0"/></svg>
+          <div style="position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 1.5px solid var(--surface);"></div>
+        </div>
+        <button id="themeToggle" title="Chuyển giao diện sáng/tối" style="width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+          <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12.5px;">TA</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div style="flex: 1; padding: 26px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; overflow: hidden;">
+
+      <!-- KPI ROW -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tiến độ tổng thể</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 30px;">58%</div>
+            <div style="font-size: 12.5px; color: var(--text-muted);">/ kế hoạch 66%</div>
+          </div>
+          <div style="display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: 999px; background: var(--danger-tint); color: var(--danger); font-size: 11.5px; font-weight: 600;">Chậm 8 điểm %</div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân công hôm nay</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 30px;">128<span style="font-size: 16px; color: var(--text-muted); font-weight: 600;">/150</span></div>
+          </div>
+          <div style="display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: 999px; background: var(--attendance-tint); color: var(--attendance); font-size: 11.5px; font-weight: 600;">3 công trường hoạt động</div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tồn quỹ dự kiến · T9</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 28px; color: var(--success);">+1.24 tỷ</div>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted);">Thu 3.80 tỷ · Chi 2.56 tỷ</div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Cảnh báo cần xử lý</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 30px;">5</div>
+          <div style="font-size: 12px; color: var(--text-muted);">2 trễ tiến độ · 1 ngoài vùng · 2 hoá đơn quá hạn</div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div style="flex: 1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; min-height: 0;">
+
+        <!-- LEFT: S-CURVE -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="font-size: 15px; font-weight: 700;">Tiến độ theo tuần — Kế hoạch vs Thực tế</h3>
+            <div style="display: flex; gap: 14px; font-size: 12px; color: var(--text-muted);">
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 0; border-top: 2px dashed var(--text-muted); display: inline-block;"></span>Kế hoạch</span>
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 2px; background: var(--primary); display: inline-block;"></span>Thực tế</span>
+            </div>
+          </div>
+
+          <figure style="margin: 0;">
+            <svg viewBox="0 0 680 230" role="img" aria-label="Biểu đồ đường cong S: kế hoạch tăng đều lên 100% ở tuần 8, thực tế thấp hơn kế hoạch khoảng 8 điểm phần trăm, hiện ở tuần 5 đạt 58%.">
+              <style>text{font-family:'IBM Plex Mono',monospace; font-size: 10.5px; fill: #9AA1B2;}</style>
+              <line x1="40" y1="10" x2="40" y2="190" stroke="#E2E5EC" stroke-width="1"/>
+              <line x1="40" y1="190" x2="660" y2="190" stroke="#E2E5EC" stroke-width="1"/>
+              <line x1="40" y1="47.5" x2="660" y2="47.5" stroke="#EEF0F4" stroke-width="1"/>
+              <line x1="40" y1="85" x2="660" y2="85" stroke="#EEF0F4" stroke-width="1"/>
+              <line x1="40" y1="122.5" x2="660" y2="122.5" stroke="#EEF0F4" stroke-width="1"/>
+              <line x1="40" y1="160" x2="660" y2="160" stroke="#EEF0F4" stroke-width="1"/>
+              <text x="10" y="14">100</text>
+              <text x="18" y="89">50</text>
+              <text x="22" y="194">0</text>
+
+              <polyline points="40,178.2 128.6,151.6 217.1,126.1 305.7,97.5 394.3,68.9 482.9,42.4 571.4,17.4 660,10" fill="none" stroke="#9AA1B2" stroke-width="2" stroke-dasharray="5 4"/>
+              <polyline points="40,182.6 128.6,159.7 217.1,137.1 305.7,111.6 394.3,86" fill="none" stroke="#2F5DA8" stroke-width="2.5"/>
+              <circle cx="394.3" cy="86" r="4.5" fill="#2F5DA8"/>
+              <text x="404" y="82" fill="#2F5DA8" font-weight="600">Hiện tại · 58%</text>
+
+              <text x="36" y="208" text-anchor="middle">T1</text>
+              <text x="124.6" y="208" text-anchor="middle">T2</text>
+              <text x="213.1" y="208" text-anchor="middle">T3</text>
+              <text x="301.7" y="208" text-anchor="middle">T4</text>
+              <text x="390.3" y="208" text-anchor="middle">T5</text>
+              <text x="478.9" y="208" text-anchor="middle">T6</text>
+              <text x="567.4" y="208" text-anchor="middle">T7</text>
+              <text x="656" y="208" text-anchor="middle">T8</text>
+            </svg>
+            <figcaption style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Trục ngang: tuần thi công. Trục dọc: % khối lượng hoàn thành luỹ kế.</figcaption>
+          </figure>
+
+          <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted);">Hạng mục cần chú ý</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+              <div style="display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 13px;">Đổ bê tông sàn tầng 5</span><span style="font-size: 12px; color: var(--text-muted);">PM: Anh Tuấn</span></div>
+              <span style="padding: 3px 9px; border-radius: 999px; background: var(--danger-tint); color: var(--danger); font-size: 11.5px; font-weight: 600;">Trễ 3 ngày</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border);">
+              <div style="display: flex; flex-direction: column;"><span style="font-weight: 600; font-size: 13px;">Lắp đặt điện tầng 2</span><span style="font-size: 12px; color: var(--text-muted);">PM: Chị Hoa</span></div>
+              <span style="padding: 3px 9px; border-radius: 999px; background: var(--finance-tint); color: var(--finance); font-size: 11.5px; font-weight: 600;">Trễ 1 ngày</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div style="display: flex; flex-direction: column; gap: 16px; min-height: 0;">
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="font-size: 14.5px; font-weight: 700;">Dòng tiền 4 tuần tới</h3>
+            <svg viewBox="0 0 320 120" role="img" aria-label="Biểu đồ cột thu chi 4 tuần tới, thu luôn cao hơn chi mỗi tuần">
+              <style>text{font-family:'IBM Plex Mono',monospace; font-size: 9.5px; fill:#9AA1B2;}</style>
+              <line x1="10" y1="100" x2="310" y2="100" stroke="#E2E5EC"/>
+              <rect x="26" y="35" width="14" height="65" rx="2" fill="#1E8E5A"/>
+              <rect x="44" y="55" width="14" height="45" rx="2" fill="#B7791F"/>
+              <text x="40" y="112" text-anchor="middle">T1</text>
+              <rect x="98" y="24" width="14" height="76" rx="2" fill="#1E8E5A"/>
+              <rect x="116" y="48" width="14" height="52" rx="2" fill="#B7791F"/>
+              <text x="112" y="112" text-anchor="middle">T2</text>
+              <rect x="170" y="44" width="14" height="56" rx="2" fill="#1E8E5A"/>
+              <rect x="188" y="54" width="14" height="46" rx="2" fill="#B7791F"/>
+              <text x="184" y="112" text-anchor="middle">T3</text>
+              <rect x="242" y="35" width="14" height="65" rx="2" fill="#1E8E5A"/>
+              <rect x="260" y="57" width="14" height="43" rx="2" fill="#B7791F"/>
+              <text x="256" y="112" text-anchor="middle">T4</text>
+            </svg>
+            <div style="display: flex; gap: 14px; font-size: 12px; color: var(--text-muted);">
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #1E8E5A; display: inline-block;"></span>Thu</span>
+              <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 9px; height: 9px; border-radius: 2px; background: #B7791F; display: inline-block;"></span>Chi</span>
+            </div>
+          </div>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0;">
+            <h3 style="font-size: 14.5px; font-weight: 700;">Chấm công theo địa điểm — hôm nay</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--attendance)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.2"/></svg>
+                <span style="font-size: 13px; font-weight: 600; flex: 1;">Riverside — Tòa A</span>
+                <span class="mono" style="font-size: 12px; color: var(--text-muted);">62/70</span>
+              </div>
+              <div style="height: 6px; border-radius: 3px; background: var(--surface-alt);"><div style="width: 89%; height: 100%; border-radius: 3px; background: var(--attendance);"></div></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--attendance)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.2"/></svg>
+                <span style="font-size: 13px; font-weight: 600; flex: 1;">Riverside — Tòa B</span>
+                <span class="mono" style="font-size: 12px; color: var(--text-muted);">41/50</span>
+              </div>
+              <div style="height: 6px; border-radius: 3px; background: var(--surface-alt);"><div style="width: 82%; height: 100%; border-radius: 3px; background: var(--attendance);"></div></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--finance)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.2"/></svg>
+                <span style="font-size: 13px; font-weight: 600; flex: 1;">Kho vật tư Bình Chánh</span>
+                <span class="mono" style="font-size: 12px; color: var(--text-muted);">25/30</span>
+              </div>
+              <div style="height: 6px; border-radius: 3px; background: var(--surface-alt);"><div style="width: 83%; height: 100%; border-radius: 3px; background: var(--attendance);"></div></div>
+              <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--finance); margin-top: 2px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><line x1="12" y1="10" x2="12" y2="15"/><circle cx="12" cy="18" r="0.6" fill="currentColor" stroke="none"/></svg>
+                1 chấm công ngoài vùng cần duyệt
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function updateThemeIcon(theme){
+  document.getElementById('themeIconMoon').style.display = theme==='dark' ? 'none' : 'block';
+  document.getElementById('themeIconSun').style.display = theme==='dark' ? 'block' : 'none';
+}
+updateThemeIcon(document.documentElement.getAttribute('data-theme') || 'light');
+document.getElementById('themeToggle').onclick = function(){
+  var cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+  var next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{ localStorage.setItem('siteflow-theme', next); }catch(e){}
+  updateThemeIcon(next);
+};
+
+function updateSidebarState(){
+  var sb = document.getElementById('appSidebar');
+  try{
+    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){ sb.classList.add('collapsed'); }
+  }catch(e){}
+}
+updateSidebarState();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var sb = document.getElementById('appSidebar');
+  var collapsed = sb.classList.toggle('collapsed');
+  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+});
+</script>
+</body>
+</html>

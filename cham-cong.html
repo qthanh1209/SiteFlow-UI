@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>SiteFlow — Chấm công</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('siteflow-theme');
+    if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+})();
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
+  --text:#161A22; --text-muted:#6B7280;
+  --primary:#2F5DA8; --primary-tint:#E8EEFB;
+  --attendance:#0E8A82; --attendance-tint:#E1F5F2;
+  --finance:#B7791F; --finance-tint:#FBF1DC;
+  --danger:#C0392B; --danger-tint:#FBEBE9;
+  --success:#1E8E5A; --success-tint:#E7F6EE;
+}
+html[data-theme="dark"]{
+  --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
+  --text:#E7E9EE; --text-muted:#98A0B3;
+  --primary:#6C9BEA; --primary-tint:#1E2A42;
+  --attendance:#3FC2B6; --attendance-tint:#123330;
+  --finance:#E0AC4F; --finance-tint:#3A2E14;
+  --danger:#E0685A; --danger-tint:#3A211E;
+  --success:#4FC585; --success-tint:#15301F;
+}
+*{box-sizing:border-box;}
+body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:#cbd1da; border-radius:5px;}
+
+.app-sidebar{transition:width .18s ease;}
+.app-sidebar.collapsed{width:76px !important;}
+.app-sidebar.collapsed .brand{flex-direction:column !important; gap:8px !important;}
+.app-sidebar.collapsed .word{display:none !important;}
+.app-sidebar.collapsed a, .app-sidebar.collapsed .navitem{justify-content:center !important; padding-left:0 !important; padding-right:0 !important;}
+.app-sidebar.collapsed .nav-label{display:none !important;}
+.app-sidebar.collapsed .navbadge{display:none !important;}
+.app-sidebar.collapsed .who{justify-content:center !important; padding-left:0 !important;}
+.app-sidebar.collapsed .who-info{display:none !important;}
+.sidebar-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; margin-left:auto;}
+.sidebar-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.sidebar-collapse-btn svg{transition:transform .18s ease;}
+.app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
+.app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
+.app-sidebar.collapsed .navbadge-dot{display:block;}
+.app-sidebar a{position:relative;}
+
+.att-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px;}
+.att-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:600;}
+</style>
+</head>
+<body>
+
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+
+  <!-- SIDEBAR -->
+  <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
+    <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+      </div>
+      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <a href="dashboard.html" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </a>
+      <a href="du-an.html" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Dự án</span>
+      </a>
+      <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Chat</span>
+        <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
+        <span class="navbadge-dot"></span>
+      </a>
+      <a href="gantt.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+        <span class="nav-label">Quản lý dự án</span>
+      </a>
+      <div class="navitem" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(14,138,130,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--attendance);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <span class="nav-label">Chấm công</span>
+      </div>
+      <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <span class="nav-label">Tài chính</span>
+      </a>
+      <a href="qs.html" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <span class="nav-label">QS</span>
+      </a>
+      <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="nav-label">Wiki</span>
+      </a>
+    </div>
+    <div style="flex: 1;"></div>
+    <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
+      <div class="who-info" style="min-width: 0;">
+        <div style="color: #FFFFFF; font-weight: 600; font-size: 13px;">Trần Anh</div>
+        <div style="color: #7C8399; font-size: 11.5px;">Quản lý dự án</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+
+    <div style="height: 64px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 6px;">
+      <span style="color: var(--text-muted); font-size: 13px;">Chung cư Riverside</span>
+      <span style="color: var(--text-muted); font-size: 13px;">/</span>
+      <span style="color: var(--text-muted); font-size: 13px;">Giai đoạn 2</span>
+      <span style="color: var(--text-muted); font-size: 13px;">/</span>
+      <span style="font-size: 13px; font-weight: 600;">Chấm công</span>
+      <span style="flex: 1;"></span>
+      <a href="cham-cong-mobile.html" style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); text-decoration: none; margin-right: 6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        Xem giao diện mobile
+      </a>
+      <button id="themeToggle" title="Chuyển giao diện sáng/tối" style="width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+
+    <div style="height: 52px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 4px;">
+      <button class="att-tab active" data-tab="daily">Theo ngày</button>
+      <button class="att-tab" data-tab="staff">Theo nhân viên</button>
+      <button class="att-tab" data-tab="approve">Duyệt ngoại vùng<span style="margin-left: 6px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">1</span></button>
+    </div>
+
+    <div style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden;">
+
+      <!-- ================= TAB: THEO NGÀY ================= -->
+      <div class="att-panel" data-panel="daily" style="display: flex; flex-direction: column; gap: 16px;">
+
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg></button>
+            <div style="padding: 7px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+              Thứ Hai, 21/09/2026
+            </div>
+            <button style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg></button>
+            <div style="padding: 7px 12px; border-radius: 9px; background: var(--attendance-tint); color: var(--attendance); font-size: 12.5px; font-weight: 600;">Hôm nay</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; cursor: pointer;">
+            Tất cả công trường
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự hôm nay</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">150</div>
+            <div style="font-size: 12px; color: var(--text-muted);">3 công trường hoạt động</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang có mặt</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--attendance);">128<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;">/150</span></div>
+            <div style="display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: 999px; background: var(--attendance-tint); color: var(--attendance); font-size: 11.5px; font-weight: 600;">85%</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Trễ / Chưa chấm công</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--finance);">6<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;"> / 22</span></div>
+            <div style="font-size: 12px; color: var(--text-muted);">Trễ · chưa chấm công</div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Cần duyệt ngoài vùng</div>
+            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
+            <span data-goto="approve" style="font-size: 11.5px; color: var(--danger); font-weight: 600; cursor: pointer;">Xem &amp; duyệt ngay ›</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; gap: 12px; align-items: center;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--attendance)" stroke-width="1.6" style="flex: none;"><circle cx="12" cy="10" r="7" stroke-dasharray="2 2"/><path d="M12 7c-2 0-3.5 1.5-3.5 3.5 0 2.5 3.5 6 3.5 6s3.5-3.5 3.5-6C15.5 8.5 14 7 12 7z" fill="var(--attendance)" stroke="none"/></svg>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 13.5px;">Riverside — Tòa A</div>
+              <div class="mono" style="font-size: 12px; color: var(--text-muted);">62 / 70 có mặt</div>
+            </div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; gap: 12px; align-items: center;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--attendance)" stroke-width="1.6" style="flex: none;"><circle cx="12" cy="10" r="7" stroke-dasharray="2 2"/><path d="M12 7c-2 0-3.5 1.5-3.5 3.5 0 2.5 3.5 6 3.5 6s3.5-3.5 3.5-6C15.5 8.5 14 7 12 7z" fill="var(--attendance)" stroke="none"/></svg>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 13.5px;">Riverside — Tòa B</div>
+              <div class="mono" style="font-size: 12px; color: var(--text-muted);">41 / 50 có mặt</div>
+            </div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--danger); border-radius: 14px; padding: 14px 16px; display: flex; gap: 12px; align-items: center;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--finance)" stroke-width="1.6" style="flex: none;"><circle cx="12" cy="10" r="7" stroke-dasharray="2 2"/><path d="M12 7c-2 0-3.5 1.5-3.5 3.5 0 2.5 3.5 6 3.5 6s3.5-3.5 3.5-6C15.5 8.5 14 7 12 7z" fill="var(--finance)" stroke="none"/></svg>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 13.5px;">Kho vật tư Bình Chánh</div>
+              <div class="mono" style="font-size: 12px; color: var(--text-muted);">25 / 30 có mặt</div>
+            </div>
+            <span style="padding: 3px 8px; border-radius: 999px; background: var(--danger-tint); color: var(--danger); font-size: 10.5px; font-weight: 700;">1 ngoài vùng</span>
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px; flex: 1;">
+          <div class="mono" style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+            <span>Nhân viên</span><span>Đội / Vai trò</span><span>Địa điểm</span><span>Giờ vào</span><span>Giờ ra</span><span>Tổng giờ</span><span>Trạng thái</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #0E8A8222; color: var(--attendance); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">LV</span>Lê Văn</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội thi công A</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa A</span>
+            <span class="mono" style="font-size: 12px;">06:58</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">8h12*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #B7791F22; color: var(--finance); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">NH</span>Ngọc Hà</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội thi công B</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa A</span>
+            <span class="mono" style="font-size: 12px;">07:02</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">8h05*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #2F5DA822; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">PB</span>Phạm Quốc Bảo</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội thi công A</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa A</span>
+            <span class="mono" style="font-size: 12px;">07:15</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">7h50*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--finance-tint); color: var(--finance); font-size: 11px; font-weight: 600; justify-self: start;">Trễ 15 phút</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #7658C222; color: #7658C2; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">HB</span>Hoàng Gia Bảo</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội hoàn thiện</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa A</span>
+            <span class="mono" style="font-size: 12px;">07:20</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">7h45*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--finance-tint); color: var(--finance); font-size: 11px; font-weight: 600; justify-self: start;">Trễ 20 phút</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #C2618F22; color: #C2618F; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">NL</span>Ngô Thị Lan</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội MEP</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa A</span>
+            <span class="mono" style="font-size: 12px;">06:50</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">8h15*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #2F5DA822; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">VN</span>Vũ Hải Nam</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội thi công B</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa B</span>
+            <span class="mono" style="font-size: 12px;">06:55</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">8h10*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #6B728022; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">TS</span>Trịnh Xuân Sơn</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Đội thi công C</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa B</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 11px; font-weight: 600; justify-self: start;">Chưa chấm công</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #0E8A8222; color: var(--attendance); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">DP</span>Đặng Hữu Phúc</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Nhân sự</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Riverside — Tòa B</span>
+            <span class="mono" style="font-size: 12px;">08:00</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">6h30*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border); background: var(--danger-tint);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #C0392B22; color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">CT</span>Cao Nhật Tân</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Mua hàng</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Kho vật tư Bình Chánh</span>
+            <span class="mono" style="font-size: 12px;">07:10</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">7h55*</span>
+            <span data-goto="approve" style="padding: 3px 9px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 11px; font-weight: 600; justify-self: start; cursor: pointer;">Ngoài vùng · Duyệt</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; align-items: center; padding: 10px 4px;">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #C2618F22; color: #C2618F; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">LT</span>Lý Thu Trang</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Cung ứng</span>
+            <span style="font-size: 12px; color: var(--text-muted);">Kho vật tư Bình Chánh</span>
+            <span class="mono" style="font-size: 12px;">07:05</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">—</span>
+            <span class="mono" style="font-size: 12px;">8h00*</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đúng giờ</span>
+          </div>
+          <div style="padding: 10px 4px 0; font-size: 11px; color: var(--text-muted);">* Đang trong ca làm việc, giờ tính đến thời điểm hiện tại. Hiển thị 10/150 nhân sự.</div>
+        </div>
+      </div>
+
+      <!-- ================= TAB: THEO NHÂN VIÊN ================= -->
+      <div class="att-panel" data-panel="staff" style="display: none; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="position: relative; width: 280px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Tìm nhân viên..." style="width: 100%; padding: 8px 10px 8px 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text); font-size: 12.5px;">
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; cursor: pointer;">
+            Tuần này (15–21/09)
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px;">
+          <div class="mono" style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+            <span>Nhân viên</span><span>Đội</span><span>Ngày công</span><span>Tổng giờ</span><span>TB giờ / ngày</span><span></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #0E8A8222; color: var(--attendance); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">LV</span>Lê Văn</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Đội thi công A</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 60px; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 100%; height: 100%; border-radius: 4px; background: var(--success);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">5/5</span></div>
+            <span class="mono" style="font-size: 12.5px; font-weight: 600;">41h00</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">8h12</span>
+            <span style="font-size: 11.5px; color: var(--attendance); font-weight: 600; cursor: pointer;">Lịch sử ›</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #B7791F22; color: var(--finance); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">NH</span>Ngọc Hà</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Đội thi công B</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 60px; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 100%; height: 100%; border-radius: 4px; background: var(--success);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">5/5</span></div>
+            <span class="mono" style="font-size: 12.5px; font-weight: 600;">40h30</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">8h06</span>
+            <span style="font-size: 11.5px; color: var(--attendance); font-weight: 600; cursor: pointer;">Lịch sử ›</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #2F5DA822; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">PB</span>Phạm Quốc Bảo</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Đội thi công A</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 60px; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 80%; height: 100%; border-radius: 4px; background: var(--finance);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">4/5</span></div>
+            <span class="mono" style="font-size: 12.5px; font-weight: 600;">32h10</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">8h02</span>
+            <span style="font-size: 11.5px; color: var(--attendance); font-weight: 600; cursor: pointer;">Lịch sử ›</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #2F5DA822; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">VN</span>Vũ Hải Nam</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Đội thi công B</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 60px; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 100%; height: 100%; border-radius: 4px; background: var(--success);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">5/5</span></div>
+            <span class="mono" style="font-size: 12.5px; font-weight: 600;">40h45</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">8h09</span>
+            <span style="font-size: 11.5px; color: var(--attendance); font-weight: 600; cursor: pointer;">Lịch sử ›</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><span style="width: 26px; height: 26px; border-radius: 50%; background: #C0392B22; color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">CT</span>Cao Nhật Tân</span>
+            <span style="font-size: 12.5px; color: var(--text-muted);">Mua hàng</span>
+            <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 60px; height: 6px; border-radius: 4px; background: var(--surface-alt);"><div style="width: 100%; height: 100%; border-radius: 4px; background: var(--success);"></div></div><span class="mono" style="font-size: 11px; color: var(--text-muted);">5/5</span></div>
+            <span class="mono" style="font-size: 12.5px; font-weight: 600;">39h20</span>
+            <span class="mono" style="font-size: 12px; color: var(--text-muted);">7h52</span>
+            <span style="font-size: 11.5px; color: var(--attendance); font-weight: 600; cursor: pointer;">Lịch sử ›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB: DUYỆT NGOÀI VÙNG ================= -->
+      <div class="att-panel" data-panel="approve" style="display: none; flex-direction: column; gap: 16px;">
+
+        <div style="background: var(--surface); border: 1px solid var(--danger); border-radius: 14px; padding: 18px 20px; display: flex; gap: 18px;">
+          <svg width="130" height="110" viewBox="0 0 354 150" style="border-radius: 10px; flex: none;" role="img" aria-label="Bản đồ: vị trí chấm công nằm ngoài vòng tròn geofence cho phép">
+            <rect x="0" y="0" width="354" height="150" fill="#FBEBE9"/>
+            <line x1="0" y1="40" x2="354" y2="30" stroke="#FFFFFF" stroke-width="6"/>
+            <line x1="0" y1="115" x2="354" y2="128" stroke="#FFFFFF" stroke-width="8"/>
+            <circle cx="150" cy="78" r="55" fill="none" stroke="#0E8A82" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <path d="M150 55c-9 0-16 7-16 16 0 12 16 27 16 27s16-15 16-27c0-9-7-16-16-16z" fill="#0E8A82"/>
+            <circle cx="150" cy="71" r="5.5" fill="#FBEBE9"/>
+            <circle cx="255" cy="88" r="8" fill="#C0392B" stroke="#FFFFFF" stroke-width="2.5"/>
+            <line x1="150" y1="78" x2="255" y2="88" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="3 3"/>
+          </svg>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 34px; height: 34px; border-radius: 50%; background: #C0392B22; color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">CT</span>
+                <div>
+                  <div style="font-weight: 700; font-size: 14px;">Cao Nhật Tân</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Mua hàng · Kho vật tư Bình Chánh</div>
+                </div>
+              </div>
+              <span class="mono" style="font-size: 12px; color: var(--text-muted);">Hôm nay, 07:10</span>
+            </div>
+            <div style="font-size: 12.5px; color: var(--danger); background: var(--danger-tint); border-radius: 8px; padding: 8px 10px;">
+              Vị trí chấm công cách tâm công trường <strong>180m</strong>, vượt quá bán kính cho phép <strong>100m</strong>.
+            </div>
+            <textarea placeholder="Ghi chú duyệt (không bắt buộc)..." style="width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text); font-family: inherit; font-size: 12.5px; resize: vertical;"></textarea>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <button style="border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 8px 16px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer;">Từ chối</button>
+              <button style="border: none; background: var(--success); color: #fff; padding: 8px 16px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg>
+                Duyệt chấm công
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 4px;">
+          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Đã xử lý gần đây</h3>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #1E8E5A22; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">NL</span>
+            <span style="flex: 1; font-size: 13px;">Nguyễn Văn Long — Kho vật tư Bình Chánh</span>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Duyệt bởi Trần Anh · hôm qua</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600;">Đã duyệt</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #C0392B22; color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none;">DK</span>
+            <span style="flex: 1; font-size: 13px;">Đỗ Văn Kiên — Riverside Tòa B</span>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Từ chối bởi Trần Anh · 18/09</span>
+            <span style="padding: 3px 9px; border-radius: 999px; background: var(--danger-tint); color: var(--danger); font-size: 11px; font-weight: 600;">Từ chối</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function goToTab(name){
+  document.querySelectorAll('.att-tab').forEach(function(b){
+    var isTarget = b.getAttribute('data-tab') === name;
+    b.classList.toggle('active', isTarget);
+  });
+  document.querySelectorAll('.att-panel').forEach(function(p){
+    p.style.display = (p.getAttribute('data-panel') === name) ? 'flex' : 'none';
+  });
+}
+document.querySelectorAll('.att-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){ goToTab(btn.getAttribute('data-tab')); });
+});
+document.querySelectorAll('[data-goto]').forEach(function(el){
+  el.addEventListener('click', function(){ goToTab(el.getAttribute('data-goto')); });
+});
+
+function updateThemeIcon(theme){
+  document.getElementById('themeIconMoon').style.display = theme==='dark' ? 'none' : 'block';
+  document.getElementById('themeIconSun').style.display = theme==='dark' ? 'block' : 'none';
+}
+updateThemeIcon(document.documentElement.getAttribute('data-theme') || 'light');
+document.getElementById('themeToggle').onclick = function(){
+  var cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+  var next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{ localStorage.setItem('siteflow-theme', next); }catch(e){}
+  updateThemeIcon(next);
+};
+
+(function(){
+  try{
+    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){
+      document.getElementById('appSidebar').classList.add('collapsed');
+    }
+  }catch(e){}
+})();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var sb = document.getElementById('appSidebar');
+  var collapsed = sb.classList.toggle('collapsed');
+  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+});
+</script>
+</body>
+</html>
