@@ -86,7 +86,7 @@ button{font-family:inherit;}
 </head>
 <body>
 
-<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div style="width: 100%; height: 100vh; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- APP SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
@@ -104,13 +104,13 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span class="nav-label">Dashboard</span>
       </a>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
       <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         <span class="nav-label">Kinh doanh</span>
-      </a>
-      <a href="du-an.html" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span class="nav-label">Dự án</span>
       </a>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -122,9 +122,9 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
-      <a href="cham-cong.html" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+      <a href="cham-cong.html" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
-        <span class="nav-label">Chấm công</span>
+        <span class="nav-label">HR</span>
       </a>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
@@ -134,12 +134,22 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Mua hàng</span>
+      </a>
+    </div>
+    <div style="flex: 1;"></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
       <div class="navitem" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(138,90,68,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--wiki);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         <span class="nav-label">Wiki</span>
       </div>
+      <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span class="nav-label">Cài đặt</span>
+      </a>
     </div>
-    <div style="flex: 1;"></div>
     <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
       <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
       <div class="who-info" style="min-width: 0;">
@@ -192,6 +202,7 @@ button{font-family:inherit;}
         <div class="wiki-cat">Quy trình làm việc</div>
         <a class="wiki-link" data-page="attendance-process"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Chấm công &amp; xin nghỉ</a>
         <a class="wiki-link" data-page="expense-process"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Duyệt chi phí</a>
+        <div style="border-top: 1px solid var(--border); margin: 6px 10px;"></div>
         <a class="wiki-link" data-page="acceptance-process"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Nghiệm thu công việc</a>
         <a class="wiki-link" data-page="incident-process"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Xử lý sự cố công trường</a>
 
@@ -199,11 +210,17 @@ button{font-family:inherit;}
         <a class="wiki-link" data-page="form-leave"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Mẫu đơn xin nghỉ phép</a>
         <a class="wiki-link" data-page="form-acceptance"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Mẫu biên bản nghiệm thu</a>
         <a class="wiki-link" data-page="form-advance"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Mẫu đề nghị tạm ứng</a>
+
+        <!-- ON THIS PAGE -->
+        <div id="tocSection" style="margin-top: 18px; padding: 14px 10px 4px; border-top: 1px solid var(--border);">
+          <div style="font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;">Trong trang này</div>
+          <div id="tocList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
       </div>
 
       <!-- WIKI CONTENT -->
       <div style="flex: 1; overflow-y: auto; padding: 32px 40px; min-width: 0;">
-        <div style="max-width: 720px;">
+        <div style="max-width: none;">
           <div id="pageCategory" class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--wiki); font-weight: 600; margin-bottom: 8px;">Sổ tay nhân viên</div>
           <h1 id="pageTitle" style="font-size: 28px; font-weight: 800; margin-bottom: 10px;">Giới thiệu công ty</h1>
           <div id="pageMeta" style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); margin-bottom: 26px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
@@ -212,12 +229,6 @@ button{font-family:inherit;}
           </div>
           <div id="wikiBody" class="wiki-body"></div>
         </div>
-      </div>
-
-      <!-- ON THIS PAGE -->
-      <div id="tocPanel" style="width: 220px; flex: none; border-left: 1px solid var(--border); background: var(--surface); padding: 22px 18px; overflow-y: auto;">
-        <div style="font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;">Trong trang này</div>
-        <div id="tocList" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
     </div>
   </div>
@@ -388,11 +399,11 @@ function renderPage(slug){
   document.getElementById('pageMeta').querySelector('span:last-child').textContent = 'Cập nhật bởi Trần Anh · ' + p.updated;
 
   const body = document.getElementById('wikiBody');
-  const tocPanel = document.getElementById('tocPanel');
+  const tocSection = document.getElementById('tocSection');
   const tocList = document.getElementById('tocList');
 
   if(p.isForm){
-    tocPanel.style.display = 'none';
+    tocSection.style.display = 'none';
     body.innerHTML = `
       <div class="doc-card">
         <div style="width:44px;height:44px;border-radius:10px;background:var(--primary-tint);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:none;">
@@ -411,7 +422,7 @@ function renderPage(slug){
   }
 
   body.innerHTML = p.html;
-  tocPanel.style.display = 'block';
+  tocSection.style.display = 'block';
   const heads = body.querySelectorAll('h2, h3');
   tocList.innerHTML = '';
   heads.forEach(function(h){

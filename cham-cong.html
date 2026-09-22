@@ -12,7 +12,7 @@
   }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
 })();
 </script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root{
   --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
@@ -22,6 +22,8 @@
   --finance:#B7791F; --finance-tint:#FBF1DC;
   --danger:#C0392B; --danger-tint:#FBEBE9;
   --success:#1E8E5A; --success-tint:#E7F6EE;
+  --marketing:#C23B78; --marketing-tint:#FBE6F0;
+  --sales:#C2621A; --sales-tint:#FBEADC;
 }
 html[data-theme="dark"]{
   --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
@@ -31,6 +33,8 @@ html[data-theme="dark"]{
   --finance:#E0AC4F; --finance-tint:#3A2E14;
   --danger:#E0685A; --danger-tint:#3A211E;
   --success:#4FC585; --success-tint:#15301F;
+  --marketing:#E87FAE; --marketing-tint:#3A1F2C;
+  --sales:#E8A268; --sales-tint:#3A2814;
 }
 *{box-sizing:border-box;}
 body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
@@ -60,11 +64,13 @@ button{font-family:inherit;}
 
 .att-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px;}
 .att-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:600;}
+.hr-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px; font-family:inherit;}
+.hr-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:600;}
 </style>
 </head>
 <body>
 
-<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div style="width: 100vw; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
@@ -82,13 +88,13 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span class="nav-label">Dashboard</span>
       </a>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
       <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         <span class="nav-label">Kinh doanh</span>
-      </a>
-      <a href="du-an.html" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span class="nav-label">Dự án</span>
       </a>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -100,9 +106,9 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
-      <div class="navitem" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(14,138,130,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--attendance);">
+      <div class="navitem" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(14,138,130,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--attendance);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
-        <span class="nav-label">Chấm công</span>
+        <span class="nav-label">HR</span>
       </div>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
@@ -112,12 +118,22 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Mua hàng</span>
+      </a>
+    </div>
+    <div style="flex: 1;"></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
       <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         <span class="nav-label">Wiki</span>
       </a>
+      <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span class="nav-label">Cài đặt</span>
+      </a>
     </div>
-    <div style="flex: 1;"></div>
     <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
       <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
       <div class="who-info" style="min-width: 0;">
@@ -135,7 +151,7 @@ button{font-family:inherit;}
       <span style="color: var(--text-muted); font-size: 13px;">/</span>
       <span style="color: var(--text-muted); font-size: 13px;">Giai đoạn 2</span>
       <span style="color: var(--text-muted); font-size: 13px;">/</span>
-      <span style="font-size: 13px; font-weight: 600;">Chấm công</span>
+      <span style="font-size: 13px; font-weight: 600;">HR</span>
       <span style="flex: 1;"></span>
       <a href="cham-cong-mobile.html" style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); text-decoration: none; margin-right: 6px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
@@ -146,6 +162,14 @@ button{font-family:inherit;}
         <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
     </div>
+
+    <div style="height: 52px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 4px;">
+      <button class="hr-tab active" data-htab="cham-cong">Chấm công</button>
+      <button class="hr-tab" data-htab="ho-so">Hồ sơ nhân sự</button>
+      <button class="hr-tab" data-htab="bang-luong">Bảng lương</button>
+    </div>
+
+    <div class="hr-panel" data-hpanel="cham-cong" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
 
     <div style="height: 52px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 4px;">
       <button class="att-tab active" data-tab="daily">Theo ngày</button>
@@ -439,6 +463,109 @@ button{font-family:inherit;}
       </div>
 
     </div>
+    </div>
+
+    <div class="hr-panel" data-hpanel="ho-so" style="display: none; flex-direction: column; gap: 16px; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;">
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">12</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Trên 6 phòng ban</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang làm việc</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">10</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Chính thức</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Thử việc</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--finance);">1</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Đang trong kỳ đánh giá</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã nghỉ việc</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Trong 12 tháng qua</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; font-weight: 700;">Danh sách nhân sự</span>
+        <button style="display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; background: var(--attendance); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm nhân sự
+        </button>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+        <div class="mono" style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <span>Họ tên</span><span>Chức vụ</span><span>Phòng ban</span><span>Điện thoại</span><span>Ngày vào làm</span><span>Trạng thái</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Trần Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Quản lý dự án</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Quản lý dự án</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 111 222</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">01/03/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thảo Vy</span><span style="font-size:12.5px; color:var(--text-muted);">Head Marketing</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 222 333</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/06/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Ngọc Hà</span><span style="font-size:12.5px; color:var(--text-muted);">Graphic Designer</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 333 444</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">10/01/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Minh Quân</span><span style="font-size:12.5px; color:var(--text-muted);">Media (quay, dựng video)</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 444 555</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">05/09/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Thuỳ Dương</span><span style="font-size:12.5px; color:var(--text-muted);">Content Creator</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 555 666</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/11/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Hoàng Yến Nhi</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dân dụng</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Kinh doanh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 666 777</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/02/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đặng Quốc Cường</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dự án</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Kinh doanh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 777 888</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">03/07/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Nguyễn Đức Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Chỉ huy trưởng công trường</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 888 999</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">18/04/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thành Long</span><span style="font-size:12.5px; color:var(--text-muted);">Tư vấn giám sát</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 999 000</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">25/05/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Vũ Thị Diệu</span><span style="font-size:12.5px; color:var(--text-muted);">Giám sát an toàn lao động</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 111 222</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">14/08/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Thử việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cao Nhật Tân</span><span style="font-size:12.5px; color:var(--text-muted);">Mua hàng &amp; cung ứng</span><span style="padding:3px 9px; border-radius:999px; background:var(--surface-alt); color:var(--text-muted); font-size:11px; font-weight:600; justify-self:start;">Vận hành</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 222 333</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">09/10/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600; color:var(--text-muted); text-decoration:line-through;">Lý Thu Trang</span><span style="font-size:12.5px; color:var(--text-muted);">Kế toán</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Tài chính</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 333 444</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">01/01/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Đã nghỉ việc</span></div>
+      </div>
+    </div>
+
+    <div class="hr-panel" data-hpanel="bang-luong" style="display: none; flex-direction: column; gap: 16px; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; color: var(--text-muted);">Kỳ lương hiện tại</span>
+        <span style="padding: 5px 11px; border-radius: 999px; background: var(--finance-tint); color: var(--finance); font-size: 11.5px; font-weight: 600;">Tháng 9/2026</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng quỹ lương (Gross)</div>
+          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px;">174.000.000 đ</div>
+          <div style="font-size: 12px; color: var(--text-muted);">11 nhân sự nhận lương kỳ này</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Bảo hiểm NLĐ đóng</div>
+          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--finance);">18.270.000 đ</div>
+          <div style="font-size: 12px; color: var(--text-muted);">BHXH 8% + BHYT 1.5% + BHTN 1%</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng thực nhận</div>
+          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--success);">155.730.000 đ</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Sau khi trừ bảo hiểm</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã chi trả</div>
+          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">9<span style="font-size:15px; color:var(--text-muted); font-weight:600;"> / 11</span></div>
+          <div style="font-size: 12px; color: var(--text-muted);">2 hồ sơ đang chờ chi trả</div>
+        </div>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+        <div class="mono" style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <span>Họ tên</span><span>Chức vụ</span><span>Lương Gross</span><span>BH (NLĐ 10.5%)</span><span>Thực nhận</span><span>Trạng thái</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Trần Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Quản lý dự án</span><span class="mono" style="font-size:12.5px;">25.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">2.625.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">22.375.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thảo Vy</span><span style="font-size:12.5px; color:var(--text-muted);">Head Marketing</span><span class="mono" style="font-size:12.5px;">18.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.890.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">16.110.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Nguyễn Đức Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Chỉ huy trưởng công trường</span><span class="mono" style="font-size:12.5px;">20.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">2.100.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">17.900.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Minh Quân</span><span style="font-size:12.5px; color:var(--text-muted);">Media (quay, dựng video)</span><span class="mono" style="font-size:12.5px;">16.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.680.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">14.320.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thành Long</span><span style="font-size:12.5px; color:var(--text-muted);">Tư vấn giám sát</span><span class="mono" style="font-size:12.5px;">16.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.680.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">14.320.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Chờ chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Ngọc Hà</span><span style="font-size:12.5px; color:var(--text-muted);">Graphic Designer</span><span class="mono" style="font-size:12.5px;">15.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.575.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">13.425.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Thuỳ Dương</span><span style="font-size:12.5px; color:var(--text-muted);">Content Creator</span><span class="mono" style="font-size:12.5px;">14.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.470.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">12.530.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đặng Quốc Cường</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dự án</span><span class="mono" style="font-size:12.5px;">13.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.365.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">11.635.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cao Nhật Tân</span><span style="font-size:12.5px; color:var(--text-muted);">Mua hàng &amp; cung ứng</span><span class="mono" style="font-size:12.5px;">13.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.365.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">11.635.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Hoàng Yến Nhi</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dân dụng</span><span class="mono" style="font-size:12.5px;">12.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.260.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">10.740.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600;">Vũ Thị Diệu</span><span style="font-size:12.5px; color:var(--text-muted);">Giám sát an toàn lao động</span><span class="mono" style="font-size:12.5px;">12.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">1.260.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">10.740.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Chờ chi trả</span></div>
+      </div>
+      <div style="font-size: 11.5px; color: var(--text-muted);">* Lý Thu Trang (Kế toán) đã nghỉ việc trong kỳ — không nằm trong bảng lương tháng này.</div>
+    </div>
+
   </div>
 </div>
 
@@ -457,6 +584,18 @@ document.querySelectorAll('.att-tab').forEach(function(btn){
 });
 document.querySelectorAll('[data-goto]').forEach(function(el){
   el.addEventListener('click', function(){ goToTab(el.getAttribute('data-goto')); });
+});
+
+function goToHrTab(name){
+  document.querySelectorAll('.hr-tab').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-htab') === name);
+  });
+  document.querySelectorAll('.hr-panel').forEach(function(p){
+    p.style.display = (p.getAttribute('data-hpanel') === name) ? 'flex' : 'none';
+  });
+}
+document.querySelectorAll('.hr-tab').forEach(function(btn){
+  btn.addEventListener('click', function(){ goToHrTab(btn.getAttribute('data-htab')); });
 });
 
 function updateThemeIcon(theme){

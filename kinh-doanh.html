@@ -23,6 +23,9 @@
   --danger:#C0392B; --danger-tint:#FBEBE9;
   --success:#1E8E5A; --success-tint:#E7F6EE;
   --sales:#C2621A; --sales-tint:#FBEADC;
+  --gold:#B7791F; --gold-tint:#FBF1DC;
+  --silver:#6B7280; --silver-tint:#EDEFF4;
+  --bronze:#A15C2A; --bronze-tint:#F5E7DA;
 }
 html[data-theme="dark"]{
   --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
@@ -33,6 +36,9 @@ html[data-theme="dark"]{
   --danger:#E0685A; --danger-tint:#3A211E;
   --success:#4FC585; --success-tint:#15301F;
   --sales:#E8A268; --sales-tint:#3A2814;
+  --gold:#E0AC4F; --gold-tint:#3A2E14;
+  --silver:#98A0B3; --silver-tint:#20242F;
+  --bronze:#D69A6A; --bronze-tint:#3A2A1C;
 }
 *{box-sizing:border-box;}
 body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
@@ -72,11 +78,44 @@ button{font-family:inherit;}
 .lead-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 12px; display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
 .stage-col{flex:1; min-width:0; display:flex; flex-direction:column; gap:10px;}
 .stage-head{display:flex; align-items:center; justify-content:space-between; padding:0 2px 8px;}
+
+.task-tab{border:none; cursor:pointer; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:12.5px; font-weight:600; font-family:inherit;}
+.task-tab.active{background:var(--sales-tint); color:var(--sales);}
+.step-row{display:flex; gap:14px; position:relative;}
+.step-row .line{position:absolute; left:17px; top:38px; bottom:-14px; width:2px; background:var(--border);}
+.step-row:last-child .line{display:none;}
+.step-dot{width:36px; height:36px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; z-index:1;}
+.step-dot.done{background:var(--success); color:#fff;}
+.step-dot.current{background:var(--sales); color:#fff; box-shadow:0 0 0 4px var(--sales-tint);}
+.step-dot.locked{background:var(--surface-alt); color:var(--text-muted); border:1.5px dashed var(--border);}
+.step-card{flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:14px;}
+.step-card.locked{opacity:.55;}
+.step-card.current{border-color:var(--sales);}
+.subtask-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--border);}
+.subtask-chk{width:19px; height:19px; border-radius:6px; border:1.5px solid var(--border); flex:none; cursor:pointer; display:flex; align-items:center; justify-content:center; background:var(--surface);}
+.subtask-chk.checked{background:var(--success); border-color:var(--success); color:#fff;}
+.subtask-chk.disabled{cursor:default;}
+.reward-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px;}
+.reward-card.locked{opacity:.55;}
+.create-task-btn{border:none; background:var(--sales); color:#fff; padding:9px 16px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; flex:none; font-family:inherit;}
+.create-task-btn:hover{filter:brightness(1.07);}
+.task-modal-overlay{position:fixed; inset:0; background:rgba(15,20,30,.45); display:none; align-items:center; justify-content:center; z-index:100;}
+.task-modal-overlay.open{display:flex;}
+.task-modal-box{width:420px; max-width:calc(100vw - 40px); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px 24px; box-shadow:0 24px 60px rgba(0,0,0,.28);}
+.task-modal-box h3{font-size:15.5px; font-weight:700; margin-bottom:4px;}
+.task-modal-sub{font-size:12px; color:var(--text-muted); margin-bottom:16px;}
+.task-modal-field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.task-modal-field label{font-size:12px; font-weight:600; color:var(--text-muted);}
+.task-modal-field input, .task-modal-field select{padding:9px 11px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:13px; font-family:inherit;}
+.task-modal-field input:focus, .task-modal-field select:focus{outline:none; border-color:var(--sales);}
+.task-modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
+.task-modal-btn{padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-family:inherit;}
+.task-modal-btn.primary{background:var(--sales); color:#fff; border-color:var(--sales);}
 </style>
 </head>
 <body>
 
-<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div style="width: 1680px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
@@ -94,14 +133,14 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span class="nav-label">Dashboard</span>
       </a>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
       <div class="navitem" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(194,98,26,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--sales);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         <span class="nav-label">Kinh doanh</span>
       </div>
-      <a href="du-an.html" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span class="nav-label">Dự án</span>
-      </a>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">Chat</span>
@@ -112,9 +151,9 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
-      <a href="cham-cong.html" title="Chấm công" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+      <a href="cham-cong.html" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
-        <span class="nav-label">Chấm công</span>
+        <span class="nav-label">HR</span>
       </a>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
@@ -124,12 +163,22 @@ button{font-family:inherit;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-label">Mua hàng</span>
+      </a>
+    </div>
+    <div style="flex: 1;"></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
       <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         <span class="nav-label">Wiki</span>
       </a>
+      <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span class="nav-label">Cài đặt</span>
+      </a>
     </div>
-    <div style="flex: 1;"></div>
     <div class="who" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-top: 1px solid #262B37;">
       <div style="width: 32px; height: 32px; border-radius: 50%; background: #2A3040; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; flex: none;">TA</div>
       <div class="who-info" style="min-width: 0;">
@@ -165,6 +214,7 @@ button{font-family:inherit;}
       <button class="sales-tab" data-tab="leads">Khách hàng tiềm năng</button>
       <button class="sales-tab" data-tab="design-board">Dự án (Thiết kế)</button>
       <button class="sales-tab" data-tab="construction-board">Dự án (Thi công)</button>
+      <button class="sales-tab" data-tab="tasks">Nhiệm vụ &amp; điểm thưởng</button>
     </div>
 
     <div style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden;">
@@ -227,11 +277,18 @@ button{font-family:inherit;}
 
       <!-- ================= TAB: PIPELINE ================= -->
       <div class="sales-panel" data-panel="pipeline" style="display: none; flex-direction: column; gap: 14px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
           <div style="font-size: 11.5px; color: var(--text-muted);">Kéo thả thẻ giữa các cột, hoặc dùng ô chọn giai đoạn trên mỗi thẻ để chuyển. Thẻ vào cột "Dự án (Thiết kế)" / "Dự án (Thi công)" sẽ tự xuất hiện ở tab Dự án.</div>
-          <div style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex: none;">
-            <button class="view-switch-btn active" data-view="kanban" style="border:none; cursor:pointer; padding:7px 13px; font-size:12.5px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Kanban</button>
-            <button class="view-switch-btn" data-view="list" style="border:none; cursor:pointer; padding:7px 13px; font-size:12.5px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Danh sách</button>
+          <div style="display: flex; align-items: center; gap: 10px; flex: none;">
+            <div class="dept-filter-group" style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+              <button class="dept-filter-btn active" data-dept="all" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Tất cả</button>
+              <button class="dept-filter-btn" data-dept="du-an" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dự Án</button>
+              <button class="dept-filter-btn" data-dept="dan-dung" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dân dụng</button>
+            </div>
+            <div style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+              <button class="view-switch-btn active" data-view="kanban" style="border:none; cursor:pointer; padding:7px 13px; font-size:12.5px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Kanban</button>
+              <button class="view-switch-btn" data-view="list" style="border:none; cursor:pointer; padding:7px 13px; font-size:12.5px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Danh sách</button>
+            </div>
           </div>
         </div>
         <div id="pipelineKanban" style="display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px;"></div>
@@ -240,16 +297,24 @@ button{font-family:inherit;}
 
       <!-- ================= TAB: KHÁCH HÀNG TIỀM NĂNG ================= -->
       <div class="sales-panel" data-panel="leads" style="display: none; flex-direction: column; gap: 16px;">
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
-          <div class="mono" style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-            <span>Khách hàng</span><span>Điện thoại</span><span>Loại dự án</span><span>Giá trị</span><span>Giai đoạn</span><span>Phụ trách</span><span>Cập nhật</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <span style="font-size: 11.5px; color: var(--text-muted);">Lọc danh sách theo phòng ban phụ trách.</span>
+          <div class="dept-filter-group" style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex: none;">
+            <button class="dept-filter-btn active" data-dept="all" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Tất cả</button>
+            <button class="dept-filter-btn" data-dept="du-an" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dự Án</button>
+            <button class="dept-filter-btn" data-dept="dan-dung" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dân dụng</button>
           </div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">BQL Riverside</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 123 456</span><span style="font-size:12.5px;">Chung cư (GĐ3)</span><span class="mono" style="font-size:12.5px;">15.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/09</span></div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Hải Yến</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0918 345 221</span><span style="font-size:12.5px;">Biệt thự</span><span class="mono" style="font-size:12.5px;">7.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">19/09</span></div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Minh Thư</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 887 234</span><span style="font-size:12.5px;">Biệt thự</span><span class="mono" style="font-size:12.5px;">6.8 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">17/09</span></div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cty Đông Dương</span><span class="mono" style="font-size:12px; color:var(--text-muted);">028 3822 xxxx</span><span style="font-size:12.5px;">Văn phòng</span><span class="mono" style="font-size:12.5px;">5.5 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/09</span></div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Bích Ngọc</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0938 556 771</span><span style="font-size:12.5px;">Biệt thự</span><span class="mono" style="font-size:12.5px;">6.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Tư vấn</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/09</span></div>
-          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1fr 1fr 1.1fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600;">Chị Lan Anh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0977 224 890</span><span style="font-size:12.5px;">Biệt thự</span><span class="mono" style="font-size:12.5px;">5.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--surface-alt); color:var(--text-muted); font-size:11px; font-weight:600; justify-self:start;">Tiếp cận</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">08/09</span></div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+          <div class="mono" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+            <span>Khách hàng</span><span>Điện thoại</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Phụ trách</span><span>Cập nhật</span>
+          </div>
+          <div class="leads-table-row" data-dept="du-an" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">BQL Riverside</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 123 456</span><span style="font-size:12.5px;">Chung cư (GĐ3)</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:10.5px; font-weight:600; justify-self:start;">Dự án</span><span class="mono" style="font-size:12.5px;">15.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/09</span></div>
+          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Hải Yến</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0918 345 221</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">7.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">19/09</span></div>
+          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Minh Thư</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 887 234</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">6.8 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">17/09</span></div>
+          <div class="leads-table-row" data-dept="du-an" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cty Đông Dương</span><span class="mono" style="font-size:12px; color:var(--text-muted);">028 3822 xxxx</span><span style="font-size:12.5px;">Văn phòng</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:10.5px; font-weight:600; justify-self:start;">Dự án</span><span class="mono" style="font-size:12.5px;">5.5 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/09</span></div>
+          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Bích Ngọc</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0938 556 771</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">6.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Tư vấn</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/09</span></div>
+          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600;">Chị Lan Anh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0977 224 890</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">5.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--surface-alt); color:var(--text-muted); font-size:11px; font-weight:600; justify-self:start;">Tiếp cận</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">08/09</span></div>
         </div>
       </div>
 
@@ -263,6 +328,173 @@ button{font-family:inherit;}
       <div class="sales-panel" data-panel="construction-board" style="display: none; flex-direction: column; gap: 14px;">
         <div style="font-size: 11.5px; color: var(--text-muted);">Bảng Kanban kiểu Lark Task — kéo thả thẻ giữa các cột, hoặc bấm "+ Thêm thẻ" ở cuối mỗi cột để tạo nhanh.</div>
         <div id="constructionKanban" style="display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px;"></div>
+      </div>
+
+      <!-- ================= TAB: NHIỆM VỤ & ĐIỂM THƯỞNG ================= -->
+      <div class="sales-panel" data-panel="tasks" style="display: none; flex-direction: column; gap: 16px;">
+
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <button class="task-tab active" data-ktab="overview">Tổng quan</button>
+          <button class="task-tab" data-ktab="mission">Nhiệm vụ</button>
+          <button class="task-tab" data-ktab="rewards">Đổi quà</button>
+          <button class="task-tab" data-ktab="leaderboard">Bảng xếp hạng</button>
+        </div>
+
+        <!-- ---- Tổng quan ---- -->
+        <div class="task-panel" data-kpanel="overview" style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân sự tham gia</div>
+              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">5</div>
+              <div style="font-size: 12px; color: var(--text-muted);">2 phòng KD Dự Án &amp; Dân dụng</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng điểm đã phát</div>
+              <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--gold);">7.240</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Từ đầu quý đến nay</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ hoàn thành tuần này</div>
+              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">6</div>
+              <div style="font-size: 12px; color: var(--text-muted);">+2 so với tuần trước</div>
+            </div>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Quà đã đổi</div>
+              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--sales);">4</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Xem lịch sử tại tab Đổi quà</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; flex: 1; min-height: 0;">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <h3 style="font-size: 14.5px; font-weight: 700;">Quy trình đang "chơi"</h3>
+              <div style="background: var(--surface); border: 1px solid var(--sales); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: var(--sales-tint); color: var(--sales); display: flex; align-items: center; justify-content: center;">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                    </div>
+                    <div>
+                      <div style="font-weight: 700; font-size: 14px;">Quy trình chốt hợp đồng — BQL Riverside GĐ3</div>
+                      <div style="font-size: 11.5px; color: var(--text-muted);">5 bước · Phòng KD Dự Án</div>
+                    </div>
+                  </div>
+                  <span data-kgoto="mission" style="padding: 6px 12px; border-radius: 8px; background: var(--sales); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;">Chơi tiếp</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--surface-alt);"><div id="kdOvProgressBar" style="width: 40%; height: 100%; border-radius: 4px; background: var(--sales);"></div></div>
+                  <span class="mono" id="kdOvProgressLabel" style="font-size: 12px; color: var(--text-muted); white-space: nowrap;">2/5 bước</span>
+                </div>
+              </div>
+              <div style="background: var(--surface); border: 1px dashed var(--border); border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; opacity: .7;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex: none;">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; font-size: 14px;">Quy trình chăm sóc khách hàng sau bàn giao</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">Sắp ra mắt — đang thiết kế nhiệm vụ &amp; mốc điểm</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="font-size: 14.5px; font-weight: 700;">Bảng xếp hạng tuần này</h3>
+                <span data-kgoto="leaderboard" style="font-size: 12px; color: var(--sales); font-weight: 600; cursor: pointer;">Xem tất cả ›</span>
+              </div>
+              <div id="kdOvLeaderboard" style="display: flex; flex-direction: column; gap: 4px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- Nhiệm vụ ---- -->
+        <div class="task-panel" data-kpanel="mission" style="display: none; flex-direction: column; gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 20px;">
+            <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--sales-tint); color: var(--sales); display: flex; align-items: center; justify-content: center; flex: none;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-weight: 800; font-size: 17px; font-family: 'Sora';">Quy trình chốt hợp đồng — BQL Riverside GĐ3</div>
+              <div style="font-size: 12.5px; color: var(--text-muted);">5 bước chính · Phòng KD Dự Án · Mỗi bước gồm các nhiệm vụ nhỏ, hoàn thành để nhận điểm</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="mono" id="kdMissionPoints" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--gold);">0 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ 0 điểm</span></div>
+              <div style="width: 200px; height: 7px; border-radius: 4px; background: var(--surface-alt); margin-top: 6px;"><div id="kdMissionProgressBar" style="width: 0%; height: 100%; border-radius: 4px; background: var(--sales);"></div></div>
+            </div>
+            <button class="create-task-btn" id="kdCreateTaskBtn" title="Tạo nhiệm vụ mới">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tạo nhiệm vụ
+            </button>
+          </div>
+          <div id="kdStepList" style="display: flex; flex-direction: column;"></div>
+        </div>
+
+        <!-- ---- Đổi quà ---- -->
+        <div class="task-panel" data-kpanel="rewards" style="display: none; flex-direction: column; gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; display: flex; align-items: center; gap: 16px;">
+            <div style="width: 46px; height: 46px; border-radius: 50%; background: #C2621A22; color: var(--sales); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex: none;">TA</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 14.5px;">Trần Anh — Trưởng phòng Kinh doanh</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Điểm khả dụng để đổi quà</div>
+            </div>
+            <div class="mono" id="kdRewardsWallet" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; color: var(--gold);">1.320 điểm</div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div class="reward-card">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--finance-tint); color: var(--finance); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Phiếu ăn trưa miễn phí (1 tuần)</div>
+              <div class="mono" style="font-size: 13px; color: var(--gold); font-weight: 700;">300 điểm</div>
+              <button class="kd-redeem-btn" data-cost="300" style="border: none; background: var(--sales); color: #fff; padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">Đổi ngay</button>
+            </div>
+            <div class="reward-card">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 14.5 16 10 4 20"/><path d="M6 20 20.4 5.5"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Voucher nhà hàng 500.000đ</div>
+              <div class="mono" style="font-size: 13px; color: var(--gold); font-weight: 700;">500 điểm</div>
+              <button class="kd-redeem-btn" data-cost="500" style="border: none; background: var(--sales); color: #fff; padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">Đổi ngay</button>
+            </div>
+            <div class="reward-card">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--attendance-tint); color: var(--attendance); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Khoá học kỹ năng đàm phán</div>
+              <div class="mono" style="font-size: 13px; color: var(--gold); font-weight: 700;">700 điểm</div>
+              <button class="kd-redeem-btn" data-cost="700" style="border: none; background: var(--sales); color: #fff; padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">Đổi ngay</button>
+            </div>
+            <div class="reward-card">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--success-tint); color: var(--success); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Ngày nghỉ phép thêm (1 ngày)</div>
+              <div class="mono" style="font-size: 13px; color: var(--gold); font-weight: 700;">1.000 điểm</div>
+              <button class="kd-redeem-btn" data-cost="1000" style="border: none; background: var(--sales); color: #fff; padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;">Đổi ngay</button>
+            </div>
+            <div class="reward-card locked">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Chuyến du lịch team quý (2 ngày 1 đêm)</div>
+              <div class="mono" style="font-size: 13px; color: var(--text-muted); font-weight: 700;">2.500 điểm</div>
+              <button disabled style="border: none; background: var(--surface-alt); color: var(--text-muted); padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: not-allowed; font-family: inherit;">Không đủ điểm</button>
+            </div>
+            <div class="reward-card locked">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8V5a3 3 0 0 1 6 0v3"/></svg></div>
+              <div style="font-weight: 700; font-size: 13.5px;">Thưởng tiền mặt 1.000.000đ</div>
+              <div class="mono" style="font-size: 13px; color: var(--text-muted); font-weight: 700;">3.000 điểm</div>
+              <button disabled style="border: none; background: var(--surface-alt); color: var(--text-muted); padding: 8px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: not-allowed; font-family: inherit;">Không đủ điểm</button>
+            </div>
+          </div>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Lịch sử đổi quà gần đây</h3>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px;"><span style="flex:1;">Hoàng Yến Nhi — Voucher nhà hàng</span><span class="mono" style="color: var(--gold);">-500 điểm</span><span style="color: var(--text-muted);">18/09</span></div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px;"><span style="flex:1;">Đặng Quốc Cường — Phiếu ăn trưa miễn phí</span><span class="mono" style="color: var(--gold);">-300 điểm</span><span style="color: var(--text-muted);">10/09</span></div>
+          </div>
+        </div>
+
+        <!-- ---- Bảng xếp hạng ---- -->
+        <div class="task-panel" data-kpanel="leaderboard" style="display: none; flex-direction: column; gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px;">
+            <div class="mono" style="display: grid; grid-template-columns: 0.6fr 2fr 1.4fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+              <span>Hạng</span><span>Nhân sự</span><span>Phòng ban</span><span>Điểm tuần này</span><span>Tổng điểm</span>
+            </div>
+            <div id="kdFullLeaderboard"></div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -300,7 +532,12 @@ button{font-family:inherit;}
             <select id="lmSource"><option>Giới thiệu</option><option>Website</option><option>Mạng xã hội</option><option>Sự kiện</option><option>Khác</option></select>
           </div>
         </div>
-        <div class="field"><label>Địa chỉ</label><input id="lmAddress" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+          <div class="field"><label>Địa chỉ</label><input id="lmAddress" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện"></div>
+          <div class="field"><label>Phòng ban phụ trách</label>
+            <select id="lmDept"><option value="dan-dung">Phòng KD Dân dụng</option><option value="du-an">Phòng KD Dự Án</option></select>
+          </div>
+        </div>
       </div>
 
       <div class="lead-step" data-step="detail" style="display:none; flex-direction:column; gap:14px;">
@@ -352,6 +589,34 @@ button{font-family:inherit;}
   </div>
 </div>
 
+<!-- ===================== Modal: Tạo nhiệm vụ mới ===================== -->
+<div class="task-modal-overlay" id="kdCreateTaskOverlay">
+  <div class="task-modal-box">
+    <h3>Tạo nhiệm vụ mới</h3>
+    <div class="task-modal-sub">Dành cho trưởng phòng Kinh doanh — tạo nhiệm vụ và chỉ định nhân sự tham gia.</div>
+    <div class="task-modal-field">
+      <label>Tên nhiệm vụ *</label>
+      <input type="text" id="kdCtName" placeholder="VD: Gọi lại 5 khách hàng chưa phản hồi">
+    </div>
+    <div class="task-modal-field">
+      <label>Thuộc bước quy trình</label>
+      <select id="kdCtStep"></select>
+    </div>
+    <div class="task-modal-field">
+      <label>Nhân sự tham gia</label>
+      <input type="text" id="kdCtAssignee" placeholder="VD: Hoàng Yến Nhi, Đặng Quốc Cường">
+    </div>
+    <div class="task-modal-field">
+      <label>Điểm thưởng</label>
+      <input type="text" inputmode="numeric" id="kdCtPoints" placeholder="VD: 20" value="20">
+    </div>
+    <div class="task-modal-actions">
+      <button class="task-modal-btn" id="kdCtCancel">Huỷ</button>
+      <button class="task-modal-btn primary" id="kdCtSubmit">Tạo nhiệm vụ</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===================== Dữ liệu Pipeline (Kanban) ===================== */
 const STAGES = ['tiep-can','tu-van','bao-gia','dam-phan','chot-hd','thiet-ke','thi-cong'];
@@ -359,26 +624,31 @@ const STAGE_LABEL = {
   'tiep-can':'Tiếp cận', 'tu-van':'Tư vấn', 'bao-gia':'Báo giá', 'dam-phan':'Đàm phán',
   'chot-hd':'Chốt hợp đồng', 'thiet-ke':'Dự án (Thiết kế)', 'thi-cong':'Dự án (Thi công)'
 };
+const DEPTS = ['du-an','dan-dung'];
+const DEPT_LABEL = {'du-an':'Phòng KD Dự Án', 'dan-dung':'Phòng KD Dân dụng'};
+const DEPT_SHORT = {'du-an':'Dự án', 'dan-dung':'Dân dụng'};
+const DEPT_COLOR = {'du-an':'var(--primary)', 'dan-dung':'var(--attendance)'};
+const DEPT_TINT = {'du-an':'var(--primary-tint)', 'dan-dung':'var(--attendance-tint)'};
 const LEADS = [
-  {id:'l1', name:'Anh Minh Khang', type:'Nhà phố', value:1.8, stage:'tiep-can'},
-  {id:'l2', name:'Chị Lan Anh', type:'Biệt thự', value:5.2, stage:'tiep-can'},
-  {id:'l3', name:'Cty XYZ Group', type:'Văn phòng', value:3.5, stage:'tiep-can'},
-  {id:'l4', name:'Anh Đức Thịnh', type:'Nhà phố', value:2.0, stage:'tiep-can'},
-  {id:'l5', name:'Chị Thu Hằng', type:'Chung cư mini', value:4.1, stage:'tiep-can'},
-  {id:'l6', name:'Chị Bích Ngọc', type:'Biệt thự', value:6.0, stage:'tu-van'},
-  {id:'l7', name:'Anh Hoàng Long', type:'Nhà phố', value:2.3, stage:'tu-van'},
-  {id:'l8', name:'Cty Minh Phát', type:'Văn phòng', value:4.8, stage:'tu-van'},
-  {id:'l9', name:'Anh Tuấn Kiệt', type:'Nhà phố', value:1.9, stage:'tu-van'},
-  {id:'l10', name:'Chị Minh Thư', type:'Biệt thự Song lập — Thảo Điền', value:6.8, stage:'bao-gia'},
-  {id:'l11', name:'Anh Văn Sơn', type:'Nhà phố', value:2.2, stage:'bao-gia'},
-  {id:'l12', name:'Cty Đông Dương', type:'Văn phòng', value:5.5, stage:'bao-gia'},
-  {id:'l13', name:'BQL Riverside', type:'Mở rộng Giai đoạn 3', value:15.0, stage:'dam-phan'},
-  {id:'l14', name:'Chị Hải Yến', type:'Biệt thự Nhà Bè', value:7.2, stage:'dam-phan'},
-  {id:'l17', name:'Anh Phúc Nguyên', type:'Nhà phố', value:2.4, stage:'chot-hd'},
-  {id:'l18', name:'Chị Ngọc Diễm', type:'Nhà phố', value:2.6, stage:'thiet-ke', sub:'concept'},
-  {id:'l19', name:'Anh Bảo Long', type:'Biệt thự', value:5.4, stage:'thiet-ke', sub:'review'},
-  {id:'l15', name:'Anh Quang Huy', type:'Nhà phố Lô B12 — KDC Bình Chánh', value:2.1, stage:'thi-cong', sub:'structure'},
-  {id:'l16', name:'Cty TNHH ABC Logistics', type:'Văn phòng cho thuê — Q3', value:4.2, stage:'thi-cong', sub:'handover'},
+  {id:'l1', name:'Anh Minh Khang', type:'Nhà phố', value:1.8, stage:'tiep-can', dept:'dan-dung'},
+  {id:'l2', name:'Chị Lan Anh', type:'Biệt thự', value:5.2, stage:'tiep-can', dept:'dan-dung'},
+  {id:'l3', name:'Cty XYZ Group', type:'Văn phòng', value:3.5, stage:'tiep-can', dept:'du-an'},
+  {id:'l4', name:'Anh Đức Thịnh', type:'Nhà phố', value:2.0, stage:'tiep-can', dept:'dan-dung'},
+  {id:'l5', name:'Chị Thu Hằng', type:'Chung cư mini', value:4.1, stage:'tiep-can', dept:'dan-dung'},
+  {id:'l6', name:'Chị Bích Ngọc', type:'Biệt thự', value:6.0, stage:'tu-van', dept:'dan-dung'},
+  {id:'l7', name:'Anh Hoàng Long', type:'Nhà phố', value:2.3, stage:'tu-van', dept:'dan-dung'},
+  {id:'l8', name:'Cty Minh Phát', type:'Văn phòng', value:4.8, stage:'tu-van', dept:'du-an'},
+  {id:'l9', name:'Anh Tuấn Kiệt', type:'Nhà phố', value:1.9, stage:'tu-van', dept:'dan-dung'},
+  {id:'l10', name:'Chị Minh Thư', type:'Biệt thự Song lập — Thảo Điền', value:6.8, stage:'bao-gia', dept:'dan-dung'},
+  {id:'l11', name:'Anh Văn Sơn', type:'Nhà phố', value:2.2, stage:'bao-gia', dept:'dan-dung'},
+  {id:'l12', name:'Cty Đông Dương', type:'Văn phòng', value:5.5, stage:'bao-gia', dept:'du-an'},
+  {id:'l13', name:'BQL Riverside', type:'Mở rộng Giai đoạn 3', value:15.0, stage:'dam-phan', dept:'du-an'},
+  {id:'l14', name:'Chị Hải Yến', type:'Biệt thự Nhà Bè', value:7.2, stage:'dam-phan', dept:'dan-dung'},
+  {id:'l17', name:'Anh Phúc Nguyên', type:'Nhà phố', value:2.4, stage:'chot-hd', dept:'dan-dung'},
+  {id:'l18', name:'Chị Ngọc Diễm', type:'Nhà phố', value:2.6, stage:'thiet-ke', sub:'concept', dept:'dan-dung'},
+  {id:'l19', name:'Anh Bảo Long', type:'Biệt thự', value:5.4, stage:'thiet-ke', sub:'review', dept:'dan-dung'},
+  {id:'l15', name:'Anh Quang Huy', type:'Nhà phố Lô B12 — KDC Bình Chánh', value:2.1, stage:'thi-cong', sub:'structure', dept:'dan-dung'},
+  {id:'l16', name:'Cty TNHH ABC Logistics', type:'Văn phòng cho thuê — Q3', value:4.2, stage:'thi-cong', sub:'handover', dept:'du-an'},
 ];
 
 /* ===================== Bảng con: Thiết kế & Thi công (kiểu Lark Base/Task) ===================== */
@@ -450,7 +720,7 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
       function commit(){
         const name = input.value.trim();
         if(name){
-          LEADS.push({ id:'lnew'+(leadCounter++), name:name, type:'Chưa xác định', value:0, stage:row.getAttribute('data-parent'), sub:row.getAttribute('data-sub') });
+          LEADS.push({ id:'lnew'+(leadCounter++), name:name, type:'Chưa xác định', value:0, stage:row.getAttribute('data-parent'), sub:row.getAttribute('data-sub'), dept:'dan-dung' });
         }
         renderAllBoards();
       }
@@ -459,6 +729,8 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
     });
   });
 }
+
+let activeDept = 'all';
 
 function renderAllBoards(){
   renderKanban();
@@ -469,10 +741,31 @@ function renderAllBoards(){
 
 function fmtTy(v){ return v.toFixed(1).replace(/\.0$/,'') + ' tỷ'; }
 
+function setDeptFilter(dept){
+  activeDept = dept;
+  document.querySelectorAll('.dept-filter-btn').forEach(b => {
+    const isActive = b.getAttribute('data-dept') === dept;
+    b.classList.toggle('active', isActive);
+    b.style.background = isActive ? 'var(--sales-tint)' : 'none';
+    b.style.color = isActive ? 'var(--sales)' : 'var(--text-muted)';
+  });
+  renderKanban();
+  renderList();
+  filterLeadsTable();
+}
+function filterLeadsTable(){
+  document.querySelectorAll('.leads-table-row').forEach(row => {
+    row.style.display = (activeDept === 'all' || row.getAttribute('data-dept') === activeDept) ? 'grid' : 'none';
+  });
+}
+document.querySelectorAll('.dept-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => setDeptFilter(btn.getAttribute('data-dept')));
+});
+
 function renderKanban(){
   const board = document.getElementById('pipelineKanban');
   board.innerHTML = STAGES.map(stageId => {
-    const items = LEADS.filter(l => l.stage === stageId);
+    const items = LEADS.filter(l => l.stage === stageId && (activeDept === 'all' || l.dept === activeDept));
     const total = items.reduce((s,l)=>s+l.value, 0);
     const isProjectStage = stageId === 'thiet-ke' || stageId === 'thi-cong';
     return `
@@ -486,6 +779,9 @@ function renderKanban(){
               ${isProjectStage?'<span style="padding:2px 7px; border-radius:20px; background:var(--success-tint); color:var(--success); font-size:9.5px; font-weight:700; white-space:nowrap;">→ Dự án</span>':''}
             </div>
             <div style="font-size:11.5px; color:var(--text-muted);">${l.type}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span style="font-size:10px; font-weight:600; color:${DEPT_COLOR[l.dept]};">${DEPT_SHORT[l.dept]}</span>
+            </div>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:2px;">
               <div class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700;">${fmtTy(l.value)}</div>
               <select class="stage-move-select" data-id="${l.id}" style="font-size:10.5px; padding:3px 4px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-family:inherit;">
@@ -523,14 +819,16 @@ function renderKanban(){
 
 function renderList(){
   const wrap = document.getElementById('pipelineList');
+  const filtered = LEADS.filter(l => activeDept === 'all' || l.dept === activeDept);
   wrap.innerHTML = `
-    <div class="mono" style="display:grid; grid-template-columns:1.6fr 1.4fr 1fr 1.4fr 1fr; gap:10px; padding:12px 4px; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border);">
-      <span>Khách hàng</span><span>Loại dự án</span><span>Giá trị</span><span>Giai đoạn</span><span>Chuyển tới</span>
+    <div class="mono" style="display:grid; grid-template-columns:1.4fr 1.2fr 1fr 0.9fr 1.2fr 1fr; gap:10px; padding:12px 4px; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border);">
+      <span>Khách hàng</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Chuyển tới</span>
     </div>
-    ${LEADS.map((l,i) => `
-      <div style="display:grid; grid-template-columns:1.6fr 1.4fr 1fr 1.4fr 1fr; gap:10px; align-items:center; padding:11px 4px; ${i<LEADS.length-1?'border-bottom:1px solid var(--border);':''}">
+    ${filtered.map((l,i) => `
+      <div style="display:grid; grid-template-columns:1.4fr 1.2fr 1fr 0.9fr 1.2fr 1fr; gap:10px; align-items:center; padding:11px 4px; ${i<filtered.length-1?'border-bottom:1px solid var(--border);':''}">
         <span style="font-size:13px; font-weight:600;">${l.name}</span>
         <span style="font-size:12.5px; color:var(--text-muted);">${l.type}</span>
+        <span style="padding:3px 9px; border-radius:999px; background:${DEPT_TINT[l.dept]}; color:${DEPT_COLOR[l.dept]}; font-size:10.5px; font-weight:600; justify-self:start;">${DEPT_SHORT[l.dept]}</span>
         <span class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700;">${fmtTy(l.value)}</span>
         <span style="padding:3px 9px; border-radius:999px; background:${l.stage==='thiet-ke'||l.stage==='thi-cong'?'var(--success-tint)':'var(--sales-tint)'}; color:${l.stage==='thiet-ke'||l.stage==='thi-cong'?'var(--success)':'var(--sales)'}; font-size:11px; font-weight:600; justify-self:start;">${STAGE_LABEL[l.stage]}</span>
         <select class="stage-move-select" data-id="${l.id}" style="font-size:11px; padding:5px 6px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit;">
@@ -633,12 +931,14 @@ document.getElementById('leadModalSaveBtn').addEventListener('click', () => {
   const scale = document.getElementById('lmScale').value.trim();
   const value = parseFloat(document.getElementById('lmValue').value.replace(',', '.')) || 0;
   const stage = document.getElementById('lmStage').value;
+  const dept = document.getElementById('lmDept').value || 'dan-dung';
   LEADS.push({
     id: 'lnew' + (leadCounter++),
     name: name,
     type: scale ? `${type} (${scale})` : type,
     value: value,
-    stage: stage
+    stage: stage,
+    dept: dept
   });
   closeLeadModal();
   renderAllBoards();
@@ -667,6 +967,220 @@ function goToTab(name){
   document.querySelectorAll('.sales-panel').forEach(p => { p.style.display = (p.getAttribute('data-panel')===name) ? (name==='pipeline'?'flex':'flex') : 'none'; });
 }
 document.querySelectorAll('.sales-tab').forEach(btn => btn.addEventListener('click', () => goToTab(btn.getAttribute('data-tab'))));
+
+/* ===================== Nhiệm vụ & điểm thưởng ===================== */
+const KD_LEADERBOARD = [
+  {name:'Trần Anh', team:'Trưởng phòng KD', color:'#C2621A', week:150, total:1780},
+  {name:'Đặng Quốc Cường', team:'Phòng KD Dự Án', color:'#2F5DA8', week:120, total:1420},
+  {name:'Hoàng Yến Nhi', team:'Phòng KD Dân dụng', color:'#0E8A82', week:110, total:1320},
+  {name:'Vũ Đình Khoa', team:'Phòng KD Dự Án', color:'#B7791F', week:80, total:960},
+  {name:'Lâm Bảo Ngọc', team:'Phòng KD Dân dụng', color:'#7658C2', week:60, total:760}
+];
+function initialsOfK(name){ const p = name.trim().split(/\s+/); return p.length===1?p[0][0].toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); }
+function medalK(rank){
+  if(rank===1) return {bg:'var(--gold-tint)', color:'var(--gold)'};
+  if(rank===2) return {bg:'var(--silver-tint)', color:'var(--silver)'};
+  if(rank===3) return {bg:'var(--bronze-tint)', color:'var(--bronze)'};
+  return {bg:'var(--surface-alt)', color:'var(--text-muted)'};
+}
+function renderTaskLeaderboardsK(){
+  const top5 = KD_LEADERBOARD.slice(0,5);
+  document.getElementById('kdOvLeaderboard').innerHTML = top5.map((p,i)=>{
+    const m = medalK(i+1);
+    return `<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border);">
+      <span style="width:24px; height:24px; border-radius:50%; background:${m.bg}; color:${m.color}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex:none;">${i+1}</span>
+      <span style="width:26px; height:26px; border-radius:50%; background:${p.color}22; color:${p.color}; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex:none;">${initialsOfK(p.name)}</span>
+      <span style="flex:1; font-size:13px; font-weight:600;">${p.name}</span>
+      <span class="mono" style="font-size:12.5px; color:var(--gold); font-weight:700;">${p.week}đ</span>
+    </div>`;
+  }).join('');
+  document.getElementById('kdFullLeaderboard').innerHTML = KD_LEADERBOARD.map((p,i)=>{
+    const m = medalK(i+1);
+    return `<div style="display:grid; grid-template-columns:0.6fr 2fr 1.4fr 1fr 1fr; gap:10px; align-items:center; padding:10px 4px; border-bottom:1px solid var(--border);">
+      <span style="width:26px; height:26px; border-radius:50%; background:${m.bg}; color:${m.color}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">${i+1}</span>
+      <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600;"><span style="width:26px; height:26px; border-radius:50%; background:${p.color}22; color:${p.color}; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">${initialsOfK(p.name)}</span>${p.name}</span>
+      <span style="font-size:12.5px; color:var(--text-muted);">${p.team}</span>
+      <span class="mono" style="font-size:12.5px; font-weight:600;">${p.week} đ</span>
+      <span class="mono" style="font-size:12.5px; font-weight:700; color:var(--gold);">${p.total.toLocaleString('vi-VN')} đ</span>
+    </div>`;
+  }).join('');
+}
+
+const KD_STEPS = [
+  {title:'Tiếp cận & xác minh khách hàng tiềm năng', status:'done', subtasks:[
+    {text:'Gọi điện xác minh nhu cầu', who:'Đặng Quốc Cường', pts:20, done:true},
+    {text:'Ghi nhận thông tin vào hệ thống', who:'Đặng Quốc Cường', pts:15, done:true},
+    {text:'Phân loại theo phòng ban phụ trách', who:'Trần Anh', pts:15, done:true}
+  ]},
+  {title:'Tư vấn & khảo sát nhu cầu', status:'done', subtasks:[
+    {text:'Hẹn gặp tư vấn trực tiếp', who:'Đặng Quốc Cường', pts:20, done:true},
+    {text:'Khảo sát hiện trạng / mặt bằng', who:'Vũ Đình Khoa', pts:25, done:true},
+    {text:'Ghi nhận yêu cầu thiết kế', who:'Đặng Quốc Cường', pts:20, done:true}
+  ]},
+  {title:'Lập báo giá', status:'current', subtasks:[
+    {text:'Bóc tách sơ bộ chi phí', who:'Vũ Đình Khoa', pts:25, done:true},
+    {text:'Soạn báo giá & trình duyệt', who:'Trần Anh', pts:20, done:true},
+    {text:'Gửi báo giá cho khách hàng', who:'Đặng Quốc Cường', pts:15, done:false}
+  ]},
+  {title:'Đàm phán hợp đồng', status:'locked', subtasks:[
+    {text:'Trao đổi điều khoản thanh toán', who:'Trần Anh', pts:20, done:false},
+    {text:'Điều chỉnh phạm vi công việc', who:'Vũ Đình Khoa', pts:20, done:false},
+    {text:'Thống nhất tiến độ bàn giao', who:'Đặng Quốc Cường', pts:20, done:false}
+  ]},
+  {title:'Chốt hợp đồng & bàn giao hồ sơ', status:'locked', subtasks:[
+    {text:'Ký kết hợp đồng', who:'Trần Anh', pts:25, done:false},
+    {text:'Thu tạm ứng đợt 1', who:'Trần Anh', pts:20, done:false},
+    {text:'Bàn giao hồ sơ sang phòng Dự án / Thi công', who:'Đặng Quốc Cường', pts:20, done:false}
+  ]}
+];
+function stepPointsK(step){ return step.subtasks.reduce((s,x)=>s+x.pts, 0); }
+function stepEarnedK(step){ return step.subtasks.reduce((s,x)=>s+(x.done?x.pts:0), 0); }
+const KD_TOTAL_MAX = KD_STEPS.reduce((s,st)=>s+stepPointsK(st), 0);
+
+function renderTaskStepsK(){
+  const list = document.getElementById('kdStepList');
+  let earned = 0;
+  list.innerHTML = KD_STEPS.map((step, idx) => {
+    earned += stepEarnedK(step);
+    const isOpen = step.status === 'current';
+    const dotContent = step.status === 'done'
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg>`
+      : step.status === 'locked'
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`
+        : (idx+1);
+    const subtasksHtml = step.subtasks.map((s, si) => `
+      <div class="subtask-row">
+        <div class="subtask-chk${s.done?' checked':''}${isOpen?'':' disabled'}" data-step="${idx}" data-sub="${si}">
+          ${s.done ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg>' : ''}
+        </div>
+        <span style="flex:1; font-size:13px; ${s.done?'color:var(--text-muted); text-decoration:line-through;':''}">${s.text}</span>
+        <span style="font-size:11.5px; color:var(--text-muted);">${s.who}</span>
+        <span class="mono" style="font-size:12px; font-weight:700; color:var(--gold); width:44px; text-align:right;">+${s.pts}đ</span>
+      </div>
+    `).join('');
+    return `
+      <div class="step-row">
+        <div style="display:flex; flex-direction:column; align-items:center; position:relative;">
+          <div class="step-dot ${step.status}">${dotContent}</div>
+          <div class="line"></div>
+        </div>
+        <div class="step-card ${step.status}">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div>
+              <div style="font-weight:700; font-size:13.5px;">${step.title}</div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${step.subtasks.length} nhiệm vụ nhỏ ${step.status==='locked' ? '· Hoàn thành bước trước để mở khoá' : ''}</div>
+            </div>
+            <span class="mono" style="font-size:13px; font-weight:800; color:${step.status==='locked'?'var(--text-muted)':'var(--gold)'};">${stepEarnedK(step)}/${stepPointsK(step)}đ</span>
+          </div>
+          ${(step.status !== 'locked') ? subtasksHtml : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('kdMissionPoints').innerHTML = earned.toLocaleString('vi-VN') + ' <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ ' + KD_TOTAL_MAX.toLocaleString('vi-VN') + ' điểm</span>';
+  const pct = Math.round(earned/KD_TOTAL_MAX*100);
+  document.getElementById('kdMissionProgressBar').style.width = pct + '%';
+
+  const doneSteps = KD_STEPS.filter(s=>s.status==='done').length;
+  document.getElementById('kdOvProgressBar').style.width = Math.round(doneSteps/KD_STEPS.length*100) + '%';
+  document.getElementById('kdOvProgressLabel').textContent = doneSteps + '/' + KD_STEPS.length + ' bước';
+
+  list.querySelectorAll('.subtask-chk:not(.disabled)').forEach(chk => {
+    chk.addEventListener('click', () => {
+      const stepIdx = Number(chk.getAttribute('data-step'));
+      const subIdx = Number(chk.getAttribute('data-sub'));
+      const step = KD_STEPS[stepIdx];
+      const sub = step.subtasks[subIdx];
+      if(sub.done) return;
+      sub.done = true;
+      if(step.subtasks.every(s => s.done)){
+        step.status = 'done';
+        if(KD_STEPS[stepIdx+1] && KD_STEPS[stepIdx+1].status === 'locked'){
+          KD_STEPS[stepIdx+1].status = 'current';
+        }
+      }
+      renderTaskStepsK();
+    });
+  });
+}
+
+/* ---------- Tạo nhiệm vụ mới (modal) ---------- */
+function populateStepSelectK(){
+  const sel = document.getElementById('kdCtStep');
+  sel.innerHTML = KD_STEPS.map((s, i) => `<option value="${i}">${i+1}. ${s.title}</option>`).join('');
+  const currentIdx = KD_STEPS.findIndex(s => s.status === 'current');
+  if(currentIdx >= 0) sel.value = currentIdx;
+}
+function openCreateTaskModalK(){
+  populateStepSelectK();
+  document.getElementById('kdCtName').value = '';
+  document.getElementById('kdCtAssignee').value = '';
+  document.getElementById('kdCtPoints').value = '20';
+  document.getElementById('kdCreateTaskOverlay').classList.add('open');
+  document.getElementById('kdCtName').focus();
+}
+function closeCreateTaskModalK(){
+  document.getElementById('kdCreateTaskOverlay').classList.remove('open');
+}
+document.getElementById('kdCreateTaskBtn').addEventListener('click', openCreateTaskModalK);
+document.getElementById('kdCtCancel').addEventListener('click', closeCreateTaskModalK);
+document.getElementById('kdCreateTaskOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'kdCreateTaskOverlay') closeCreateTaskModalK();
+});
+document.getElementById('kdCtSubmit').addEventListener('click', () => {
+  const nameEl = document.getElementById('kdCtName');
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); return; }
+  const stepIdx = Number(document.getElementById('kdCtStep').value);
+  const who = document.getElementById('kdCtAssignee').value.trim() || 'Chưa gán';
+  const pts = Math.max(0, Number(document.getElementById('kdCtPoints').value) || 0);
+  const step = KD_STEPS[stepIdx];
+  step.subtasks.push({text: name, who: who, pts: pts, done: false});
+  if(step.status === 'done') step.status = 'current';
+  closeCreateTaskModalK();
+  renderTaskStepsK();
+});
+
+/* ---------- Đổi quà ---------- */
+let kdWallet = 1320;
+function updateWalletUIK(){
+  document.querySelectorAll('.kd-redeem-btn').forEach(btn => {
+    const cost = Number(btn.getAttribute('data-cost'));
+    if(cost > kdWallet){
+      btn.disabled = true;
+      btn.textContent = 'Không đủ điểm';
+      btn.style.background = 'var(--surface-alt)';
+      btn.style.color = 'var(--text-muted)';
+      btn.style.cursor = 'not-allowed';
+    }
+  });
+}
+document.querySelectorAll('.kd-redeem-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cost = Number(btn.getAttribute('data-cost'));
+    if(cost > kdWallet) return;
+    kdWallet -= cost;
+    renderWalletLabelK();
+    updateWalletUIK();
+  });
+});
+function renderWalletLabelK(){
+  const el = document.getElementById('kdRewardsWallet');
+  if(el) el.textContent = kdWallet.toLocaleString('vi-VN') + ' điểm';
+}
+
+/* ---------- Chuyển tab con (Nhiệm vụ & điểm thưởng) ---------- */
+function goToTaskTabK(name){
+  document.querySelectorAll('.task-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-ktab')===name));
+  document.querySelectorAll('.task-panel').forEach(p => { p.style.display = (p.getAttribute('data-kpanel')===name) ? 'flex' : 'none'; });
+}
+document.querySelectorAll('.task-tab').forEach(btn => btn.addEventListener('click', () => goToTaskTabK(btn.getAttribute('data-ktab'))));
+document.querySelectorAll('[data-kgoto]').forEach(el => el.addEventListener('click', () => goToTaskTabK(el.getAttribute('data-kgoto'))));
+
+renderTaskLeaderboardsK();
+renderTaskStepsK();
+updateWalletUIK();
 
 function updateThemeIcon(theme){
   document.getElementById('themeIconMoon').style.display = theme==='dark' ? 'none' : 'block';
