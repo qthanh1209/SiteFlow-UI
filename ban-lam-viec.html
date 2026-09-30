@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<title>SiteFlow — Mua hàng</title>
+<title>SiteFlow — Bàn làm việc của tôi</title>
 <script>
 (function(){
   try{
@@ -102,8 +102,57 @@ html[data-sidebar-pos="right"] .sidebar-flyout-clone{left:auto !important; right
 .app-sidebar.collapsed .navbadge-dot{display:block;}
 .app-sidebar a{position:relative;}
 
-.po-filter{border:none; cursor:pointer; padding:5px 11px; border-radius:20px; background:var(--surface-alt); color:var(--text-muted); font-size:11.5px; font-weight:600; font-family:inherit;}
-.po-filter.active{background:var(--qs-tint); color:var(--qs);}
+.task-row{display:flex; align-items:center; gap:11px; padding:15px 4px; border-bottom:1px solid var(--border);}
+.task-row:last-child{border-bottom:none;}
+.task-chk{width:18px; height:18px; border-radius:6px; border:1.5px solid var(--border); flex:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff;}
+.task-chk.done{background:var(--success); border-color:var(--success);}
+.task-title{font-size:12.5px; font-weight:600;}
+.task-row.done .task-title{text-decoration:line-through; color:var(--text-muted);}
+.task-meta{font-size:11px; color:var(--text-muted); margin-top:2px;}
+.task-prio{font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; flex:none;}
+.task-prio.high{background:var(--danger-tint); color:var(--danger);}
+.task-prio.med{background:var(--finance-tint); color:var(--finance);}
+.task-prio.low{background:var(--surface-alt); color:var(--text-muted);}
+.wk-add-btn{display:flex; align-items:center; gap:6px; background:var(--primary); color:#fff; padding:8px 14px; border-radius:9px; font-size:12.5px; font-weight:600; cursor:pointer; border:none;}
+
+.wk-modal-overlay{position:fixed; inset:0; background:rgba(15,18,26,.45); display:none; align-items:center; justify-content:center; z-index:50;}
+.wk-modal-overlay.open{display:flex;}
+.wk-modal-box{width:360px; background:var(--surface); border-radius:14px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.wk-modal-field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.wk-modal-field label{font-size:12px; font-weight:600; color:var(--text-muted);}
+.wk-modal-field input, .wk-modal-field select{padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:13px; font-family:inherit;}
+.wk-modal-btn{border:none; padding:9px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;}
+.wk-modal-btn.cancel{background:var(--surface-alt); color:var(--text);}
+.wk-modal-btn.submit{background:var(--primary); color:#fff;}
+
+.leave-bar-track{height:8px; border-radius:20px; background:var(--surface-alt); overflow:hidden;}
+.leave-bar-fill{height:100%; background:var(--attendance); border-radius:20px;}
+
+.wk-tab{border:none; cursor:pointer; padding:9px 16px; border-radius:9px; background:none; color:var(--text-muted); font-size:12.5px; font-weight:600; font-family:inherit;}
+.wk-tab.active{background:var(--primary-tint); color:var(--primary);}
+.wk-panel{display:none; flex-direction:column; gap:16px; min-height:0; flex:1;}
+.wk-panel.active{display:flex;}
+.form-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px 20px; cursor:pointer; display:flex; flex-direction:column; gap:10px;}
+.form-card:hover{border-color:var(--primary);}
+.form-card .fc-icon{width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex:none;}
+.request-row{display:flex; align-items:center; gap:12px; padding:12px 4px; border-bottom:1px solid var(--border);}
+.request-row:last-child{border-bottom:none;}
+.request-status{font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:20px; flex:none;}
+.request-status.pending{background:var(--finance-tint); color:var(--finance);}
+.request-status.approved{background:var(--success-tint); color:var(--success);}
+.request-status.rejected{background:var(--danger-tint); color:var(--danger);}
+.approver-steps{display:flex; flex-direction:column; gap:8px;}
+.approver-step{display:flex; align-items:center; gap:10px; background:var(--surface-alt); border-radius:10px; padding:7px 10px;}
+.approver-num{width:20px; height:20px; border-radius:50%; background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none;}
+.approver-name{font-size:12px; font-weight:600;}
+.approver-input{flex:1; min-width:0; width:auto; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-weight:600; font-family:inherit; padding:6px 9px; border-radius:7px;}
+.approver-input:focus{outline:none; border-color:var(--primary);}
+.approver-role{font-size:10.5px; color:var(--text-muted); flex:none; white-space:nowrap;}
+.approve-mini{display:flex; gap:4px; flex:none;}
+.approve-seg{font-size:9.5px; font-weight:700; padding:3px 7px; border-radius:6px; background:var(--surface-alt); color:var(--text-muted);}
+.approve-seg.done{background:var(--success-tint); color:var(--success);}
+.approve-seg.active{background:var(--finance-tint); color:var(--finance);}
+.approve-seg.rejected{background:var(--danger-tint); color:var(--danger);}
 .ai-fab{position:fixed; bottom:28px; right:32px; width:54px; height:54px; border-radius:50%; background:linear-gradient(160deg,#2FA3E6,#8B5CF6); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,.28); z-index:79;}
 .ai-fab:hover{filter:brightness(1.08);}
 .ai-panel{position:fixed; top:0; right:0; height:100vh; width:var(--ai-panel-width, 440px); max-width:92vw; background:var(--surface); border-left:1px solid var(--border); box-shadow:-14px 0 40px rgba(0,0,0,.18); display:flex; flex-direction:column; overflow:hidden; z-index:80; transform:translateX(100%); transition:transform .25s ease;}
@@ -149,7 +198,7 @@ body.ai-panel-resizing #appMainContent{transition:none;}
 </head>
 <body>
 
-<div class="app-shell" style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div class="app-shell" style="width: 100%; height: 100vh; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
@@ -208,10 +257,10 @@ body.ai-panel-resizing #appMainContent{transition:none;}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
         <span class="nav-label">BIM</span>
       </a>
-      <div class="navitem" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(109,79,194,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--qs);">
+      <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="nav-label">Mua hàng</span>
-      </div>
+      </a>
       <a href="san-xuat.html" title="Sản xuất" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         <span class="nav-label">Sản xuất</span>
@@ -227,10 +276,10 @@ body.ai-panel-resizing #appMainContent{transition:none;}
     </div>
     <div style="flex: 1;"></div>
     <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
-      <a href="ban-lam-viec.html" title="Bàn làm việc của tôi" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+      <div class="navitem" title="Bàn làm việc của tôi" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(47,93,168,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--primary);">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2 13h20"/></svg>
         <span class="nav-label">Bàn làm việc</span>
-      </a>
+      </div>
       <a href="lich.html" title="Lịch" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span class="nav-label">Lịch</span>
@@ -257,110 +306,377 @@ body.ai-panel-resizing #appMainContent{transition:none;}
   <div id="appMainContent" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
 
     <div style="height: 64px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 12px;">
-      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--qs-tint); color: var(--qs); display: flex; align-items: center; justify-content: center; flex: none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2 13h20"/></svg>
       </div>
-      <span style="font-size: 14.5px; font-weight: 700;">Mua hàng</span>
-      <span style="font-size: 12px; color: var(--text-muted);">Đơn mua hàng vật tư — đồng bộ từ bóc tách QS</span>
+      <span style="font-size: 14.5px; font-weight: 700;">Bàn làm việc của tôi</span>
+      <span style="font-size: 12px; color: var(--text-muted);">Nhiệm vụ, chấm công &amp; ngày phép cá nhân</span>
       <span style="flex: 1;"></span>
-      <a href="qs.html" style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--qs); text-decoration: none; margin-right: 6px; font-weight: 600;">
-        Xem bóc tách tại QS ›
-      </a>
       <button id="themeToggle" title="Chuyển giao diện sáng/tối" style="width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
         <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
         <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       </button>
     </div>
 
-    <div style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px;">
+    <div style="flex: 1; padding: 18px 28px 22px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; gap: 14px; min-height: 0;">
+
+      <div style="display: flex; gap: 6px; flex: none;">
+        <button class="wk-tab active" data-wktab="tongquan">Tổng quan</button>
+        <button class="wk-tab" data-wktab="dontu">Đơn từ</button>
+      </div>
+
+      <div class="wk-panel active" data-panel="tongquan" style="overflow-y: auto; overflow-x: hidden;">
 
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng đơn mua hàng</div>
-          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">5</div>
-          <div style="font-size: 12px; color: var(--text-muted);">Trên 5 nhà cung cấp</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ đang làm</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">7</div>
+          <div style="font-size: 12px; color: var(--text-muted);">2 việc sắp đến hạn</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Chưa đặt</div>
-          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--text-muted);">2</div>
-          <div style="font-size: 12px; color: var(--text-muted);">Cần đặt hàng trong tuần</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Hoàn thành tuần này</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">12</div>
+          <div style="font-size: 12px; color: var(--text-muted);">+3 so với tuần trước</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã đặt</div>
-          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--primary);">2</div>
-          <div style="font-size: 12px; color: var(--text-muted);">Đang chờ giao</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Ngày công tháng này</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--attendance);">18<span style="font-size:14px; color:var(--text-muted); font-weight:600;">/20</span></div>
+          <div style="font-size: 12px; color: var(--text-muted);">1 lần đi trễ</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng giá trị</div>
-          <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 24px; color: var(--success);">11.93 triệu</div>
-          <div style="font-size: 12px; color: var(--text-muted);">5 đơn mua hàng</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Ngày phép còn lại</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--finance);">8<span style="font-size:14px; color:var(--text-muted); font-weight:600;">/12</span></div>
+          <div style="font-size: 12px; color: var(--text-muted);">Đã dùng 4 ngày</div>
         </div>
       </div>
 
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 16px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; gap: 10px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <button class="po-filter active" data-status="all">Tất cả</button>
-            <button class="po-filter" data-status="Chưa đặt">Chưa đặt</button>
-            <button class="po-filter" data-status="Đã đặt">Đã đặt</button>
-            <button class="po-filter" data-status="Đã nhận">Đã nhận</button>
+      <div style="flex: 1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; min-height: 0;">
+
+        <div style="display: flex; flex-direction: column; gap: 16px; min-height: 0;">
+
+        <!-- Nhiệm vụ của tôi: tổng hợp nhiệm vụ từ các hạng mục khác, tích điểm đổi quà -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; flex: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <h3 style="font-size: 14.5px; font-weight: 700;">Nhiệm vụ của tôi</h3>
+            <div class="mono" style="font-size: 13px; font-weight: 700;"><span style="color: var(--finance);">330</span><span style="color: var(--text-muted); font-weight: 600;"> / 1.450 điểm</span></div>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px; background: var(--qs); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Tạo đơn mua hàng
+          <p style="font-size: 11.5px; color: var(--text-muted); margin: 0 0 12px;">Tổng hợp nhiệm vụ bạn được giao &amp; tham gia từ các hạng mục khác — hoàn thành để tích điểm đổi quà.</p>
+          <div class="leave-bar-track" style="margin-bottom: 14px;"><div class="leave-bar-fill" style="width: 23%; background: var(--finance);"></div></div>
+          <div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px;">
+            <div class="task-row">
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Khảo sát địa chất &amp; hiện trạng</div>
+                <div class="task-meta">Quản lý dự án · Quy trình thi công Lô B12</div>
+              </div>
+              <div class="mono" style="font-size: 12px; font-weight: 700; color: var(--finance); flex: none;">+20đ</div>
+            </div>
+            <div class="task-row">
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Duyệt đơn mua hàng PO-003</div>
+                <div class="task-meta">Mua hàng · Đã nhận hàng</div>
+              </div>
+              <div class="mono" style="font-size: 12px; font-weight: 700; color: var(--finance); flex: none;">+15đ</div>
+            </div>
+            <div class="task-row">
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Xác nhận chấm công tuần</div>
+                <div class="task-meta">HR · Chấm công</div>
+              </div>
+              <div class="mono" style="font-size: 12px; font-weight: 700; color: var(--finance); flex: none;">+10đ</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="gantt.html#nhiemvu-rewards" class="wk-add-btn" style="background: var(--finance); text-decoration: none;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              Đổi quà
+            </a>
+            <a href="gantt.html#nhiemvu-mission" style="font-size: 12px; font-weight: 600; color: var(--primary); text-decoration: none;">Xem tất cả tại Quản lý dự án ›</a>
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; padding: 8px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-          <span>Mã PO</span><span>Nhà cung cấp</span><span>Số mặt hàng</span><span>Tổng giá trị</span><span>Ngày giao dự kiến</span><span>Trạng thái</span>
+
+        <!-- Task hàng ngày: ghi chú công việc cá nhân -->
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; min-height: 0; flex: 1;">
+          <div style="margin-bottom: 6px; flex: none;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <h3 style="font-size: 14.5px; font-weight: 700;">Task hàng ngày</h3>
+              <button class="wk-add-btn" id="wkAddTaskBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Thêm việc
+              </button>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-muted); margin: 4px 0 0;">Ghi chú &amp; việc cần làm cá nhân trong ngày — không tính điểm.</p>
+          </div>
+          <div id="wkTaskList" style="flex: 1; overflow-y: auto;">
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Hoàn thiện bóc tách vật tư GĐ2</div>
+                <div class="task-meta">Chung cư Riverside GĐ2 · Hạn 24/09</div>
+              </div>
+              <div class="task-prio high">Cao</div>
+            </div>
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Duyệt đơn mua hàng PO-004</div>
+                <div class="task-meta">Mua hàng · Hạn 25/09</div>
+              </div>
+              <div class="task-prio med">TB</div>
+            </div>
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Review App tiến độ thi công</div>
+                <div class="task-meta">Quản lý dự án · Hạn 23/09</div>
+              </div>
+              <div class="task-prio high">Cao</div>
+            </div>
+            <div class="task-row done">
+              <div class="task-chk done" data-check><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Gửi báo giá cho khách Lô B12</div>
+                <div class="task-meta">Kinh doanh · Hoàn thành 21/09</div>
+              </div>
+              <div class="task-prio low">Thấp</div>
+            </div>
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Chuẩn bị họp kinh doanh tổng</div>
+                <div class="task-meta">Kinh doanh · Hạn 24/09</div>
+              </div>
+              <div class="task-prio med">TB</div>
+            </div>
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Cập nhật Wiki quy trình thi công</div>
+                <div class="task-meta">Wiki · Hạn 27/09</div>
+              </div>
+              <div class="task-prio low">Thấp</div>
+            </div>
+            <div class="task-row">
+              <div class="task-chk" data-check></div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="task-title">Xác nhận nhân sự tăng ca cuối tuần</div>
+                <div class="task-meta">HR · Hạn 26/09</div>
+              </div>
+              <div class="task-prio med">TB</div>
+            </div>
+          </div>
         </div>
-        <div class="po-row" data-status="Chưa đặt" style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
-          <span class="mono" style="font-size: 12px; font-weight: 600;">PO-001</span><span style="font-size: 12.5px;">Rạng Đông</span><span class="mono" style="font-size: 12px;">3</span><span class="mono" style="font-size: 12.5px;">1.975.000</span><span class="mono" style="font-size: 12px; color: var(--text-muted);">25/09</span>
-          <span style="padding: 3px 9px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 11px; font-weight: 600; justify-self: start;">Chưa đặt</span>
+
         </div>
-        <div class="po-row" data-status="Đã đặt" style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
-          <span class="mono" style="font-size: 12px; font-weight: 600;">PO-002</span><span style="font-size: 12.5px;">MPE</span><span class="mono" style="font-size: 12px;">2</span><span class="mono" style="font-size: 12.5px;">2.665.000</span><span class="mono" style="font-size: 12px; color: var(--text-muted);">27/09</span>
-          <span style="padding: 3px 9px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 11px; font-weight: 600; justify-self: start;">Đã đặt</span>
+
+        <!-- Cột phải -->
+        <div style="display: flex; flex-direction: column; gap: 16px; min-height: 0; overflow-y: auto;">
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;">
+            <h3 style="font-size: 13.5px; font-weight: 700; margin-bottom: 14px;">Thống kê chấm công</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+              <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 18px; color: var(--attendance);">18</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Ngày công đủ giờ</div>
+              </div>
+              <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 18px; color: var(--finance);">1</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Đi trễ</div>
+              </div>
+              <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 18px;">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Về sớm</div>
+              </div>
+              <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
+                <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 18px; color: var(--danger);">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Nghỉ không phép</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;">
+            <h3 style="font-size: 13.5px; font-weight: 700; margin-bottom: 12px;">Ngày nghỉ phép</h3>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text-muted);">Đã dùng 4 / 12 ngày</span>
+              <span class="mono" style="font-size: 12px; font-weight: 700; color: var(--attendance);">33%</span>
+            </div>
+            <div class="leave-bar-track"><div class="leave-bar-fill" style="width: 33%;"></div></div>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 10px;">Còn lại 8 ngày phép năm 2026, có thể đăng ký nghỉ trước 3 ngày.</div>
+          </div>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;">
+            <h3 style="font-size: 13.5px; font-weight: 700; margin-bottom: 12px;">Thông số khác</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;">
+                <span style="color: var(--text-muted);">Dự án đang tham gia</span>
+                <span class="mono" style="font-weight: 700;">4</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;">
+                <span style="color: var(--text-muted);">Điểm đánh giá KPI quý này</span>
+                <span class="mono" style="font-weight: 700; color: var(--success);">92/100</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;">
+                <span style="color: var(--text-muted);">Tin nhắn chưa đọc</span>
+                <span class="mono" style="font-weight: 700;">6</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;">
+                <span style="color: var(--text-muted);">Đơn mua hàng đang chờ duyệt</span>
+                <span class="mono" style="font-weight: 700;">2</span>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="po-row" data-status="Đã nhận" style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
-          <span class="mono" style="font-size: 12px; font-weight: 600;">PO-003</span><span style="font-size: 12.5px;">Philips</span><span class="mono" style="font-size: 12px;">1</span><span class="mono" style="font-size: 12.5px;">1.920.000</span><span class="mono" style="font-size: 12px; color: var(--text-muted);">18/09</span>
-          <span style="padding: 3px 9px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 11px; font-weight: 600; justify-self: start;">Đã nhận</span>
+      </div>
+      </div>
+
+      <div class="wk-panel" data-panel="dontu" style="overflow-y: auto; overflow-x: hidden; gap: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: none;">
+          <div class="form-card" data-formtype="xinphep">
+            <div class="fc-icon" style="background: var(--attendance-tint); color: var(--attendance);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700;">Xin phép nghỉ</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Nghỉ phép năm, nghỉ ốm, nghỉ không lương</div>
+            </div>
+          </div>
+          <div class="form-card" data-formtype="tamung">
+            <div class="fc-icon" style="background: var(--finance-tint); color: var(--finance);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg></div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700;">Tạm ứng</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Đề nghị tạm ứng lương / công tác phí</div>
+            </div>
+          </div>
+          <div class="form-card" data-formtype="hoanung">
+            <div class="fc-icon" style="background: var(--primary-tint); color: var(--primary);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700;">Hoàn ứng</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Quyết toán khoản đã tạm ứng trước đó</div>
+            </div>
+          </div>
         </div>
-        <div class="po-row" data-status="Chưa đặt" style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">
-          <span class="mono" style="font-size: 12px; font-weight: 600;">PO-004</span><span style="font-size: 12.5px;">Hồng Phúc</span><span class="mono" style="font-size: 12px;">1</span><span class="mono" style="font-size: 12.5px;">4.800.000</span><span class="mono" style="font-size: 12px; color: var(--text-muted);">02/10</span>
-          <span style="padding: 3px 9px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 11px; font-weight: 600; justify-self: start;">Chưa đặt</span>
-        </div>
-        <div class="po-row" data-status="Đã đặt" style="display: grid; grid-template-columns: 1fr 1.4fr 1fr 1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;">
-          <span class="mono" style="font-size: 12px; font-weight: 600;">PO-005</span><span style="font-size: 12.5px;">Điện Quang</span><span class="mono" style="font-size: 12px;">1</span><span class="mono" style="font-size: 12.5px;">570.000</span><span class="mono" style="font-size: 12px; color: var(--text-muted);">24/09</span>
-          <span style="padding: 3px 9px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 11px; font-weight: 600; justify-self: start;">Đã đặt</span>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;">
+          <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 4px;">Lịch sử đơn từ</h3>
+          <p style="font-size: 11.5px; color: var(--text-muted); margin: 0 0 4px;">Bấm vào 1 trong 3 loại đơn phía trên để tạo đơn mới.</p>
+          <div id="donTuList">
+            <div class="request-row">
+              <div class="fc-icon" style="width:30px; height:30px; background: var(--attendance-tint); color: var(--attendance); flex:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 12.5px; font-weight: 600;">Xin phép nghỉ ốm — 18/09 đến 19/09</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Gửi 17/09/2026 · Sốt siêu vi, có giấy khám bệnh</div>
+              </div>
+              <div class="approve-mini" title="Quản lý đã duyệt · HR đã duyệt">
+                <span class="approve-seg done">QL ✓</span>
+                <span class="approve-seg done">HR ✓</span>
+              </div>
+            </div>
+            <div class="request-row">
+              <div class="fc-icon" style="width:30px; height:30px; background: var(--finance-tint); color: var(--finance); flex:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg></div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 12.5px; font-weight: 600;">Tạm ứng công tác phí — 3.000.000đ</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Gửi 20/09/2026 · Công tác khảo sát Lô B12</div>
+              </div>
+              <div class="approve-mini" title="Quản lý đã duyệt · Đang chờ HR duyệt">
+                <span class="approve-seg done">QL ✓</span>
+                <span class="approve-seg active">HR ⏳</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;">
-        <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 14px;">Nhà cung cấp</h3>
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
-          <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
-            <div style="font-weight: 600; font-size: 12.5px;">Rạng Đông</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1 đơn · Chưa đặt</div>
-          </div>
-          <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
-            <div style="font-weight: 600; font-size: 12.5px;">MPE</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1 đơn · Đã đặt</div>
-          </div>
-          <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
-            <div style="font-weight: 600; font-size: 12.5px;">Philips</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1 đơn · Đã nhận</div>
-          </div>
-          <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
-            <div style="font-weight: 600; font-size: 12.5px;">Hồng Phúc</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1 đơn · Chưa đặt</div>
-          </div>
-          <div style="background: var(--surface-alt); border-radius: 10px; padding: 12px 14px;">
-            <div style="font-weight: 600; font-size: 12.5px;">Điện Quang</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1 đơn · Đã đặt</div>
-          </div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE TASK MODAL -->
+<div class="wk-modal-overlay" id="wkModalOverlay">
+  <div class="wk-modal-box">
+    <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Thêm việc hàng ngày</h3>
+    <div class="wk-modal-field">
+      <label>Nội dung ghi chú</label>
+      <input type="text" id="wkTitle" placeholder="VD: Gọi lại cho nhà cung cấp thép">
+    </div>
+    <div class="wk-modal-field">
+      <label>Liên quan tới (không bắt buộc)</label>
+      <select id="wkProject">
+        <option>Cá nhân</option>
+        <option>Quản lý dự án</option>
+        <option>Kinh doanh</option>
+        <option>Mua hàng</option>
+        <option>HR</option>
+        <option>Tài chính</option>
+        <option>Wiki</option>
+      </select>
+    </div>
+    <div class="wk-modal-field">
+      <label>Hạn chót (không bắt buộc)</label>
+      <input type="date" id="wkDue" value="2026-09-26">
+    </div>
+    <div class="wk-modal-field">
+      <label>Độ ưu tiên</label>
+      <select id="wkPrio">
+        <option value="high">Cao</option>
+        <option value="med" selected>Trung bình</option>
+        <option value="low">Thấp</option>
+      </select>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+      <button class="wk-modal-btn cancel" id="wkModalCancel">Hủy</button>
+      <button class="wk-modal-btn submit" id="wkModalSubmit">Thêm việc</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE ĐƠN TỪ MODAL -->
+<div class="wk-modal-overlay" id="donTuModalOverlay">
+  <div class="wk-modal-box">
+    <h3 id="donTuModalTitle" style="font-size: 15px; font-weight: 700; margin-bottom: 16px;">Tạo đơn</h3>
+    <div class="wk-modal-row">
+      <div class="wk-modal-field">
+        <label id="donTuDateFromLabel">Từ ngày</label>
+        <input type="date" id="donTuDateFrom" value="2026-09-24">
+      </div>
+      <div class="wk-modal-field" id="donTuDateToField">
+        <label>Đến ngày</label>
+        <input type="date" id="donTuDateTo" value="2026-09-24">
+      </div>
+    </div>
+    <div class="wk-modal-field" id="donTuAmountField" style="display: none;">
+      <label id="donTuAmountLabel">Số tiền</label>
+      <input type="text" inputmode="numeric" id="donTuAmount" placeholder="VD: 3.000.000">
+    </div>
+    <div class="wk-modal-field">
+      <label id="donTuReasonLabel">Lý do</label>
+      <textarea id="donTuReason" rows="3" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;" placeholder="Nhập nội dung..."></textarea>
+    </div>
+    <div class="wk-modal-field">
+      <label>Cấp duyệt <span style="font-weight: 400; color: var(--text-muted);">(chọn gợi ý hoặc tự nhập tên)</span></label>
+      <div class="approver-steps">
+        <div class="approver-step">
+          <div class="approver-num">1</div>
+          <input class="approver-input" id="donTuApprover1" list="approverSuggestions" value="Nguyễn Đức Anh" placeholder="Nhập tên người duyệt">
+          <div class="approver-role">Quản lý trực tiếp</div>
+        </div>
+        <div class="approver-step">
+          <div class="approver-num">2</div>
+          <input class="approver-input" id="donTuApprover2" list="approverSuggestions" value="Phan Bảo Ngọc" placeholder="Nhập tên người duyệt">
+          <div class="approver-role">Nhân sự (HR)</div>
         </div>
       </div>
-
+      <datalist id="approverSuggestions">
+        <option value="Nguyễn Đức Anh">
+        <option value="Cao Hưng (CEO)">
+        <option value="Đỗ Thành Long">
+        <option value="Phan Bảo Ngọc">
+        <option value="Ngọc Hà">
+        <option value="Lê Trung Kiên">
+        <option value="Nguyễn Trung Thành">
+        <option value="Ngô Mỹ Duyên">
+      </datalist>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+      <button class="wk-modal-btn cancel" id="donTuModalCancel">Hủy</button>
+      <button class="wk-modal-btn submit" id="donTuModalSubmit">Gửi đơn</button>
     </div>
   </div>
 </div>
@@ -392,9 +708,9 @@ body.ai-panel-resizing #appMainContent{transition:none;}
     <div class="ai-log" id="aiLog"></div>
   </div>
   <div class="ai-suggest-row">
-    <button class="ai-suggest-chip" data-ai-prompt="Tóm tắt tình hình dự án hôm nay">Tóm tắt tình hình dự án hôm nay</button>
-    <button class="ai-suggest-chip" data-ai-prompt="Đơn mua hàng nào chưa đặt?">Đơn mua hàng nào chưa đặt?</button>
-    <button class="ai-suggest-chip" data-ai-prompt="Nhà cung cấp nào đang có đơn trễ?">Nhà cung cấp nào đang có đơn trễ?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Tôi còn bao nhiêu ngày phép?">Tôi còn bao nhiêu ngày phép?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Đơn từ nào đang chờ duyệt?">Đơn từ nào đang chờ duyệt?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Tóm tắt nhiệm vụ của tôi tuần này">Tóm tắt nhiệm vụ của tôi tuần này</button>
   </div>
   <div class="ai-input-area">
     <textarea id="aiInput" placeholder="Hỏi về tiến độ, chấm công, dòng tiền, khách hàng…"></textarea>
@@ -408,15 +724,128 @@ body.ai-panel-resizing #appMainContent{transition:none;}
 </div>
 
 <script>
-document.querySelectorAll('.po-filter').forEach(btn => {
+document.querySelectorAll('[data-check]').forEach(chk => {
+  chk.addEventListener('click', () => {
+    var row = chk.closest('.task-row');
+    var isDone = row.classList.toggle('done');
+    chk.classList.toggle('done', isDone);
+    chk.innerHTML = isDone ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg>' : '';
+  });
+});
+
+/* ---- Tab con: Tổng quan / Đơn từ ---- */
+document.querySelectorAll('.wk-tab').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.po-filter').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.wk-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const status = btn.getAttribute('data-status');
-    document.querySelectorAll('.po-row').forEach(row => {
-      row.style.display = (status === 'all' || row.getAttribute('data-status') === status) ? 'grid' : 'none';
+    var name = btn.getAttribute('data-wktab');
+    document.querySelectorAll('.wk-panel').forEach(p => {
+      p.classList.toggle('active', p.getAttribute('data-panel') === name);
     });
   });
+});
+
+/* ---- Tạo đơn từ (Xin phép / Tạm ứng / Hoàn ứng) ---- */
+var DONTU_CONFIG = {
+  xinphep: { title: 'Xin phép nghỉ', dateFromLabel: 'Từ ngày', showAmount: false, reasonLabel: 'Lý do xin nghỉ', icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>', color: 'attendance' },
+  tamung: { title: 'Đề nghị tạm ứng', dateFromLabel: 'Ngày cần nhận', showAmount: true, amountLabel: 'Số tiền đề nghị tạm ứng (đ)', reasonLabel: 'Lý do tạm ứng', icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg>', color: 'finance' },
+  hoanung: { title: 'Hoàn ứng', dateFromLabel: 'Ngày hoàn ứng', showAmount: true, amountLabel: 'Số tiền hoàn (đ)', reasonLabel: 'Nội dung quyết toán', icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>', color: 'primary' }
+};
+var currentDonTuType = null;
+var donTuOverlay = document.getElementById('donTuModalOverlay');
+
+document.querySelectorAll('.form-card').forEach(card => {
+  card.addEventListener('click', () => {
+    currentDonTuType = card.getAttribute('data-formtype');
+    var cfg = DONTU_CONFIG[currentDonTuType];
+    document.getElementById('donTuModalTitle').textContent = 'Tạo đơn — ' + cfg.title;
+    document.getElementById('donTuDateFromLabel').textContent = cfg.dateFromLabel;
+    document.getElementById('donTuDateToField').style.display = (currentDonTuType === 'xinphep') ? 'flex' : 'none';
+    document.getElementById('donTuAmountField').style.display = cfg.showAmount ? 'flex' : 'none';
+    if(cfg.showAmount){ document.getElementById('donTuAmountLabel').textContent = cfg.amountLabel; }
+    document.getElementById('donTuReasonLabel').textContent = cfg.reasonLabel;
+    donTuOverlay.classList.add('open');
+  });
+});
+document.getElementById('donTuModalCancel').addEventListener('click', () => donTuOverlay.classList.remove('open'));
+donTuOverlay.addEventListener('click', e => { if(e.target === donTuOverlay) donTuOverlay.classList.remove('open'); });
+
+document.getElementById('donTuModalSubmit').addEventListener('click', () => {
+  if(!currentDonTuType) return;
+  var cfg = DONTU_CONFIG[currentDonTuType];
+  var reason = document.getElementById('donTuReason').value.trim();
+  if(!reason){ alert('Vui lòng nhập ' + cfg.reasonLabel.toLowerCase() + '.'); return; }
+  var dateFrom = document.getElementById('donTuDateFrom').value;
+  var dateFromLabel = dateFrom ? dateFrom.split('-').reverse().slice(0,2).join('/') : '';
+  var amount = document.getElementById('donTuAmount').value.trim();
+  var approver1 = document.getElementById('donTuApprover1').value.trim() || 'Quản lý trực tiếp';
+  var approver2 = document.getElementById('donTuApprover2').value.trim() || 'Nhân sự (HR)';
+
+  var titleText = cfg.title;
+  if(currentDonTuType === 'xinphep'){
+    var dateTo = document.getElementById('donTuDateTo').value;
+    var dateToLabel = dateTo ? dateTo.split('-').reverse().slice(0,2).join('/') : '';
+    titleText += ' — ' + dateFromLabel + (dateToLabel && dateToLabel !== dateFromLabel ? ' đến ' + dateToLabel : '');
+  } else if(amount){
+    titleText += ' — ' + amount + 'đ';
+  }
+
+  var row = document.createElement('div');
+  row.className = 'request-row';
+  row.innerHTML =
+    '<div class="fc-icon" style="width:30px; height:30px; background: var(--' + cfg.color + '-tint); color: var(--' + cfg.color + '); flex:none;">' + cfg.icon + '</div>' +
+    '<div style="flex:1; min-width:0;">' +
+      '<div class="rq-title" style="font-size:12.5px; font-weight:600;"></div>' +
+      '<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Gửi ' + dateFromLabel + ' · ' + reason + '</div>' +
+    '</div>' +
+    '<div class="approve-mini" title="Đang chờ ' + approver1 + ' duyệt · ' + approver2 + ' chưa xét">' +
+      '<span class="approve-seg active">QL ⏳</span>' +
+      '<span class="approve-seg">HR</span>' +
+    '</div>';
+  row.querySelector('.rq-title').textContent = titleText;
+  document.getElementById('donTuList').prepend(row);
+
+  document.getElementById('donTuReason').value = '';
+  document.getElementById('donTuAmount').value = '';
+  donTuOverlay.classList.remove('open');
+});
+
+var wkOverlay = document.getElementById('wkModalOverlay');
+var PRIO_LABEL = { high: 'Cao', med: 'TB', low: 'Thấp' };
+document.getElementById('wkAddTaskBtn').addEventListener('click', () => wkOverlay.classList.add('open'));
+document.getElementById('wkModalCancel').addEventListener('click', () => wkOverlay.classList.remove('open'));
+wkOverlay.addEventListener('click', e => { if(e.target === wkOverlay) wkOverlay.classList.remove('open'); });
+
+document.getElementById('wkModalSubmit').addEventListener('click', () => {
+  var title = document.getElementById('wkTitle').value.trim();
+  if(!title){ alert('Vui lòng nhập tiêu đề task.'); return; }
+  var project = document.getElementById('wkProject').value;
+  var due = document.getElementById('wkDue').value;
+  var dueLabel = due ? due.split('-').reverse().slice(0,2).join('/') : '';
+  var prio = document.getElementById('wkPrio').value;
+
+  var row = document.createElement('div');
+  row.className = 'task-row';
+  row.innerHTML =
+    '<div class="task-chk" data-check></div>' +
+    '<div style="flex:1; min-width:0;">' +
+      '<div class="task-title"></div>' +
+      '<div class="task-meta"></div>' +
+    '</div>' +
+    '<div class="task-prio ' + prio + '"></div>';
+  row.querySelector('.task-title').textContent = title;
+  row.querySelector('.task-meta').textContent = project + (dueLabel ? (' · Hạn ' + dueLabel) : '');
+  row.querySelector('.task-prio').textContent = PRIO_LABEL[prio];
+  row.querySelector('[data-check]').addEventListener('click', function(){
+    var r = this.closest('.task-row');
+    var isDone = r.classList.toggle('done');
+    this.classList.toggle('done', isDone);
+    this.innerHTML = isDone ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,12 9,17 20,6"/></svg>' : '';
+  });
+
+  document.getElementById('wkTaskList').prepend(row);
+  document.getElementById('wkTitle').value = '';
+  wkOverlay.classList.remove('open');
 });
 
 function updateThemeIcon(theme){
@@ -504,23 +933,27 @@ document.addEventListener('click', function(e){
 
   var AI_KB = {
     tiendo: 'Dự án "Chung cư Riverside GĐ2" đang hoàn thành 62% khối lượng — đúng tiến độ tổng thể. Hạng mục "Hoàn thiện" có 2 đầu việc đang trễ hạn, cần ưu tiên xử lý trong tuần này.',
-    chamcong: 'Hôm nay có 18/21 nhân sự đã chấm công đúng giờ, 2 người chấm công trễ và 1 người xin nghỉ phép. Tỷ lệ chuyên cần tuần này đạt 94%.',
+    chamcong: 'Bạn có 18/20 ngày công đủ giờ tháng này, 1 lần đi trễ, còn 8/12 ngày phép năm. Đơn xin nghỉ ốm gần nhất đã được duyệt.',
     dongtien: 'Dòng tiền tháng này: Thu về 1.85 tỷ, Chi ra 1.42 tỷ — dương 430 triệu. Có 3 hoá đơn nhà cung cấp sắp đến hạn thanh toán trong 7 ngày tới.',
     khachhang: 'Hiện có 12 khách hàng đang trong giai đoạn đàm phán, 4 khách vừa ký hợp đồng trong tuần này. Cơ hội "Nhà phố Lô B12" có giá trị lớn nhất, đang chờ chốt hợp đồng.',
     tinnhan: 'Bạn có 6 tin nhắn chưa đọc trong Chat, tập trung ở nhóm "Dự án Riverside" và "Ban giám đốc". Muốn mình tóm tắt nội dung chính không?',
     boctach: 'Bóc tách khối lượng mới nhất từ QS ghi nhận tổng giá trị vật tư khoảng 11.93 triệu trên 5 đơn mua hàng, trong đó 2 đơn chưa đặt hàng.',
     quytrinh: 'Quy trình thi công hiện tại gồm 5 bước: Khảo sát → Thiết kế → Xin phép → Thi công → Nghiệm thu. Bước "Thi công" đang được nhiều dự án thực hiện nhất.',
-    default: 'Mình đã tra trong dữ liệu workspace nhưng chưa tìm thấy câu trả lời chính xác cho câu hỏi này — bạn thử hỏi cụ thể hơn về tiến độ, chấm công, dòng tiền, khách hàng, bóc tách hoặc quy trình nhé.'
+    nhiemvu: 'Bạn đang có 7 nhiệm vụ, 2 việc sắp đến hạn: "Hoàn thiện bóc tách vật tư GĐ2" (24/09) và "Chuẩn bị họp kinh doanh tổng" (24/09). Tuần này đã hoàn thành 12 việc.',
+    dontu: 'Bạn có 1 đơn tạm ứng công tác phí 3.000.000đ đang chờ duyệt (gửi 20/09), và 1 đơn xin nghỉ ốm đã được duyệt.',
+    default: 'Mình đã tra trong dữ liệu workspace nhưng chưa tìm thấy câu trả lời chính xác cho câu hỏi này — bạn thử hỏi cụ thể hơn về nhiệm vụ, chấm công, đơn từ, dòng tiền, khách hàng, bóc tách hoặc quy trình nhé.'
   };
 
   function matchTopic(text){
     var t = text.toLowerCase();
+    if(t.indexOf('đơn từ') > -1 || t.indexOf('tạm ứng') > -1 || t.indexOf('hoàn ứng') > -1 || t.indexOf('chờ duyệt') > -1) return 'dontu';
+    if(t.indexOf('nhiệm vụ') > -1 || t.indexOf('task') > -1) return 'nhiemvu';
     if(t.indexOf('tiến độ') > -1 || t.indexOf('tien do') > -1 || t.indexOf('dự án') > -1) return 'tiendo';
-    if(t.indexOf('chấm công') > -1 || t.indexOf('nhân công') > -1 || t.indexOf('nhân sự') > -1 || t.indexOf('nghỉ phép') > -1) return 'chamcong';
+    if(t.indexOf('chấm công') > -1 || t.indexOf('nhân công') > -1 || t.indexOf('nhân sự') > -1 || t.indexOf('nghỉ phép') > -1 || t.indexOf('ngày phép') > -1) return 'chamcong';
     if(t.indexOf('dòng tiền') > -1 || t.indexOf('hoá đơn') > -1 || t.indexOf('hóa đơn') > -1 || t.indexOf('thu') > -1 || t.indexOf('chi') > -1) return 'dongtien';
     if(t.indexOf('khách hàng') > -1 || t.indexOf('hợp đồng') > -1) return 'khachhang';
     if(t.indexOf('tin nhắn') > -1 || t.indexOf('chat') > -1) return 'tinnhan';
-    if(t.indexOf('bóc tách') > -1 || t.indexOf('mua hàng') > -1 || t.indexOf('đơn') > -1 || t.indexOf('nhà cung cấp') > -1 || t.indexOf('vật tư') > -1) return 'boctach';
+    if(t.indexOf('bóc tách') > -1 || t.indexOf('mua hàng') > -1 || t.indexOf('vật tư') > -1) return 'boctach';
     if(t.indexOf('quy trình') > -1) return 'quytrinh';
     return 'default';
   }
@@ -580,7 +1013,7 @@ document.addEventListener('click', function(e){
     return msg;
   }
 
-  function sendMessage(text){
+  function sendAiMessage(text){
     text = (text || '').trim();
     if(!text) return;
     if(welcome.style.display !== 'none'){
@@ -595,20 +1028,20 @@ document.addEventListener('click', function(e){
     }, 550);
   }
 
-  sendBtn.addEventListener('click', function(){ sendMessage(input.value); });
+  sendBtn.addEventListener('click', function(){ sendAiMessage(input.value); });
   input.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(input.value); }
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendAiMessage(input.value); }
   });
 
   document.querySelectorAll('[data-ai-topic]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var topic = btn.getAttribute('data-ai-topic');
       var labels = { tiendo:'Tiến độ dự án đang thế nào?', chamcong:'Tình hình chấm công hôm nay?', dongtien:'Dòng tiền tháng này ra sao?', khachhang:'Khách hàng nào đang tiềm năng?', tinnhan:'Tôi có tin nhắn nào chưa đọc?' };
-      sendMessage(labels[topic] || btn.textContent.trim());
+      sendAiMessage(labels[topic] || btn.textContent.trim());
     });
   });
   document.querySelectorAll('[data-ai-prompt]').forEach(function(btn){
-    btn.addEventListener('click', function(){ sendMessage(btn.getAttribute('data-ai-prompt')); });
+    btn.addEventListener('click', function(){ sendAiMessage(btn.getAttribute('data-ai-prompt')); });
   });
 })();
 </script>

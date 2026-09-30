@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Dezon Bim</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">D</div>
+    <div>
+      <div class="brand-name">Dezon Bim</div>
+      <div class="brand-sub">Không gian dữ liệu BIM</div>
+    </div>
+  </div>
+  <span class="status-dot" id="statusDot"><span class="dot"></span><span id="statusLabel">Đang tải model...</span></span>
+</div>
+
+<div class="content">
+
+  <!-- FILE CARD -->
+  <div class="card file-card">
+    <div class="file-card-row">
+      <div>
+        <div class="label">File SketchUp</div>
+        <div class="file-name" id="modelName">—</div>
+        <div class="muted" id="modelSavedLabel">—</div>
+      </div>
+    </div>
+    <div class="file-card-meta">
+      <div>
+        <div class="label">Model GUID</div>
+        <div class="mono strong" id="modelGuid">—</div>
+      </div>
+      <div>
+        <div class="label">Objects</div>
+        <div class="mono strong" id="objectCountLabel">—</div>
+      </div>
+      <div>
+        <div class="label">Đã gán Product</div>
+        <div class="mono strong" id="assignedCountLabel">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tabbar">
+    <button class="tab active" data-tab="objects">Objects</button>
+    <button class="tab" data-tab="level">Level</button>
+    <button class="tab" data-tab="roomspace">Room/Space</button>
+    <button class="tab" data-tab="material">Material</button>
+    <button class="tab" data-tab="filter">Filter</button>
+    <button class="tab" data-tab="boq">BOQ</button>
+  </div>
+
+  <!-- OBJECTS (real data) -->
+  <div class="panel active" data-panel="objects">
+    <button class="btn-dark full" id="scanBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+      Scan / Đồng bộ Objects
+    </button>
+    <div class="hint" id="errorHint" style="display:none;"></div>
+    <div class="objects-list" id="objectsList"></div>
+  </div>
+
+  <!-- LEVEL (thật — object tự gán theo cao độ) -->
+  <div class="panel" data-panel="level">
+    <div class="hint" style="background:var(--bim-tint); color:var(--bim);">Object được tự động xếp vào Level có khoảng cao độ chứa đáy bounding box của nó — khai báo Level đúng thực tế công trình trước khi Scan.</div>
+    <div class="card" style="padding:4px;" id="levelList"></div>
+    <button class="btn-ghost full" id="addLevelBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Thêm Level
+    </button>
+  </div>
+
+  <!-- ROOM / SPACE (mẫu) -->
+  <div class="panel" data-panel="roomspace">
+    <div class="coming-soon">Tính năng Room/Space đang được phát triển — dữ liệu dưới đây chỉ minh hoạ.</div>
+    <div class="card" style="padding:4px;">
+      <div class="data-row"><div class="grow"><div class="row-title">Phòng khách</div><div class="row-sub">P.101 · Tầng 01</div></div><span class="mono strong">34,82 m²</span></div>
+      <div class="data-row" style="border-bottom:none;"><div class="grow"><div class="row-title">Bếp + Ăn</div><div class="row-sub">P.102 · Tầng 01</div></div><span class="mono strong">27,45 m²</span></div>
+    </div>
+  </div>
+
+  <!-- MATERIAL (thật — bóc theo material SketchUp đang gán trên hình học) -->
+  <div class="panel" data-panel="material">
+    <div class="hint" style="background:var(--bim-tint); color:var(--bim);">Diện tích cộng dồn theo vật liệu SketchUp thật đang tô trên các mặt trong model — không cần gán Product, phù hợp bóc sơn/ốp lát/hoàn thiện.</div>
+    <div class="card" style="padding:4px;" id="materialList"></div>
+  </div>
+
+  <!-- FILTER (mẫu) -->
+  <div class="panel" data-panel="filter">
+    <div class="coming-soon">Tính năng Filter đang được phát triển — dữ liệu dưới đây chỉ minh hoạ.</div>
+    <div class="card" style="padding:14px;">
+      <div class="muted" style="margin-bottom:8px;">Level = Tầng 02 · Product group = Cửa đi · Thuộc tính chứa "Chống cháy"</div>
+      <div class="kpi-num">18</div>
+      <div class="muted">objects phù hợp</div>
+    </div>
+  </div>
+
+  <!-- BOQ (bóc khối lượng thật từ model) -->
+  <div class="panel" data-panel="boq">
+    <div class="hint" style="background:var(--bim-tint); color:var(--bim);">Số lượng đo trực tiếp từ hình học trong model — chưa có đơn giá vì bảng giá/pricing policy nằm ở Dezon Bim Workspace, không lưu ở SketchUp.</div>
+    <div class="card" style="padding:4px;" id="boqList"></div>
+    <button class="btn-ghost full" id="exportBoqBtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Xuất CSV
+    </button>
+  </div>
+
+</div>
+
+<script src="panel.js"></script>
+</body>
+</html>

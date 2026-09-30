@@ -10,9 +10,22 @@
     if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
     document.documentElement.setAttribute('data-theme', t);
   }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  try{
+    var c = JSON.parse(localStorage.getItem('siteflow-customize') || '{}');
+    document.documentElement.setAttribute('data-accent', c.accent || 'blue');
+    document.documentElement.setAttribute('data-density', c.density || 'comfortable');
+    document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left');
+    document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium');
+    if(c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily);
+  }catch(e){}
+  try{
+    var uiTheme = localStorage.getItem('siteflow-ui-theme');
+    document.documentElement.setAttribute('data-ui-theme', uiTheme || 'default');
+  }catch(e){}
 })();
 </script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="liquid-glass.css">
 <style>
 :root{
   --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
@@ -40,10 +53,28 @@ html[data-theme="dark"]{
   --silver:#98A0B3; --silver-tint:#20242F;
   --bronze:#D69A6A; --bronze-tint:#3A2A1C;
 }
+html[data-theme="light"][data-accent="purple"]{--primary:#6D4FC2; --primary-tint:#EEE9FB;}
+html[data-theme="dark"][data-accent="purple"]{--primary:#A796E8; --primary-tint:#2A2247;}
+html[data-theme="light"][data-accent="green"]{--primary:#1E8E5A; --primary-tint:#E7F6EE;}
+html[data-theme="dark"][data-accent="green"]{--primary:#4FC585; --primary-tint:#15301F;}
+html[data-theme="light"][data-accent="orange"]{--primary:#B7791F; --primary-tint:#FBF1DC;}
+html[data-theme="dark"][data-accent="orange"]{--primary:#E0AC4F; --primary-tint:#3A2E14;}
+html[data-theme="light"][data-accent="red"]{--primary:#C0392B; --primary-tint:#FBEBE9;}
+html[data-theme="dark"][data-accent="red"]{--primary:#E0685A; --primary-tint:#3A211E;}
+html[data-theme="light"][data-accent="teal"]{--primary:#0E8A82; --primary-tint:#E1F5F2;}
+html[data-theme="dark"][data-accent="teal"]{--primary:#3FC2B6; --primary-tint:#123330;}
+html[data-density="compact"]{zoom:0.88;}
+html[data-density="compact"] .app-shell{width:calc(100vw / 0.88) !important; height:calc(100vh / 0.88) !important;}
+html[data-fontsize="small"]{zoom:0.92;}
+html[data-fontsize="small"] .app-shell{width:calc(100vw / 0.92) !important; height:calc(100vh / 0.92) !important;}
+html[data-fontsize="large"]{zoom:1.12;}
+html[data-fontsize="large"] .app-shell{width:calc(100vw / 1.12) !important; height:calc(100vh / 1.12) !important;}
+html[data-sidebar-pos="right"] .app-shell{flex-direction:row-reverse;}
+html[data-sidebar-pos="right"] body{flex-direction:row-reverse;}
 *{box-sizing:border-box;}
-body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
-h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
-.mono{font-family:'IBM Plex Mono',monospace;}
+body{margin:0; font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin:0;}
+.mono{font-family:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;}
 button{font-family:inherit;}
 ::-webkit-scrollbar{width:8px; height:8px;}
 ::-webkit-scrollbar-thumb{background:#cbd1da; border-radius:5px;}
@@ -62,6 +93,17 @@ button{font-family:inherit;}
 .sidebar-collapse-btn svg{transition:transform .18s ease;}
 .app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
 .app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.ultra-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;}
+.ultra-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.app-sidebar.collapsed .ultra-collapse-btn{margin-left:0 !important;}
+.app-sidebar.ultra-collapsed{width:60px !important;}
+.app-sidebar.ultra-collapsed .brand{flex-direction:column !important; gap:8px !important; padding-bottom:0 !important;}
+.app-sidebar.ultra-collapsed .word,
+.app-sidebar.ultra-collapsed .ultra-collapse-btn{display:none !important;}
+.app-sidebar.ultra-collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.app-sidebar.ultra-collapsed > *:not(.brand){display:none !important;}
+.sidebar-flyout-clone{position:fixed !important; top:0; left:60px; height:100vh; z-index:200; box-shadow:8px 0 24px rgba(0,0,0,.35); display:none; overflow-y:auto;}
+html[data-sidebar-pos="right"] .sidebar-flyout-clone{left:auto !important; right:60px !important; box-shadow:-8px 0 24px rgba(0,0,0,.35) !important;}
 .navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
 .app-sidebar.collapsed .navbadge-dot{display:block;}
 .app-sidebar a{position:relative;}
@@ -106,71 +148,86 @@ button{font-family:inherit;}
 </head>
 <body>
 
-<div style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div class="app-shell" style="width: 1440px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
     <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
-      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+      <div id="sidebarLogoCircle" title="Bấm để mở rộng dần" style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
       </div>
-      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <div class="word" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 17px; color: #FFFFFF;">Dezon</div>
+      <button class="ultra-collapse-btn" id="sidebarUltraCollapseBtn" title="Thu gọn tối đa (chỉ hiện logo)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+      </button>
       <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px;">
-      <a href="dashboard.html" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span class="nav-label">Dashboard</span>
-      </a>
-      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
-        <span class="nav-label">Marketing</span>
-      </a>
-      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        <span class="nav-label">Kinh doanh</span>
-      </a>
-      <a href="du-an.html" title="Dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <span class="nav-label">Dự án</span>
+      <a href="dashboard.html" title="Newsfeed" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Newsfeed</span>
       </a>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">Chat</span>
         <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
         <span class="navbadge-dot"></span>
       </a>
-      <a href="gantt.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(47,93,168,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--primary); text-decoration: none;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
+      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </a>
+      <a href="quan-ly-thiet-ke.html" title="Quản lý thiết kế" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>
+        <span class="nav-label">Quản lý thiết kế</span>
+      </a>
+      <a href="du-an.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(47,93,168,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--primary); text-decoration: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
       <a href="cham-cong.html" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
         <span class="nav-label">HR</span>
       </a>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
         <span class="nav-label">Tài chính</span>
       </a>
       <a href="qs.html" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="bim.html" title="BIM" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span class="nav-label">BIM</span>
+      </a>
       <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="nav-label">Mua hàng</span>
       </a>
     </div>
     <div style="flex: 1;"></div>
     <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
+      <a href="ban-lam-viec.html" title="Bàn làm việc của tôi" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2 13h20"/></svg>
+        <span class="nav-label">Bàn làm việc</span>
+      </a>
+      <a href="lich.html" title="Lịch" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="nav-label">Lịch</span>
+      </a>
       <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span class="nav-label">Wiki</span>
       </a>
       <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         <span class="nav-label">Cài đặt</span>
       </a>
     </div>
@@ -201,7 +258,7 @@ button{font-family:inherit;}
 
     <div style="height: 48px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface-alt); gap: 6px;">
       <span style="font-size: 11.5px; color: var(--text-muted); margin-right: 4px;">2 tab con:</span>
-      <a href="gantt.html" style="border: none; cursor: pointer; padding: 6px 13px; border-radius: 8px; background: none; color: var(--text-muted); font-weight: 500; font-size: 13px; text-decoration: none;">Tiến độ</a>
+      <a href="du-an.html" style="border: none; cursor: pointer; padding: 6px 13px; border-radius: 8px; background: none; color: var(--text-muted); font-weight: 500; font-size: 13px; text-decoration: none;">Tiến độ</a>
       <button style="border: none; cursor: default; padding: 6px 13px; border-radius: 8px; background: var(--game-tint); color: var(--game); font-weight: 600; font-size: 13px; font-family: inherit;">Nhiệm vụ</button>
     </div>
 
@@ -219,23 +276,23 @@ button{font-family:inherit;}
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân sự tham gia</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">24</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân sự tham gia</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">24</div>
             <div style="font-size: 12px; color: var(--text-muted);">Trên 3 đội thi công</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng điểm đã phát</div>
-            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--gold);">18.450</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng điểm đã phát</div>
+            <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--gold);">18.450</div>
             <div style="font-size: 12px; color: var(--text-muted);">Từ đầu dự án đến nay</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ hoàn thành tuần này</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">12</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ hoàn thành tuần này</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">12</div>
             <div style="font-size: 12px; color: var(--text-muted);">+3 so với tuần trước</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Quà đã đổi</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--game);">7</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Quà đã đổi</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--game);">7</div>
             <div style="font-size: 12px; color: var(--text-muted);">Xem lịch sử tại tab Đổi quà</div>
           </div>
         </div>
@@ -311,11 +368,11 @@ button{font-family:inherit;}
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18"/><path d="M6 12h12M6 8h12M6 16h12"/></svg>
           </div>
           <div style="flex: 1;">
-            <div style="font-weight: 800; font-size: 17px; font-family: 'Sora';">Quy trình thi công nhà phố — Lô B12</div>
+            <div style="font-weight: 800; font-size: 17px; font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Quy trình thi công nhà phố — Lô B12</div>
             <div style="font-size: 12.5px; color: var(--text-muted);">15 bước chính · Đội thi công A · Mỗi bước gồm các nhiệm vụ nhỏ, hoàn thành để nhận điểm</div>
           </div>
           <div style="text-align: right;">
-            <div class="mono" id="missionPoints" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--gold);">330 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ 1.450 điểm</span></div>
+            <div class="mono" id="missionPoints" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px; color: var(--gold);">330 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ 1.450 điểm</span></div>
             <div style="width: 200px; height: 7px; border-radius: 4px; background: var(--surface-alt); margin-top: 6px;"><div id="missionProgressBar" style="width: 23%; height: 100%; border-radius: 4px; background: var(--game);"></div></div>
           </div>
           <button class="create-task-btn" id="createTaskBtn" title="Tạo nhiệm vụ mới">
@@ -336,7 +393,7 @@ button{font-family:inherit;}
             <div style="font-weight: 700; font-size: 14.5px;">Lê Văn — Đội thi công A</div>
             <div style="font-size: 12px; color: var(--text-muted);">Điểm khả dụng để đổi quà</div>
           </div>
-          <div class="mono" id="rewardsWallet" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; color: var(--gold);">1.240 điểm</div>
+          <div class="mono" id="rewardsWallet" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 24px; color: var(--gold);">1.240 điểm</div>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
@@ -388,7 +445,7 @@ button{font-family:inherit;}
       <!-- ================= TAB: BẢNG XẾP HẠNG ================= -->
       <div class="game-panel" data-panel="leaderboard" style="display: none; flex-direction: column; gap: 16px;">
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px;">
-          <div class="mono" style="display: grid; grid-template-columns: 0.6fr 2fr 1.4fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <div style="display: grid; grid-template-columns: 0.6fr 2fr 1.4fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
             <span>Hạng</span><span>Nhân viên</span><span>Đội</span><span>Điểm tuần này</span><span>Tổng điểm</span>
           </div>
           <div id="fullLeaderboard"></div>
@@ -706,17 +763,63 @@ document.getElementById('themeToggle').onclick = function(){
 };
 
 /* ===================== Thu gọn sidebar ===================== */
-(function(){
+function getSidebarLevel(){
   try{
-    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){
-      document.getElementById('appSidebar').classList.add('collapsed');
-    }
-  }catch(e){}
-})();
-document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+    var v = localStorage.getItem('siteflow-sidebar-level');
+    if(v === 'full' || v === 'icons' || v === 'logo') return v;
+    return localStorage.getItem('siteflow-sidebar-collapsed') === '1' ? 'icons' : 'full';
+  }catch(e){ return 'full'; }
+}
+var SIDEBAR_LEVELS = ['full','icons','logo'];
+var sidebarLevel = getSidebarLevel();
+var sidebarDir = (sidebarLevel === 'logo') ? -1 : 1;
+function applySidebarLevel(){
   var sb = document.getElementById('appSidebar');
-  var collapsed = sb.classList.toggle('collapsed');
-  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+  sb.classList.toggle('collapsed', sidebarLevel === 'icons');
+  sb.classList.toggle('ultra-collapsed', sidebarLevel === 'logo');
+  try{ localStorage.setItem('siteflow-sidebar-level', sidebarLevel); }catch(e){}
+}
+applySidebarLevel();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var idx = SIDEBAR_LEVELS.indexOf(sidebarLevel) + sidebarDir;
+  if(idx >= SIDEBAR_LEVELS.length - 1){ idx = SIDEBAR_LEVELS.length - 1; sidebarDir = -1; }
+  if(idx <= 0){ idx = 0; sidebarDir = 1; }
+  sidebarLevel = SIDEBAR_LEVELS[idx];
+  applySidebarLevel();
+});
+document.getElementById('sidebarUltraCollapseBtn').addEventListener('click', function(){
+  sidebarLevel = 'logo';
+  sidebarDir = -1;
+  applySidebarLevel();
+});
+function ensureSidebarFlyout(){
+  var existing = document.getElementById('sidebarFlyoutClone');
+  if(existing) return existing;
+  var real = document.getElementById('appSidebar');
+  var clone = real.cloneNode(true);
+  clone.id = 'sidebarFlyoutClone';
+  clone.classList.remove('collapsed','ultra-collapsed');
+  clone.classList.add('sidebar-flyout-clone');
+  clone.style.display = 'none';
+  var brand = clone.querySelector('.brand');
+  if(brand) brand.remove();
+  document.body.appendChild(clone);
+  return clone;
+}
+document.getElementById('sidebarLogoCircle').addEventListener('click', function(e){
+  e.stopPropagation();
+  if(sidebarLevel === 'logo'){
+    var clone = ensureSidebarFlyout();
+    clone.style.display = (clone.style.display === 'flex') ? 'none' : 'flex';
+  } else if(sidebarLevel === 'icons'){
+    sidebarLevel = 'full'; sidebarDir = 1; applySidebarLevel();
+  }
+});
+document.addEventListener('click', function(e){
+  var clone = document.getElementById('sidebarFlyoutClone');
+  if(clone && clone.style.display === 'flex' && !clone.contains(e.target) && e.target.id !== 'sidebarLogoCircle'){
+    clone.style.display = 'none';
+  }
 });
 
 /* ===================== Khởi tạo ===================== */

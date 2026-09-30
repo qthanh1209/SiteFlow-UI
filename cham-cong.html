@@ -10,9 +10,22 @@
     if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
     document.documentElement.setAttribute('data-theme', t);
   }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  try{
+    var c = JSON.parse(localStorage.getItem('siteflow-customize') || '{}');
+    document.documentElement.setAttribute('data-accent', c.accent || 'blue');
+    document.documentElement.setAttribute('data-density', c.density || 'comfortable');
+    document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left');
+    document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium');
+    if(c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily);
+  }catch(e){}
+  try{
+    var uiTheme = localStorage.getItem('siteflow-ui-theme');
+    document.documentElement.setAttribute('data-ui-theme', uiTheme || 'default');
+  }catch(e){}
 })();
 </script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="liquid-glass.css">
 <style>
 :root{
   --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
@@ -36,10 +49,28 @@ html[data-theme="dark"]{
   --marketing:#E87FAE; --marketing-tint:#3A1F2C;
   --sales:#E8A268; --sales-tint:#3A2814;
 }
+html[data-theme="light"][data-accent="purple"]{--primary:#6D4FC2; --primary-tint:#EEE9FB;}
+html[data-theme="dark"][data-accent="purple"]{--primary:#A796E8; --primary-tint:#2A2247;}
+html[data-theme="light"][data-accent="green"]{--primary:#1E8E5A; --primary-tint:#E7F6EE;}
+html[data-theme="dark"][data-accent="green"]{--primary:#4FC585; --primary-tint:#15301F;}
+html[data-theme="light"][data-accent="orange"]{--primary:#B7791F; --primary-tint:#FBF1DC;}
+html[data-theme="dark"][data-accent="orange"]{--primary:#E0AC4F; --primary-tint:#3A2E14;}
+html[data-theme="light"][data-accent="red"]{--primary:#C0392B; --primary-tint:#FBEBE9;}
+html[data-theme="dark"][data-accent="red"]{--primary:#E0685A; --primary-tint:#3A211E;}
+html[data-theme="light"][data-accent="teal"]{--primary:#0E8A82; --primary-tint:#E1F5F2;}
+html[data-theme="dark"][data-accent="teal"]{--primary:#3FC2B6; --primary-tint:#123330;}
+html[data-density="compact"]{zoom:0.88;}
+html[data-density="compact"] .app-shell{width:calc(100vw / 0.88) !important; height:calc(100vh / 0.88) !important;}
+html[data-fontsize="small"]{zoom:0.92;}
+html[data-fontsize="small"] .app-shell{width:calc(100vw / 0.92) !important; height:calc(100vh / 0.92) !important;}
+html[data-fontsize="large"]{zoom:1.12;}
+html[data-fontsize="large"] .app-shell{width:calc(100vw / 1.12) !important; height:calc(100vh / 1.12) !important;}
+html[data-sidebar-pos="right"] .app-shell{flex-direction:row-reverse;}
+html[data-sidebar-pos="right"] body{flex-direction:row-reverse;}
 *{box-sizing:border-box;}
-body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
-h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
-.mono{font-family:'IBM Plex Mono',monospace;}
+body{margin:0; font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin:0;}
+.mono{font-family:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;}
 button{font-family:inherit;}
 ::-webkit-scrollbar{width:8px; height:8px;}
 ::-webkit-scrollbar-thumb{background:#cbd1da; border-radius:5px;}
@@ -58,6 +89,17 @@ button{font-family:inherit;}
 .sidebar-collapse-btn svg{transition:transform .18s ease;}
 .app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
 .app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.ultra-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;}
+.ultra-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.app-sidebar.collapsed .ultra-collapse-btn{margin-left:0 !important;}
+.app-sidebar.ultra-collapsed{width:60px !important;}
+.app-sidebar.ultra-collapsed .brand{flex-direction:column !important; gap:8px !important; padding-bottom:0 !important;}
+.app-sidebar.ultra-collapsed .word,
+.app-sidebar.ultra-collapsed .ultra-collapse-btn{display:none !important;}
+.app-sidebar.ultra-collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.app-sidebar.ultra-collapsed > *:not(.brand){display:none !important;}
+.sidebar-flyout-clone{position:fixed !important; top:0; left:60px; height:100vh; z-index:200; box-shadow:8px 0 24px rgba(0,0,0,.35); display:none; overflow-y:auto;}
+html[data-sidebar-pos="right"] .sidebar-flyout-clone{left:auto !important; right:60px !important; box-shadow:-8px 0 24px rgba(0,0,0,.35) !important;}
 .navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
 .app-sidebar.collapsed .navbadge-dot{display:block;}
 .app-sidebar a{position:relative;}
@@ -66,71 +108,175 @@ button{font-family:inherit;}
 .att-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:600;}
 .hr-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px; font-family:inherit;}
 .hr-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:600;}
+.ai-fab{position:fixed; bottom:28px; right:32px; width:54px; height:54px; border-radius:50%; background:linear-gradient(160deg,#2FA3E6,#8B5CF6); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,.28); z-index:79;}
+.ai-fab:hover{filter:brightness(1.08);}
+.ai-panel{position:fixed; top:0; right:0; height:100vh; width:var(--ai-panel-width, 440px); max-width:92vw; background:var(--surface); border-left:1px solid var(--border); box-shadow:-14px 0 40px rgba(0,0,0,.18); display:flex; flex-direction:column; overflow:hidden; z-index:80; transform:translateX(100%); transition:transform .25s ease;}
+.ai-panel.open{transform:translateX(0);}
+#appMainContent{transition:margin-right .25s ease;}
+body.ai-panel-open #appMainContent{margin-right:var(--ai-panel-width, 440px);}
+body.ai-panel-resizing #appMainContent{transition:none;}
+.ai-resize-handle{position:absolute; top:0; left:-3px; width:6px; height:100%; cursor:col-resize; z-index:81; background:transparent; display:flex; align-items:center; justify-content:center;}
+.ai-resize-handle::before{content:''; position:absolute; top:0; left:2.5px; width:1px; height:100%; background:transparent; transition:background .12s ease;}
+.ai-resize-handle::after{content:''; width:4px; height:36px; border-radius:3px; background:transparent; transition:background .12s ease, height .12s ease; position:relative; z-index:1;}
+.ai-resize-handle:hover::before, body.ai-panel-resizing .ai-resize-handle::before{background:var(--primary);}
+.ai-resize-handle:hover::after, body.ai-panel-resizing .ai-resize-handle::after{background:var(--primary); height:48px;}
+.ai-panel.resizing{transition:none;}
+.ai-panel-head{flex:none; display:flex; align-items:center; gap:10px; padding:18px 18px 14px;}
+.ai-panel-head h4{font-size:15px; font-weight:800;}
+.ai-newchat-btn{margin-left:auto; background:#12161F; color:#fff; border:none; padding:8px 14px; border-radius:20px; font-size:11.5px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-close-btn{width:26px; height:26px; border-radius:50%; border:none; background:var(--surface-alt); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;}
+.ai-panel-body{flex:1; overflow-y:auto; padding:0 20px; display:flex; flex-direction:column;}
+.ai-welcome{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; padding:28px 6px 18px; gap:14px;}
+.ai-welcome h2{font-size:22px; font-weight:800; line-height:1.25;}
+.ai-welcome h2 .muted{color:var(--text-muted); font-weight:700;}
+.ai-welcome p{font-size:12px; color:var(--text-muted); line-height:1.6; max-width:300px;}
+.ai-topic-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:300px;}
+.ai-topic-chip{grid-column:span 1;}
+.ai-topic-chip.wide{grid-column:1 / -1; justify-self:center; width:auto;}
+.ai-chip{display:flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:9px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-chip:hover{background:var(--surface-alt);}
+.ai-log{flex:1; display:none; flex-direction:column; gap:12px; padding-top:12px;}
+.ai-log.open{display:flex;}
+.ai-msg{max-width:82%; padding:9px 13px; border-radius:14px; font-size:12.5px; line-height:1.55;}
+.ai-msg.user{align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:4px;}
+.ai-msg.bot{align-self:flex-start; background:var(--surface-alt); color:var(--text); border-bottom-left-radius:4px;}
+.ai-suggest-row{flex:none; display:flex; gap:7px; padding:10px 18px; overflow-x:auto;}
+.ai-suggest-row::-webkit-scrollbar{display:none;}
+.ai-suggest-chip{flex:none; white-space:nowrap; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); padding:8px 12px; border-radius:18px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-suggest-chip:hover{background:var(--surface-alt); color:var(--text);}
+.ai-input-area{flex:none; margin:0 14px 14px; padding:10px 12px; border:1px solid var(--border); border-radius:20px; background:var(--surface-alt);}
+.ai-input-area textarea{width:100%; border:none; background:transparent; resize:none; font-family:inherit; font-size:12.5px; color:var(--text); outline:none; height:36px;}
+.ai-input-row{display:flex; align-items:center; gap:8px; margin-top:6px;}
+.ai-tool-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); display:flex; align-items:center; justify-content:center; flex:none;}
+.ai-send-btn{margin-left:auto; background:#12161F; color:#fff; border:none; padding:8px 18px; border-radius:16px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;}
+
+.hr-view-toggle{display:flex; align-items:center; gap:2px; padding:3px; border:1px solid var(--border); border-radius:9px; background:var(--surface);}
+.hr-view-btn{width:28px; height:26px; border:none; border-radius:6px; background:none; color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+.hr-view-btn.active{background:var(--attendance-tint); color:var(--attendance);}
+.hr-emp-name-btn{background:none; border:none; padding:0; margin:0; cursor:pointer; font:inherit; text-align:left; color:inherit;}
+.hr-emp-name-btn:hover{text-decoration:underline; color:var(--attendance);}
+.hr-emp-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;}
+.hr-emp-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:8px;}
+.hr-emp-card-avatar{width:40px; height:40px; border-radius:50%; background:var(--attendance-tint); color:var(--attendance); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex:none;}
+.hr-empty-state{padding:40px 20px; text-align:center; color:var(--text-muted); font-size:12.5px;}
+
+.field{display:flex; flex-direction:column; gap:6px;}
+.field label{font-size:12px; font-weight:600; color:var(--text-muted);}
+.field input, .field select, .field textarea{
+  padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt);
+  color:var(--text); font-size:13px; font-family:inherit;
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--attendance);}
+
+.hr-back-btn{display:flex; align-items:center; gap:6px; border:none; background:none; color:var(--text-muted); cursor:pointer; font-size:12.5px; font-weight:600; padding:0; font-family:inherit; width:fit-content;}
+.hr-back-btn:hover{color:var(--attendance);}
+.hr-detail-row{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid var(--border); font-size:12.5px;}
+.hr-detail-row:last-child{border-bottom:none;}
+.hr-detail-row .k{color:var(--text-muted);}
+.hr-detail-row .v{font-weight:600; text-align:right;}
+.hr-form-tab{border:none; cursor:pointer; padding:8px 14px; border-radius:8px 8px 0 0; background:none; color:var(--text-muted); font-weight:600; font-size:12.5px; font-family:inherit;}
+.hr-form-tab.active{background:var(--attendance-tint); color:var(--attendance); font-weight:700;}
+.hr-attachment-item{display:flex; align-items:center; gap:10px; padding:9px 10px; border:1px solid var(--border); border-radius:9px; background:var(--surface-alt);}
+.hr-attachment-item .name{flex:1; font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.hr-attachment-remove{border:none; background:none; color:var(--text-muted); cursor:pointer; padding:2px; flex:none;}
+.hr-attachment-remove:hover{color:var(--danger);}
+.hr-promo-item{font-size:12px; padding:7px 10px; border-radius:8px; background:var(--surface-alt); display:flex; justify-content:space-between; gap:10px;}
 </style>
 </head>
 <body>
 
-<div style="width: 100vw; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div class="app-shell" style="width: 100vw; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
     <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
-      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+      <div id="sidebarLogoCircle" title="Bấm để mở rộng dần" style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
       </div>
-      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <div class="word" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 17px; color: #FFFFFF;">Dezon</div>
+      <button class="ultra-collapse-btn" id="sidebarUltraCollapseBtn" title="Thu gọn tối đa (chỉ hiện logo)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+      </button>
       <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px;">
-      <a href="dashboard.html" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span class="nav-label">Dashboard</span>
-      </a>
-      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
-        <span class="nav-label">Marketing</span>
-      </a>
-      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        <span class="nav-label">Kinh doanh</span>
+      <a href="dashboard.html" title="Newsfeed" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Newsfeed</span>
       </a>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">Chat</span>
         <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
         <span class="navbadge-dot"></span>
       </a>
-      <a href="gantt.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
+      <a href="kinh-doanh.html" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </a>
+      <a href="quan-ly-thiet-ke.html" title="Quản lý thiết kế" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>
+        <span class="nav-label">Quản lý thiết kế</span>
+      </a>
+      <a href="du-an.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
       <div class="navitem" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(14,138,130,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--attendance);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
         <span class="nav-label">HR</span>
       </div>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
         <span class="nav-label">Tài chính</span>
       </a>
       <a href="qs.html" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="bim.html" title="BIM" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span class="nav-label">BIM</span>
+      </a>
       <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="nav-label">Mua hàng</span>
+      </a>
+      <a href="san-xuat.html" title="Sản xuất" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span class="nav-label">Sản xuất</span>
+      </a>
+      <a href="it.html" title="IT" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span class="nav-label">IT</span>
+      </a>
+      <a href="rd.html" title="R&amp;D" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17h6v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z"/></svg>
+        <span class="nav-label">R&amp;D</span>
       </a>
     </div>
     <div style="flex: 1;"></div>
     <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
+      <a href="ban-lam-viec.html" title="Bàn làm việc của tôi" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2 13h20"/></svg>
+        <span class="nav-label">Bàn làm việc</span>
+      </a>
+      <a href="lich.html" title="Lịch" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="nav-label">Lịch</span>
+      </a>
       <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span class="nav-label">Wiki</span>
       </a>
       <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         <span class="nav-label">Cài đặt</span>
       </a>
     </div>
@@ -144,7 +290,7 @@ button{font-family:inherit;}
   </div>
 
   <!-- MAIN -->
-  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+  <div id="appMainContent" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
 
     <div style="height: 64px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 6px;">
       <span style="color: var(--text-muted); font-size: 13px;">Chung cư Riverside</span>
@@ -167,6 +313,8 @@ button{font-family:inherit;}
       <button class="hr-tab active" data-htab="cham-cong">Chấm công</button>
       <button class="hr-tab" data-htab="ho-so">Hồ sơ nhân sự</button>
       <button class="hr-tab" data-htab="bang-luong">Bảng lương</button>
+      <button class="hr-tab" data-htab="hanh-chinh">Hành chính</button>
+      <button class="hr-tab" data-htab="tuyen-dung">Tuyển dụng</button>
     </div>
 
     <div class="hr-panel" data-hpanel="cham-cong" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
@@ -200,23 +348,23 @@ button{font-family:inherit;}
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự hôm nay</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">150</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự hôm nay</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">150</div>
             <div style="font-size: 12px; color: var(--text-muted);">3 công trường hoạt động</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang có mặt</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--attendance);">128<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;">/150</span></div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang có mặt</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--attendance);">128<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;">/150</span></div>
             <div style="display: inline-flex; align-self: flex-start; padding: 3px 9px; border-radius: 999px; background: var(--attendance-tint); color: var(--attendance); font-size: 11.5px; font-weight: 600;">85%</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Trễ / Chưa chấm công</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--finance);">6<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;"> / 22</span></div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Trễ / Chưa chấm công</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--finance);">6<span style="font-size: 15px; color: var(--text-muted); font-weight: 600;"> / 22</span></div>
             <div style="font-size: 12px; color: var(--text-muted);">Trễ · chưa chấm công</div>
           </div>
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Cần duyệt ngoài vùng</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
+            <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Cần duyệt ngoài vùng</div>
+            <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
             <span data-goto="approve" style="font-size: 11.5px; color: var(--danger); font-weight: 600; cursor: pointer;">Xem &amp; duyệt ngay ›</span>
           </div>
         </div>
@@ -247,7 +395,7 @@ button{font-family:inherit;}
         </div>
 
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px; flex: 1;">
-          <div class="mono" style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <div style="display: grid; grid-template-columns: 1.8fr 1.3fr 1.6fr 0.9fr 0.9fr 0.9fr 1.3fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
             <span>Nhân viên</span><span>Đội / Vai trò</span><span>Địa điểm</span><span>Giờ vào</span><span>Giờ ra</span><span>Tổng giờ</span><span>Trạng thái</span>
           </div>
 
@@ -359,7 +507,7 @@ button{font-family:inherit;}
         </div>
 
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px;">
-          <div class="mono" style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.2fr 1fr 1.3fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
             <span>Nhân viên</span><span>Đội</span><span>Ngày công</span><span>Tổng giờ</span><span>TB giờ / ngày</span><span></span>
           </div>
 
@@ -467,53 +615,228 @@ button{font-family:inherit;}
 
     <div class="hr-panel" data-hpanel="ho-so" style="display: none; flex-direction: column; gap: 16px; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;">
 
+      <div id="hrListView" style="display:flex; flex-direction:column; gap:16px;">
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự</div>
-          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">12</div>
-          <div style="font-size: 12px; color: var(--text-muted);">Trên 6 phòng ban</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng nhân sự</div>
+          <div id="hrStatTotal" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">12</div>
+          <div id="hrStatTotalSub" style="font-size: 12px; color: var(--text-muted);">Trên 6 phòng ban</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang làm việc</div>
-          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">10</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang làm việc</div>
+          <div id="hrStatActive" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">10</div>
           <div style="font-size: 12px; color: var(--text-muted);">Chính thức</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Thử việc</div>
-          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--finance);">1</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Thử việc</div>
+          <div id="hrStatProbation" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--finance);">1</div>
           <div style="font-size: 12px; color: var(--text-muted);">Đang trong kỳ đánh giá</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã nghỉ việc</div>
-          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã nghỉ việc</div>
+          <div id="hrStatLeft" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--danger);">1</div>
           <div style="font-size: 12px; color: var(--text-muted);">Trong 12 tháng qua</div>
         </div>
       </div>
 
-      <div style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <span style="font-size: 12.5px; font-weight: 700;">Danh sách nhân sự</span>
-        <button style="display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; background: var(--attendance); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Thêm nhân sự
-        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="hr-view-toggle">
+            <button type="button" class="hr-view-btn active" id="hrViewListBtn" title="Xem dạng danh sách">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button type="button" class="hr-view-btn" id="hrViewGridBtn" title="Xem dạng ô">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+          </div>
+          <button type="button" id="hrAddEmployeeBtn" style="display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; background: var(--attendance); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Thêm nhân sự
+          </button>
+        </div>
       </div>
 
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
-        <div class="mono" style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-          <span>Họ tên</span><span>Chức vụ</span><span>Phòng ban</span><span>Điện thoại</span><span>Ngày vào làm</span><span>Trạng thái</span>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <input type="text" id="hrSearchInput" placeholder="Tìm theo tên, số điện thoại..." style="flex:1; min-width:180px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-family:inherit;">
+        <select id="hrDeptFilter" style="padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-family:inherit;">
+          <option value="all">Tất cả phòng ban</option>
+          <option value="Quản lý dự án">Quản lý dự án</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Kinh doanh">Kinh doanh</option>
+          <option value="Thi công">Thi công</option>
+          <option value="Vận hành">Vận hành</option>
+          <option value="Tài chính">Tài chính</option>
+        </select>
+        <select id="hrStatusFilter" style="padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-family:inherit;">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="active">Đang làm việc</option>
+          <option value="probation">Thử việc</option>
+          <option value="left">Đã nghỉ việc</option>
+        </select>
+        <select id="hrTimeFilter" style="padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-family:inherit;">
+          <option value="all">Ngày vào làm: Tất cả</option>
+          <option value="week">Tuần này</option>
+          <option value="month">Tháng này</option>
+          <option value="quarter">Quý này</option>
+          <option value="year">Năm nay</option>
+        </select>
+        <select id="hrContractFilter" style="padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12.5px; font-family:inherit;">
+          <option value="all">Tất cả loại HĐ</option>
+          <option value="Thử việc">Thử việc</option>
+          <option value="Xác định thời hạn">Xác định thời hạn</option>
+          <option value="Không xác định thời hạn">Không xác định thời hạn</option>
+          <option value="Thời vụ">Thời vụ</option>
+        </select>
+      </div>
+
+      <div id="hrListContainer"></div>
+      </div>
+
+      <div id="hrEmpFormPage" style="display:none; flex-direction:column; gap:18px;">
+        <button type="button" id="hrFormBackBtn" class="hr-back-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Quay lại danh sách nhân sự
+        </button>
+        <div>
+          <div id="hrEmpModalTitle" style="font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight:800; font-size:20px;">Thêm nhân sự</div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:14px; border-bottom:1px solid var(--border);">
+            <button type="button" class="hr-form-tab active" data-hform="basic">Cơ bản</button>
+            <button type="button" class="hr-form-tab" data-hform="personal">Cá nhân</button>
+            <button type="button" class="hr-form-tab" data-hform="job">Công việc</button>
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Trần Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Quản lý dự án</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Quản lý dự án</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 111 222</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">01/03/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thảo Vy</span><span style="font-size:12.5px; color:var(--text-muted);">Head Marketing</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 222 333</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/06/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Ngọc Hà</span><span style="font-size:12.5px; color:var(--text-muted);">Graphic Designer</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 333 444</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">10/01/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Minh Quân</span><span style="font-size:12.5px; color:var(--text-muted);">Media (quay, dựng video)</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 444 555</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">05/09/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Thuỳ Dương</span><span style="font-size:12.5px; color:var(--text-muted);">Content Creator</span><span style="padding:3px 9px; border-radius:999px; background:var(--marketing-tint); color:var(--marketing); font-size:11px; font-weight:600; justify-self:start;">Marketing</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 555 666</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/11/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Hoàng Yến Nhi</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dân dụng</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Kinh doanh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 666 777</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/02/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đặng Quốc Cường</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên KD — Phòng Dự án</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Kinh doanh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 777 888</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">03/07/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Nguyễn Đức Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Chỉ huy trưởng công trường</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 888 999</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">18/04/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đỗ Thành Long</span><span style="font-size:12.5px; color:var(--text-muted);">Tư vấn giám sát</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 999 000</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">25/05/2022</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Vũ Thị Diệu</span><span style="font-size:12.5px; color:var(--text-muted);">Giám sát an toàn lao động</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Thi công</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 111 222</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">14/08/2024</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Thử việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cao Nhật Tân</span><span style="font-size:12.5px; color:var(--text-muted);">Mua hàng &amp; cung ứng</span><span style="padding:3px 9px; border-radius:999px; background:var(--surface-alt); color:var(--text-muted); font-size:11px; font-weight:600; justify-self:start;">Vận hành</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 222 333</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">09/10/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đang làm việc</span></div>
-        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600; color:var(--text-muted); text-decoration:line-through;">Lý Thu Trang</span><span style="font-size:12.5px; color:var(--text-muted);">Kế toán</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Tài chính</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 333 444</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">01/01/2023</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Đã nghỉ việc</span></div>
+        <div style="max-width:640px; width:100%;">
+          <div class="hr-form-step" data-hform="basic" style="display:flex; flex-direction:column; gap:14px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Họ tên *</label><input id="hrEmpName" type="text" placeholder="VD: Nguyễn Văn A"></div>
+              <div class="field"><label>Chức vụ *</label><input id="hrEmpPosition" type="text" placeholder="VD: Kỹ sư công trình"></div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Phòng ban</label>
+                <select id="hrEmpDept">
+                  <option value="Quản lý dự án">Quản lý dự án</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Kinh doanh">Kinh doanh</option>
+                  <option value="Thi công">Thi công</option>
+                  <option value="Vận hành">Vận hành</option>
+                  <option value="Tài chính">Tài chính</option>
+                </select>
+              </div>
+              <div class="field"><label>Trạng thái</label>
+                <select id="hrEmpStatus">
+                  <option value="active">Đang làm việc</option>
+                  <option value="probation">Thử việc</option>
+                  <option value="left">Đã nghỉ việc</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Điện thoại *</label><input id="hrEmpPhone" type="text" placeholder="09xx xxx xxx"></div>
+              <div class="field"><label>Email</label><input id="hrEmpEmail" type="text" placeholder="ten@siteflow.vn"></div>
+            </div>
+            <div class="field" style="max-width:300px;"><label>Ngày vào làm</label><input id="hrEmpJoinDate" type="date"></div>
+          </div>
+          <div class="hr-form-step" data-hform="personal" style="display:none; flex-direction:column; gap:14px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>CCCD/CMND</label><input id="hrEmpCccd" type="text" placeholder="VD: 079xxxxxxxxx"></div>
+              <div class="field"><label>Ngày sinh</label><input id="hrEmpDob" type="date"></div>
+            </div>
+            <div class="field"><label>Quê quán</label><input id="hrEmpHometown" type="text" placeholder="VD: Nam Định"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Liên hệ khẩn cấp — Họ tên</label><input id="hrEmpEmergencyName" type="text" placeholder="VD: Nguyễn Thị B"></div>
+              <div class="field"><label>Liên hệ khẩn cấp — SĐT</label><input id="hrEmpEmergencyPhone" type="text" placeholder="09xx xxx xxx"></div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Ngân hàng</label><input id="hrEmpBankName" type="text" placeholder="VD: Vietcombank"></div>
+              <div class="field"><label>Số tài khoản</label><input id="hrEmpBankAccount" type="text" placeholder="VD: 0123456789"></div>
+            </div>
+          </div>
+          <div class="hr-form-step" data-hform="job" style="display:none; flex-direction:column; gap:14px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Loại hợp đồng</label>
+                <select id="hrEmpContractType">
+                  <option value="Thử việc">Thử việc</option>
+                  <option value="Xác định thời hạn">Xác định thời hạn (1-3 năm)</option>
+                  <option value="Không xác định thời hạn">Không xác định thời hạn</option>
+                  <option value="Thời vụ">Thời vụ</option>
+                </select>
+              </div>
+              <div class="field"><label>Cấp bậc (Level)</label>
+                <select id="hrEmpLevel">
+                  <option value="Nhân viên">Nhân viên</option>
+                  <option value="Chuyên viên">Chuyên viên</option>
+                  <option value="Trưởng nhóm">Trưởng nhóm</option>
+                  <option value="Trưởng phòng">Trưởng phòng</option>
+                  <option value="Giám đốc">Giám đốc</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <div class="field"><label>Mức lương hiện tại (VNĐ)</label><input id="hrEmpSalary" type="text" placeholder="VD: 15000000"></div>
+              <div class="field"><label>Quản lý trực tiếp</label><input id="hrEmpLineManager" type="text" placeholder="VD: Trần Anh"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; padding:16px 0; border-top:1px solid var(--border); max-width:640px;">
+          <button id="hrEmpModalSaveBtn" style="border:none; background:var(--attendance); color:#fff; padding:10px 20px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;">Thêm nhân sự</button>
+          <button id="hrEmpModalCancelBtn" style="border:1px solid var(--border); background:var(--surface); color:var(--text); padding:10px 18px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;">Hủy</button>
+        </div>
+      </div>
+
+      <div id="hrEmpDetailPage" style="display:none; flex-direction:column; gap:18px;">
+        <button type="button" id="hrDetailBackBtn" class="hr-back-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Quay lại danh sách nhân sự
+        </button>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div id="hrDetailAvatar" class="hr-emp-card-avatar" style="width:52px; height:52px; font-size:19px;"></div>
+          <div style="min-width:0; flex:1;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="hrDetailCode" class="mono" style="font-size:11.5px; color:var(--text-muted);"></span>
+              <div id="hrDetailName" style="font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight:800; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+            </div>
+            <div id="hrDetailPosition" style="font-size:13px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+          </div>
+          <button id="hrDetailEditBtn" style="border:none; background:var(--attendance); color:#fff; padding:9px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; flex:none;">Chỉnh sửa</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; border-bottom:1px solid var(--border);">
+          <button type="button" class="hr-form-tab active" data-hdtab="personal">Thông tin cá nhân</button>
+          <button type="button" class="hr-form-tab" data-hdtab="job">Thông tin công việc</button>
+          <button type="button" class="hr-form-tab" data-hdtab="files">Hồ sơ đính kèm</button>
+        </div>
+        <div style="max-width:640px; width:100%;">
+          <div class="hr-detail-step" data-hdtab="personal">
+            <div class="hr-detail-row"><span class="k">Phòng ban</span><span class="v" id="hrDetailDept"></span></div>
+            <div class="hr-detail-row"><span class="k">Trạng thái</span><span class="v" id="hrDetailStatus"></span></div>
+            <div class="hr-detail-row"><span class="k">Điện thoại</span><span class="v mono" id="hrDetailPhone"></span></div>
+            <div class="hr-detail-row"><span class="k">Email</span><span class="v" id="hrDetailEmail"></span></div>
+            <div class="hr-detail-row"><span class="k">CCCD/CMND</span><span class="v mono" id="hrDetailCccd"></span></div>
+            <div class="hr-detail-row"><span class="k">Ngày sinh</span><span class="v mono" id="hrDetailDob"></span></div>
+            <div class="hr-detail-row"><span class="k">Quê quán</span><span class="v" id="hrDetailHometown"></span></div>
+            <div class="hr-detail-row"><span class="k">Liên hệ khẩn cấp</span><span class="v" id="hrDetailEmergency"></span></div>
+            <div class="hr-detail-row"><span class="k">Tài khoản ngân hàng</span><span class="v" id="hrDetailBank"></span></div>
+          </div>
+          <div class="hr-detail-step" data-hdtab="job" style="display:none;">
+            <div class="hr-detail-row"><span class="k">Ngày vào làm</span><span class="v mono" id="hrDetailJoinDate"></span></div>
+            <div class="hr-detail-row"><span class="k">Loại hợp đồng</span><span class="v" id="hrDetailContractType"></span></div>
+            <div class="hr-detail-row"><span class="k">Cấp bậc</span><span class="v" id="hrDetailLevel"></span></div>
+            <div class="hr-detail-row"><span class="k">Mức lương hiện tại</span><span class="v mono" id="hrDetailSalary"></span></div>
+            <div class="hr-detail-row"><span class="k">Quản lý trực tiếp</span><span class="v" id="hrDetailLineManager"></span></div>
+            <div style="padding-top:14px;">
+              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); margin-bottom:8px;">Lịch sử thăng tiến</div>
+              <div id="hrDetailPromotions" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+          </div>
+          <div class="hr-detail-step" data-hdtab="files" style="display:none;">
+            <div id="hrDetailAttachments" style="display:flex; flex-direction:column; gap:8px; padding:10px 0 0;"></div>
+            <button type="button" id="hrAttachUploadBtn" style="display:flex; align-items:center; gap:6px; border:1px dashed var(--border); background:none; color:var(--text-muted); padding:9px 12px; border-radius:8px; font-size:12px; font-family:inherit; cursor:pointer; width:100%; justify-content:center; margin-top:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05 12.25 20.24a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              Tải lên hồ sơ (hợp đồng, bằng cấp, CV...)
+            </button>
+            <input type="file" id="hrAttachFileInput" style="display:none;">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -526,29 +849,29 @@ button{font-family:inherit;}
 
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng quỹ lương (Gross)</div>
-          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px;">174.000.000 đ</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng quỹ lương (Gross)</div>
+          <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px;">174.000.000 đ</div>
           <div style="font-size: 12px; color: var(--text-muted);">11 nhân sự nhận lương kỳ này</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Bảo hiểm NLĐ đóng</div>
-          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--finance);">18.270.000 đ</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Bảo hiểm NLĐ đóng</div>
+          <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px; color: var(--finance);">18.270.000 đ</div>
           <div style="font-size: 12px; color: var(--text-muted);">BHXH 8% + BHYT 1.5% + BHTN 1%</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng thực nhận</div>
-          <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--success);">155.730.000 đ</div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng thực nhận</div>
+          <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px; color: var(--success);">155.730.000 đ</div>
           <div style="font-size: 12px; color: var(--text-muted);">Sau khi trừ bảo hiểm</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-          <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã chi trả</div>
-          <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">9<span style="font-size:15px; color:var(--text-muted); font-weight:600;"> / 11</span></div>
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã chi trả</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">9<span style="font-size:15px; color:var(--text-muted); font-weight:600;"> / 11</span></div>
           <div style="font-size: 12px; color: var(--text-muted);">2 hồ sơ đang chờ chi trả</div>
         </div>
       </div>
 
       <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
-        <div class="mono" style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
           <span>Họ tên</span><span>Chức vụ</span><span>Lương Gross</span><span>BH (NLĐ 10.5%)</span><span>Thực nhận</span><span>Trạng thái</span>
         </div>
         <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.1fr 1.1fr 1.1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Trần Anh</span><span style="font-size:12.5px; color:var(--text-muted);">Quản lý dự án</span><span class="mono" style="font-size:12.5px;">25.000.000</span><span class="mono" style="font-size:12.5px; color:var(--finance);">2.625.000</span><span class="mono" style="font-size:12.5px; font-weight:700;">22.375.000</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã chi trả</span></div>
@@ -566,6 +889,175 @@ button{font-family:inherit;}
       <div style="font-size: 11.5px; color: var(--text-muted);">* Lý Thu Trang (Kế toán) đã nghỉ việc trong kỳ — không nằm trong bảng lương tháng này.</div>
     </div>
 
+    <div class="hr-panel" data-hpanel="hanh-chinh" style="display: none; flex-direction: column; gap: 16px; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;">
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Công văn tháng này</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">7</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Đã ban hành/tiếp nhận</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Hợp đồng sắp hết hạn</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--finance);">2</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Trong 30 ngày tới</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đơn từ chờ duyệt</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--danger);">3</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Nghỉ phép, công tác</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tài sản đang cấp phát</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">24</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Laptop, xe, thiết bị văn phòng</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; font-weight: 700;">Công văn — Văn bản nội bộ gần đây</span>
+        <button style="display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; background: var(--attendance); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm văn bản
+        </button>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.1fr 1.2fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <span>Số hiệu</span><span>Tiêu đề</span><span>Loại văn bản</span><span>Người ban hành</span><span>Ngày ban hành</span><span>Trạng thái</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.1fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span class="mono" style="font-size:12px; font-weight:600;">CV-2026/041</span><span style="font-size:12.5px;">Quy định giờ làm việc mùa mưa công trường</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Nội bộ</span><span style="font-size:12.5px; color:var(--text-muted);">Phòng HC-NS</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/09/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã ban hành</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.1fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span class="mono" style="font-size:12px; font-weight:600;">CV-2026/040</span><span style="font-size:12.5px;">Thông báo nghỉ lễ Quốc khánh 2/9</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Thông báo</span><span style="font-size:12.5px; color:var(--text-muted);">Ban giám đốc</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">28/08/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã ban hành</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.1fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span class="mono" style="font-size:12px; font-weight:600;">CV-2026/039</span><span style="font-size:12.5px;">Đề xuất mua sắm thiết bị bảo hộ lao động Q4</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Đề xuất</span><span style="font-size:12.5px; color:var(--text-muted);">Phòng HC-NS</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/09/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Chờ duyệt</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1.1fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span class="mono" style="font-size:12px; font-weight:600;">CV-2026/038</span><span style="font-size:12.5px;">Quy chế khen thưởng nhân sự xuất sắc quý 3</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Nội bộ</span><span style="font-size:12.5px; color:var(--text-muted);">Ban giám đốc</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">10/09/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đã ban hành</span></div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; font-weight: 700;">Hợp đồng lao động sắp hết hạn</span>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.2fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <span>Họ tên</span><span>Chức vụ</span><span>Loại hợp đồng</span><span>Ngày hết hạn</span><span>Trạng thái</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Vũ Thị Diệu</span><span style="font-size:12.5px; color:var(--text-muted);">Giám sát an toàn lao động</span><span style="font-size:12.5px; color:var(--text-muted);">Thử việc (2 tháng)</span><span class="mono" style="font-size:11.5px; color:var(--danger); font-weight:600;">14/10/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Cần gia hạn</span></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1.4fr 1.2fr 1fr 1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600;">Cao Nhật Tân</span><span style="font-size:12.5px; color:var(--text-muted);">Mua hàng &amp; cung ứng</span><span style="font-size:12.5px; color:var(--text-muted);">Xác định thời hạn (1 năm)</span><span class="mono" style="font-size:11.5px; color:var(--finance); font-weight:600;">09/10/2026</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Sắp hết hạn</span></div>
+      </div>
+    </div>
+
+    <div class="hr-panel" data-hpanel="tuyen-dung" style="display: none; flex-direction: column; gap: 16px; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0;">
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Vị trí đang tuyển</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">4</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Trên 3 phòng ban</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Ứng viên mới tuần này</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--primary);">6</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Từ các kênh tuyển dụng</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đang phỏng vấn</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--finance);">3</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Vòng 1 &amp; vòng 2</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã tuyển tháng này</div>
+          <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">1</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Nhân viên KD Dự Án</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; font-weight: 700;">Vị trí đang tuyển</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; font-weight: 700;">Kỹ sư giám sát công trình</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">Phòng Thi công · 2 vị trí</div>
+          <div style="font-size: 11px; color: var(--text-muted);">5 hồ sơ ứng tuyển</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; font-weight: 700;">Kiến trúc sư thiết kế</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">Phòng Thiết kế · 1 vị trí</div>
+          <div style="font-size: 11px; color: var(--text-muted);">4 hồ sơ ứng tuyển</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; font-weight: 700;">Nhân viên kinh doanh dự án</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">Phòng Kinh doanh · 2 vị trí</div>
+          <div style="font-size: 11px; color: var(--text-muted);">3 hồ sơ ứng tuyển</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 13px; font-weight: 700;">Kế toán nội bộ</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">Phòng Tài chính · 1 vị trí</div>
+          <div style="font-size: 11px; color: var(--text-muted);">2 hồ sơ ứng tuyển</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 12.5px; font-weight: 700;">Danh sách ứng viên</span>
+        <button style="display: flex; align-items: center; gap: 6px; border: none; cursor: pointer; background: var(--attendance); color: #fff; padding: 8px 14px; border-radius: 9px; font-size: 12.5px; font-weight: 600; font-family: inherit;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm ứng viên
+        </button>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+          <span>Họ tên</span><span>Vị trí ứng tuyển</span><span>Nguồn</span><span>Giai đoạn</span><span>Ngày ứng tuyển</span><span>Người phụ trách</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Lê Hoàng Phúc</span><span style="font-size:12.5px; color:var(--text-muted);">Kỹ sư giám sát công trình</span><span style="font-size:12.5px; color:var(--text-muted);">LinkedIn</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Phỏng vấn vòng 2</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/09/2026</span><span style="font-size:12.5px; color:var(--text-muted);">Trịnh Minh Tâm</span></div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Phạm Thu Uyên</span><span style="font-size:12.5px; color:var(--text-muted);">Kiến trúc sư thiết kế</span><span style="font-size:12.5px; color:var(--text-muted);">Giới thiệu nội bộ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Phỏng vấn vòng 1</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">18/09/2026</span><span style="font-size:12.5px; color:var(--text-muted);">Trịnh Minh Tâm</span></div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Ngô Bảo Châu</span><span style="font-size:12.5px; color:var(--text-muted);">Nhân viên kinh doanh dự án</span><span style="font-size:12.5px; color:var(--text-muted);">TopCV</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Sàng lọc CV</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">22/09/2026</span><span style="font-size:12.5px; color:var(--text-muted);">Lý Ngọc Diệp</span></div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Đinh Gia Huy</span><span style="font-size:12.5px; color:var(--text-muted);">Kế toán nội bộ</span><span style="font-size:12.5px; color:var(--text-muted);">VietnamWorks</span><span style="padding:3px 9px; border-radius:999px; background:var(--success-tint); color:var(--success); font-size:11px; font-weight:600; justify-self:start;">Đề nghị offer</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">05/09/2026</span><span style="font-size:12.5px; color:var(--text-muted);">Lý Ngọc Diệp</span></div>
+        <div style="display: grid; grid-template-columns: 1.4fr 1.5fr 1fr 1.1fr 1fr 1.1fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600; color:var(--text-muted); text-decoration:line-through;">Trần Bảo Long</span><span style="font-size:12.5px; color:var(--text-muted);">Kỹ sư giám sát công trình</span><span style="font-size:12.5px; color:var(--text-muted);">LinkedIn</span><span style="padding:3px 9px; border-radius:999px; background:var(--danger-tint); color:var(--danger); font-size:11px; font-weight:600; justify-self:start;">Đã từ chối</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">28/08/2026</span><span style="font-size:12.5px; color:var(--text-muted);">Trịnh Minh Tâm</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- AI ASSISTANT (Dezbot) -->
+<button class="ai-fab" id="aiFab" title="Trợ lý ảo Dezbot">
+  <svg width="30" height="30" viewBox="0 0 24 24"><defs><linearGradient id="dezbotGrad" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#2FA3E6"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><path d="M4 12.5a8 8 0 0 1 16 0" fill="none" stroke="url(#dezbotGrad)" stroke-width="1.8" stroke-linecap="round"/><rect x="2" y="11.3" width="3.1" height="6.2" rx="1.55" fill="url(#dezbotGrad)"/><rect x="18.9" y="11.3" width="3.1" height="6.2" rx="1.55" fill="url(#dezbotGrad)"/><line x1="12" y1="4.6" x2="12" y2="7.6" stroke="url(#dezbotGrad)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="3.3" r="1.5" fill="url(#dezbotGrad)"/><path d="M7.3 7.6h9.4a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-4.1l-2.6 2.4v-2.4H7.3a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z" fill="url(#dezbotGrad)"/><rect x="8.9" y="10.1" width="6.2" height="4.6" rx="1.3" fill="#fff"/><circle cx="10.55" cy="12.4" r="0.58" fill="url(#dezbotGrad)"/><circle cx="13.45" cy="12.4" r="0.58" fill="url(#dezbotGrad)"/><path d="M10.5 17.1a2.1 2.1 0 0 0 3 0" stroke="#fff" stroke-width="0.9" fill="none" stroke-linecap="round"/></svg>
+</button>
+
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-resize-handle" id="aiResizeHandle" title="Kéo để thu hẹp / mở rộng"></div>
+  <div class="ai-panel-head">
+    <h4>Dezbot</h4>
+    <button class="ai-newchat-btn" id="aiNewChatBtn">Hội thoại mới</button>
+    <button class="ai-close-btn" id="aiCloseBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="ai-panel-body">
+    <div class="ai-welcome" id="aiWelcome">
+      <h2>Tôi có thể giúp gì,<br><span class="muted">hôm nay?</span></h2>
+      <p>Hỏi về tiến độ, nhân công, dòng tiền, khách hàng, bóc tách hay quy trình — trợ lý đọc trực tiếp dữ liệu trong workspace.</p>
+      <div class="ai-topic-grid">
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="tiendo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="10" y2="18"/></svg>Tiến độ</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="chamcong"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Chấm công</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="dongtien"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg>Dòng tiền</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="khachhang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/><path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="8" cy="7" r="4"/></svg>Khách hàng</button></div>
+        <div class="ai-topic-chip wide"><button class="ai-chip" data-ai-topic="tinnhan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Tin nhắn</button></div>
+      </div>
+    </div>
+    <div class="ai-log" id="aiLog"></div>
+  </div>
+  <div class="ai-suggest-row">
+    <button class="ai-suggest-chip" data-ai-prompt="Hôm nay ai đi trễ hoặc vắng?">Hôm nay ai đi trễ hoặc vắng?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Ai đang xin nghỉ phép tuần này?">Ai đang xin nghỉ phép tuần này?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Tóm tắt bảng lương tháng này">Tóm tắt bảng lương tháng này</button>
+  </div>
+  <div class="ai-input-area">
+    <textarea id="aiInput" placeholder="Hỏi về tiến độ, chấm công, dòng tiền, khách hàng…"></textarea>
+    <div class="ai-input-row">
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="10" y2="18"/></svg></div>
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <button class="ai-send-btn" id="aiSendBtn">Gửi</button>
+    </div>
   </div>
 </div>
 
@@ -598,6 +1090,422 @@ document.querySelectorAll('.hr-tab').forEach(function(btn){
   btn.addEventListener('click', function(){ goToHrTab(btn.getAttribute('data-htab')); });
 });
 
+/* ===================== Hồ sơ nhân sự (list/grid, filter, add/edit, detail) ===================== */
+var HR_DEPT_COLOR = {
+  'Quản lý dự án': {c:'--primary', t:'--primary-tint'},
+  'Marketing': {c:'--marketing', t:'--marketing-tint'},
+  'Kinh doanh': {c:'--sales', t:'--sales-tint'},
+  'Thi công': {c:'--danger', t:'--danger-tint'},
+  'Vận hành': {c:'--text-muted', t:'--surface-alt'},
+  'Tài chính': {c:'--finance', t:'--finance-tint'}
+};
+var HR_STATUS_LABEL = {active:'Đang làm việc', probation:'Thử việc', left:'Đã nghỉ việc'};
+var HR_STATUS_COLOR = {active:{c:'--success', t:'--success-tint'}, probation:{c:'--finance', t:'--finance-tint'}, left:{c:'--danger', t:'--danger-tint'}};
+
+var hrEmployees = [
+  {id:1, code:'NV001', name:'Trần Anh', position:'Quản lý dự án', dept:'Quản lý dự án', phone:'0909 111 222', email:'tran.anh@siteflow.vn', joinDate:'2022-03-01', status:'active',
+    cccd:'079089001234', dob:'1990-04-12', hometown:'Hà Nội', emergencyName:'Trần Bình', emergencyPhone:'0909 111 000', bankName:'Vietcombank', bankAccount:'0071001234567',
+    contractType:'Không xác định thời hạn', level:'Trưởng phòng', salary:'35000000', lineManager:'Ban Giám đốc',
+    promotions:[{date:'2022-03-01', note:'Gia nhập — Kỹ sư dự án'},{date:'2024-01-01', note:'Thăng chức — Quản lý dự án'}],
+    attachments:[{name:'Hợp đồng lao động.pdf'},{name:'CV_Tran_Anh.pdf'}]},
+  {id:2, code:'NV002', name:'Đỗ Thảo Vy', position:'Head Marketing', dept:'Marketing', phone:'0909 222 333', email:'thao.vy@siteflow.vn', joinDate:'2023-06-15', status:'active',
+    cccd:'079089002345', dob:'1993-08-20', hometown:'Hải Phòng', emergencyName:'Đỗ Văn Hùng', emergencyPhone:'0909 222 000', bankName:'Techcombank', bankAccount:'19071002345678',
+    contractType:'Không xác định thời hạn', level:'Trưởng nhóm', salary:'25000000', lineManager:'Trần Anh',
+    promotions:[{date:'2023-06-15', note:'Gia nhập — Head Marketing'}],
+    attachments:[{name:'Hợp đồng lao động.pdf'}]},
+  {id:3, code:'NV003', name:'Ngọc Hà', position:'Graphic Designer', dept:'Marketing', phone:'0909 333 444', email:'ngoc.ha@siteflow.vn', joinDate:'2024-01-10', status:'active',
+    cccd:'079089003456', dob:'1998-02-14', hometown:'Nam Định', emergencyName:'Nguyễn Thu', emergencyPhone:'0909 333 000', bankName:'ACB', bankAccount:'21903456789',
+    contractType:'Xác định thời hạn', level:'Nhân viên', salary:'14000000', lineManager:'Đỗ Thảo Vy',
+    promotions:[{date:'2024-01-10', note:'Gia nhập — Graphic Designer'}],
+    attachments:[]},
+  {id:4, code:'NV004', name:'Minh Quân', position:'Media (quay, dựng video)', dept:'Marketing', phone:'0909 444 555', email:'minh.quan@siteflow.vn', joinDate:'2023-09-05', status:'active',
+    cccd:'079089004567', dob:'1996-11-02', hometown:'Thanh Hóa', emergencyName:'Lê Thị Mai', emergencyPhone:'0909 444 000', bankName:'BIDV', bankAccount:'12104567890',
+    contractType:'Không xác định thời hạn', level:'Chuyên viên', salary:'16000000', lineManager:'Đỗ Thảo Vy',
+    promotions:[{date:'2023-09-05', note:'Gia nhập — Media'}],
+    attachments:[{name:'Bằng đại học.pdf'}]},
+  {id:5, code:'NV005', name:'Thuỳ Dương', position:'Content Creator', dept:'Marketing', phone:'0909 555 666', email:'thuy.duong@siteflow.vn', joinDate:'2024-11-20', status:'active',
+    cccd:'079089005678', dob:'1999-05-30', hometown:'Nghệ An', emergencyName:'Phạm Văn Sơn', emergencyPhone:'0909 555 000', bankName:'MB Bank', bankAccount:'03305678901',
+    contractType:'Thử việc', level:'Nhân viên', salary:'10000000', lineManager:'Đỗ Thảo Vy',
+    promotions:[{date:'2024-11-20', note:'Gia nhập — Content Creator'}],
+    attachments:[]},
+  {id:6, code:'NV006', name:'Hoàng Yến Nhi', position:'Nhân viên KD — Phòng Dân dụng', dept:'Kinh doanh', phone:'0909 666 777', email:'yen.nhi@siteflow.vn', joinDate:'2024-02-12', status:'active',
+    cccd:'079089006789', dob:'1997-07-07', hometown:'Bắc Ninh', emergencyName:'Hoàng Văn Long', emergencyPhone:'0909 666 000', bankName:'Vietinbank', bankAccount:'10206789012',
+    contractType:'Xác định thời hạn', level:'Nhân viên', salary:'12000000', lineManager:'Đặng Quốc Cường',
+    promotions:[{date:'2024-02-12', note:'Gia nhập — Nhân viên KD'}],
+    attachments:[]},
+  {id:7, code:'NV007', name:'Đặng Quốc Cường', position:'Nhân viên KD — Phòng Dự án', dept:'Kinh doanh', phone:'0909 777 888', email:'quoc.cuong@siteflow.vn', joinDate:'2023-07-03', status:'active',
+    cccd:'079089007890', dob:'1992-09-18', hometown:'Hà Nam', emergencyName:'Đặng Thị Lan', emergencyPhone:'0909 777 000', bankName:'Vietcombank', bankAccount:'0077890123',
+    contractType:'Không xác định thời hạn', level:'Trưởng nhóm', salary:'20000000', lineManager:'Trần Anh',
+    promotions:[{date:'2023-07-03', note:'Gia nhập — Nhân viên KD'},{date:'2025-01-01', note:'Thăng chức — Trưởng nhóm KD Dự án'}],
+    attachments:[{name:'Hợp đồng lao động.pdf'}]},
+  {id:8, code:'NV008', name:'Nguyễn Đức Anh', position:'Chỉ huy trưởng công trường', dept:'Thi công', phone:'0909 888 999', email:'duc.anh@siteflow.vn', joinDate:'2022-04-18', status:'active',
+    cccd:'079089008901', dob:'1988-01-25', hometown:'Ninh Bình', emergencyName:'Nguyễn Thị Hoa', emergencyPhone:'0909 888 000', bankName:'Agribank', bankAccount:'34018901234',
+    contractType:'Không xác định thời hạn', level:'Trưởng phòng', salary:'28000000', lineManager:'Trần Anh',
+    promotions:[{date:'2022-04-18', note:'Gia nhập — Chỉ huy trưởng'}],
+    attachments:[{name:'Chứng chỉ hành nghề xây dựng.pdf'},{name:'Hợp đồng lao động.pdf'}]},
+  {id:9, code:'NV009', name:'Đỗ Thành Long', position:'Tư vấn giám sát', dept:'Thi công', phone:'0909 999 000', email:'thanh.long@siteflow.vn', joinDate:'2022-05-25', status:'active',
+    cccd:'079089009012', dob:'1991-12-03', hometown:'Thái Bình', emergencyName:'Đỗ Thị Nga', emergencyPhone:'0909 999 111', bankName:'Techcombank', bankAccount:'19079012345',
+    contractType:'Không xác định thời hạn', level:'Chuyên viên', salary:'18000000', lineManager:'Nguyễn Đức Anh',
+    promotions:[{date:'2022-05-25', note:'Gia nhập — Tư vấn giám sát'}],
+    attachments:[]},
+  {id:10, code:'NV010', name:'Vũ Thị Diệu', position:'Giám sát an toàn lao động', dept:'Thi công', phone:'0912 111 222', email:'thi.dieu@siteflow.vn', joinDate:'2024-08-14', status:'probation',
+    cccd:'079089010123', dob:'2000-03-09', hometown:'Vĩnh Phúc', emergencyName:'Vũ Văn Kiên', emergencyPhone:'0912 111 000', bankName:'ACB', bankAccount:'21910123456',
+    contractType:'Thử việc', level:'Nhân viên', salary:'9000000', lineManager:'Nguyễn Đức Anh',
+    promotions:[{date:'2024-08-14', note:'Gia nhập — Giám sát an toàn lao động'}],
+    attachments:[]},
+  {id:11, code:'NV011', name:'Cao Nhật Tân', position:'Mua hàng & cung ứng', dept:'Vận hành', phone:'0912 222 333', email:'nhat.tan@siteflow.vn', joinDate:'2023-10-09', status:'active',
+    cccd:'079089011234', dob:'1994-06-16', hometown:'Hưng Yên', emergencyName:'Cao Thị Hằng', emergencyPhone:'0912 222 000', bankName:'BIDV', bankAccount:'12111234567',
+    contractType:'Xác định thời hạn', level:'Chuyên viên', salary:'15000000', lineManager:'Trần Anh',
+    promotions:[{date:'2023-10-09', note:'Gia nhập — Mua hàng & cung ứng'}],
+    attachments:[]},
+  {id:12, code:'NV012', name:'Lý Thu Trang', position:'Kế toán', dept:'Tài chính', phone:'0912 333 444', email:'thu.trang@siteflow.vn', joinDate:'2023-01-01', status:'left',
+    cccd:'079089012345', dob:'1995-10-22', hometown:'Hải Dương', emergencyName:'Lý Văn Đức', emergencyPhone:'0912 333 000', bankName:'MB Bank', bankAccount:'03312345678',
+    contractType:'Xác định thời hạn', level:'Nhân viên', salary:'13000000', lineManager:'Trần Anh',
+    promotions:[{date:'2023-01-01', note:'Gia nhập — Kế toán'}],
+    attachments:[{name:'Hợp đồng lao động.pdf'}]}
+];
+var hrNextId = 13;
+var hrViewMode = 'list';
+var hrEditingId = null;
+function hrFmtMoney(v){
+  var n = parseInt(v, 10);
+  if(isNaN(n)) return '—';
+  return n.toLocaleString('vi-VN') + ' đ';
+}
+
+function hrFmtDate(iso){
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function hrInitials(name){
+  var parts = name.trim().split(/\s+/);
+  return (parts[parts.length-1][0] || '').toUpperCase();
+}
+function hrMatchesTimeFilter(iso, range){
+  if(range === 'all') return true;
+  var d = new Date(iso + 'T00:00:00');
+  var now = new Date();
+  if(range === 'week'){
+    var day = (now.getDay() + 6) % 7;
+    var start = new Date(now); start.setDate(now.getDate() - day); start.setHours(0,0,0,0);
+    var end = new Date(start); end.setDate(start.getDate() + 7);
+    return d >= start && d < end;
+  }
+  if(range === 'month'){
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  if(range === 'quarter'){
+    return d.getFullYear() === now.getFullYear() && Math.floor(d.getMonth()/3) === Math.floor(now.getMonth()/3);
+  }
+  if(range === 'year'){
+    return d.getFullYear() === now.getFullYear();
+  }
+  return true;
+}
+function hrFilteredEmployees(){
+  var q = document.getElementById('hrSearchInput').value.trim().toLowerCase();
+  var dept = document.getElementById('hrDeptFilter').value;
+  var status = document.getElementById('hrStatusFilter').value;
+  var time = document.getElementById('hrTimeFilter').value;
+  var contract = document.getElementById('hrContractFilter').value;
+  return hrEmployees.filter(function(e){
+    if(dept !== 'all' && e.dept !== dept) return false;
+    if(status !== 'all' && e.status !== status) return false;
+    if(contract !== 'all' && e.contractType !== contract) return false;
+    if(!hrMatchesTimeFilter(e.joinDate, time)) return false;
+    if(q && e.name.toLowerCase().indexOf(q) === -1 && e.phone.indexOf(q) === -1 && (e.code||'').toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+}
+function hrRenderStats(){
+  var total = hrEmployees.length;
+  var active = hrEmployees.filter(function(e){ return e.status === 'active'; }).length;
+  var probation = hrEmployees.filter(function(e){ return e.status === 'probation'; }).length;
+  var left = hrEmployees.filter(function(e){ return e.status === 'left'; }).length;
+  var deptCount = {};
+  hrEmployees.forEach(function(e){ deptCount[e.dept] = true; });
+  document.getElementById('hrStatTotal').textContent = total;
+  document.getElementById('hrStatTotalSub').textContent = 'Trên ' + Object.keys(deptCount).length + ' phòng ban';
+  document.getElementById('hrStatActive').textContent = active;
+  document.getElementById('hrStatProbation').textContent = probation;
+  document.getElementById('hrStatLeft').textContent = left;
+}
+function hrRenderList(){
+  var list = hrFilteredEmployees();
+  var container = document.getElementById('hrListContainer');
+  if(!list.length){
+    container.innerHTML = '<div class="hr-empty-state">Không tìm thấy nhân sự phù hợp bộ lọc.</div>';
+    return;
+  }
+  if(hrViewMode === 'grid'){
+    var cards = list.map(function(e){
+      var dc = HR_DEPT_COLOR[e.dept];
+      var sc = HR_STATUS_COLOR[e.status];
+      return '<div class="hr-emp-card">' +
+        '<div style="display:flex; align-items:center; gap:10px;">' +
+          '<div class="hr-emp-card-avatar">' + hrInitials(e.name) + '</div>' +
+          '<div style="min-width:0;">' +
+            '<div class="mono" style="font-size:10.5px; color:var(--text-muted);">' + e.code + '</div>' +
+            '<button type="button" class="hr-emp-name-btn" style="font-size:13.5px; font-weight:700; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;' + (e.status==='left' ? ' text-decoration:line-through;' : '') + '" data-hr-detail="' + e.id + '">' + e.name + '</button>' +
+            '<div style="font-size:11.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px;">' + e.position + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
+          '<span style="padding:3px 9px; border-radius:999px; background:var(' + dc.t + '); color:var(' + dc.c + '); font-size:10.5px; font-weight:600;">' + e.dept + '</span>' +
+          '<span style="padding:3px 9px; border-radius:999px; background:var(' + sc.t + '); color:var(' + sc.c + '); font-size:10.5px; font-weight:600;">' + HR_STATUS_LABEL[e.status] + '</span>' +
+        '</div>' +
+        '<div style="font-size:11.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + (e.email || '—') + '</div>' +
+        '<div class="mono" style="font-size:11.5px; color:var(--text-muted);">' + e.phone + '</div>' +
+      '</div>';
+    }).join('');
+    container.innerHTML = '<div class="hr-emp-grid">' + cards + '</div>';
+  } else {
+    var cols = '0.7fr 1.5fr 1.1fr 1.3fr 1.4fr 1fr 1fr';
+    var rows = list.map(function(e){
+      var dc = HR_DEPT_COLOR[e.dept];
+      var sc = HR_STATUS_COLOR[e.status];
+      var nameStyle = 'display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600;' + (e.status==='left' ? ' color:var(--text-muted); text-decoration:line-through;' : '');
+      return '<div style="display: grid; grid-template-columns: ' + cols + '; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);">' +
+        '<span class="mono" style="font-size:11.5px; color:var(--text-muted);">' + e.code + '</span>' +
+        '<button type="button" class="hr-emp-name-btn" style="' + nameStyle + '" data-hr-detail="' + e.id + '">' +
+          '<span class="hr-emp-card-avatar" style="width:26px; height:26px; font-size:11px; flex:none;">' + hrInitials(e.name) + '</span>' + e.name +
+        '</button>' +
+        '<span style="padding:3px 9px; border-radius:999px; background:var(' + dc.t + '); color:var(' + dc.c + '); font-size:11px; font-weight:600; justify-self:start;">' + e.dept + '</span>' +
+        '<span style="font-size:12.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + e.position + '</span>' +
+        '<span style="font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + (e.email || '—') + '</span>' +
+        '<span class="mono" style="font-size:12px; color:var(--text-muted);">' + e.phone + '</span>' +
+        '<span style="padding:3px 9px; border-radius:999px; background:var(' + sc.t + '); color:var(' + sc.c + '); font-size:11px; font-weight:600; justify-self:start;">' + HR_STATUS_LABEL[e.status] + '</span>' +
+      '</div>';
+    }).join('');
+    container.innerHTML = '<div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px; overflow-x:auto;">' +
+      '<div style="min-width:840px;">' +
+      '<div style="display: grid; grid-template-columns: ' + cols + '; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">' +
+        '<span>Mã NV</span><span>Họ tên</span><span>Phòng ban</span><span>Chức vụ</span><span>Email</span><span>Điện thoại</span><span>Trạng thái</span>' +
+      '</div>' + rows + '</div></div>';
+  }
+  container.querySelectorAll('[data-hr-detail]').forEach(function(btn){
+    btn.addEventListener('click', function(){ hrOpenDetail(parseInt(btn.getAttribute('data-hr-detail'), 10)); });
+  });
+}
+function hrRenderAll(){ hrRenderStats(); hrRenderList(); }
+
+document.getElementById('hrViewListBtn').addEventListener('click', function(){
+  hrViewMode = 'list';
+  document.getElementById('hrViewListBtn').classList.add('active');
+  document.getElementById('hrViewGridBtn').classList.remove('active');
+  hrRenderList();
+});
+document.getElementById('hrViewGridBtn').addEventListener('click', function(){
+  hrViewMode = 'grid';
+  document.getElementById('hrViewGridBtn').classList.add('active');
+  document.getElementById('hrViewListBtn').classList.remove('active');
+  hrRenderList();
+});
+['hrSearchInput','hrDeptFilter','hrStatusFilter','hrTimeFilter','hrContractFilter'].forEach(function(id){
+  var evt = id === 'hrSearchInput' ? 'input' : 'change';
+  document.getElementById(id).addEventListener(evt, hrRenderList);
+});
+
+document.querySelectorAll('#hrEmpFormPage .hr-form-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    var name = tab.getAttribute('data-hform');
+    document.querySelectorAll('#hrEmpFormPage .hr-form-tab').forEach(function(t){ t.classList.toggle('active', t === tab); });
+    document.querySelectorAll('#hrEmpFormPage .hr-form-step').forEach(function(s){
+      s.style.display = s.getAttribute('data-hform') === name ? 'flex' : 'none';
+    });
+  });
+});
+document.querySelectorAll('#hrEmpDetailPage .hr-form-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    var name = tab.getAttribute('data-hdtab');
+    document.querySelectorAll('#hrEmpDetailPage .hr-form-tab').forEach(function(t){ t.classList.toggle('active', t === tab); });
+    document.querySelectorAll('#hrEmpDetailPage .hr-detail-step').forEach(function(s){
+      s.style.display = s.getAttribute('data-hdtab') === name ? 'block' : 'none';
+    });
+  });
+});
+function hrResetFormTabs(){
+  document.querySelectorAll('#hrEmpFormPage .hr-form-tab').forEach(function(t, i){ t.classList.toggle('active', i === 0); });
+  document.querySelectorAll('#hrEmpFormPage .hr-form-step').forEach(function(s, i){ s.style.display = i === 0 ? 'flex' : 'none'; });
+}
+function hrResetDetailTabs(){
+  document.querySelectorAll('#hrEmpDetailPage .hr-form-tab').forEach(function(t, i){ t.classList.toggle('active', i === 0); });
+  document.querySelectorAll('#hrEmpDetailPage .hr-detail-step').forEach(function(s, i){ s.style.display = i === 0 ? 'block' : 'none'; });
+}
+
+function hrShowView(name){
+  document.getElementById('hrListView').style.display = name === 'list' ? 'flex' : 'none';
+  document.getElementById('hrEmpFormPage').style.display = name === 'form' ? 'flex' : 'none';
+  document.getElementById('hrEmpDetailPage').style.display = name === 'detail' ? 'flex' : 'none';
+}
+function hrOpenAddModal(){
+  hrEditingId = null;
+  hrResetFormTabs();
+  document.getElementById('hrEmpModalTitle').textContent = 'Thêm nhân sự';
+  document.getElementById('hrEmpModalSaveBtn').textContent = 'Thêm nhân sự';
+  document.getElementById('hrEmpName').value = '';
+  document.getElementById('hrEmpPosition').value = '';
+  document.getElementById('hrEmpDept').value = 'Quản lý dự án';
+  document.getElementById('hrEmpStatus').value = 'active';
+  document.getElementById('hrEmpPhone').value = '';
+  document.getElementById('hrEmpEmail').value = '';
+  document.getElementById('hrEmpJoinDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('hrEmpCccd').value = '';
+  document.getElementById('hrEmpDob').value = '';
+  document.getElementById('hrEmpHometown').value = '';
+  document.getElementById('hrEmpEmergencyName').value = '';
+  document.getElementById('hrEmpEmergencyPhone').value = '';
+  document.getElementById('hrEmpBankName').value = '';
+  document.getElementById('hrEmpBankAccount').value = '';
+  document.getElementById('hrEmpContractType').value = 'Thử việc';
+  document.getElementById('hrEmpLevel').value = 'Nhân viên';
+  document.getElementById('hrEmpSalary').value = '';
+  document.getElementById('hrEmpLineManager').value = '';
+  hrShowView('form');
+}
+function hrOpenEditModal(id){
+  var e = hrEmployees.find(function(x){ return x.id === id; });
+  if(!e) return;
+  hrEditingId = id;
+  hrResetFormTabs();
+  document.getElementById('hrEmpModalTitle').textContent = 'Chỉnh sửa nhân sự';
+  document.getElementById('hrEmpModalSaveBtn').textContent = 'Lưu thay đổi';
+  document.getElementById('hrEmpName').value = e.name;
+  document.getElementById('hrEmpPosition').value = e.position;
+  document.getElementById('hrEmpDept').value = e.dept;
+  document.getElementById('hrEmpStatus').value = e.status;
+  document.getElementById('hrEmpPhone').value = e.phone;
+  document.getElementById('hrEmpEmail').value = e.email;
+  document.getElementById('hrEmpJoinDate').value = e.joinDate;
+  document.getElementById('hrEmpCccd').value = e.cccd || '';
+  document.getElementById('hrEmpDob').value = e.dob || '';
+  document.getElementById('hrEmpHometown').value = e.hometown || '';
+  document.getElementById('hrEmpEmergencyName').value = e.emergencyName || '';
+  document.getElementById('hrEmpEmergencyPhone').value = e.emergencyPhone || '';
+  document.getElementById('hrEmpBankName').value = e.bankName || '';
+  document.getElementById('hrEmpBankAccount').value = e.bankAccount || '';
+  document.getElementById('hrEmpContractType').value = e.contractType || 'Thử việc';
+  document.getElementById('hrEmpLevel').value = e.level || 'Nhân viên';
+  document.getElementById('hrEmpSalary').value = e.salary || '';
+  document.getElementById('hrEmpLineManager').value = e.lineManager || '';
+  hrShowView('form');
+}
+function hrCloseEmpModal(){ hrShowView('list'); }
+document.getElementById('hrAddEmployeeBtn').addEventListener('click', hrOpenAddModal);
+document.getElementById('hrFormBackBtn').addEventListener('click', hrCloseEmpModal);
+document.getElementById('hrEmpModalCancelBtn').addEventListener('click', hrCloseEmpModal);
+document.getElementById('hrEmpModalSaveBtn').addEventListener('click', function(){
+  var name = document.getElementById('hrEmpName').value.trim();
+  var phone = document.getElementById('hrEmpPhone').value.trim();
+  if(!name){ document.getElementById('hrEmpName').focus(); return; }
+  if(!phone){ document.getElementById('hrEmpPhone').focus(); return; }
+  var data = {
+    name: name,
+    position: document.getElementById('hrEmpPosition').value.trim() || 'Chưa cập nhật',
+    dept: document.getElementById('hrEmpDept').value,
+    status: document.getElementById('hrEmpStatus').value,
+    phone: phone,
+    email: document.getElementById('hrEmpEmail').value.trim(),
+    joinDate: document.getElementById('hrEmpJoinDate').value || new Date().toISOString().slice(0,10),
+    cccd: document.getElementById('hrEmpCccd').value.trim(),
+    dob: document.getElementById('hrEmpDob').value,
+    hometown: document.getElementById('hrEmpHometown').value.trim(),
+    emergencyName: document.getElementById('hrEmpEmergencyName').value.trim(),
+    emergencyPhone: document.getElementById('hrEmpEmergencyPhone').value.trim(),
+    bankName: document.getElementById('hrEmpBankName').value.trim(),
+    bankAccount: document.getElementById('hrEmpBankAccount').value.trim(),
+    contractType: document.getElementById('hrEmpContractType').value,
+    level: document.getElementById('hrEmpLevel').value,
+    salary: document.getElementById('hrEmpSalary').value.trim(),
+    lineManager: document.getElementById('hrEmpLineManager').value.trim()
+  };
+  if(hrEditingId){
+    var e = hrEmployees.find(function(x){ return x.id === hrEditingId; });
+    Object.assign(e, data);
+  } else {
+    data.id = hrNextId;
+    data.code = 'NV' + String(hrNextId).padStart(3, '0');
+    data.promotions = [{date: data.joinDate, note: 'Gia nhập — ' + data.position}];
+    data.attachments = [];
+    hrNextId++;
+    hrEmployees.push(data);
+  }
+  hrCloseEmpModal();
+  hrRenderAll();
+});
+
+var hrDetailOpenId = null;
+function hrRenderAttachments(e){
+  var wrap = document.getElementById('hrDetailAttachments');
+  if(!e.attachments || !e.attachments.length){
+    wrap.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:6px 0;">Chưa có hồ sơ đính kèm.</div>';
+    return;
+  }
+  wrap.innerHTML = e.attachments.map(function(f, i){
+    return '<div class="hr-attachment-item">' +
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none; color:var(--attendance);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+      '<span class="name">' + f.name + '</span>' +
+      '<button type="button" class="hr-attachment-remove" data-hr-remove-file="' + i + '" title="Xóa">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>' +
+      '</button>' +
+    '</div>';
+  }).join('');
+  wrap.querySelectorAll('[data-hr-remove-file]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      e.attachments.splice(parseInt(btn.getAttribute('data-hr-remove-file'), 10), 1);
+      hrRenderAttachments(e);
+    });
+  });
+}
+function hrOpenDetail(id){
+  var e = hrEmployees.find(function(x){ return x.id === id; });
+  if(!e) return;
+  hrDetailOpenId = id;
+  hrResetDetailTabs();
+  var sc = HR_STATUS_COLOR[e.status];
+  var dc = HR_DEPT_COLOR[e.dept];
+  document.getElementById('hrDetailAvatar').textContent = hrInitials(e.name);
+  document.getElementById('hrDetailCode').textContent = e.code;
+  document.getElementById('hrDetailName').textContent = e.name;
+  document.getElementById('hrDetailName').style.textDecoration = e.status === 'left' ? 'line-through' : 'none';
+  document.getElementById('hrDetailPosition').textContent = e.position;
+  document.getElementById('hrDetailDept').innerHTML = '<span style="padding:3px 9px; border-radius:999px; background:var(' + dc.t + '); color:var(' + dc.c + '); font-size:11px; font-weight:600;">' + e.dept + '</span>';
+  document.getElementById('hrDetailStatus').innerHTML = '<span style="padding:3px 9px; border-radius:999px; background:var(' + sc.t + '); color:var(' + sc.c + '); font-size:11px; font-weight:600;">' + HR_STATUS_LABEL[e.status] + '</span>';
+  document.getElementById('hrDetailPhone').textContent = e.phone;
+  document.getElementById('hrDetailEmail').textContent = e.email || '—';
+  document.getElementById('hrDetailCccd').textContent = e.cccd || '—';
+  document.getElementById('hrDetailDob').textContent = e.dob ? hrFmtDate(e.dob) : '—';
+  document.getElementById('hrDetailHometown').textContent = e.hometown || '—';
+  document.getElementById('hrDetailEmergency').textContent = (e.emergencyName || e.emergencyPhone) ? (e.emergencyName || '—') + ' — ' + (e.emergencyPhone || '—') : '—';
+  document.getElementById('hrDetailBank').textContent = (e.bankName || e.bankAccount) ? (e.bankName || '—') + ' · ' + (e.bankAccount || '—') : '—';
+  document.getElementById('hrDetailJoinDate').textContent = hrFmtDate(e.joinDate);
+  document.getElementById('hrDetailContractType').textContent = e.contractType || '—';
+  document.getElementById('hrDetailLevel').textContent = e.level || '—';
+  document.getElementById('hrDetailSalary').textContent = hrFmtMoney(e.salary);
+  document.getElementById('hrDetailLineManager').textContent = e.lineManager || '—';
+  var promoWrap = document.getElementById('hrDetailPromotions');
+  promoWrap.innerHTML = (e.promotions && e.promotions.length) ? e.promotions.map(function(p){
+    return '<div class="hr-promo-item"><span>' + p.note + '</span><span class="mono" style="color:var(--text-muted);">' + hrFmtDate(p.date) + '</span></div>';
+  }).join('') : '<div style="font-size:12px; color:var(--text-muted);">Chưa có lịch sử thăng tiến.</div>';
+  hrRenderAttachments(e);
+  document.getElementById('hrDetailEditBtn').onclick = function(){ hrOpenEditModal(e.id); };
+  hrShowView('detail');
+}
+document.getElementById('hrDetailBackBtn').addEventListener('click', function(){ hrShowView('list'); });
+document.getElementById('hrAttachUploadBtn').addEventListener('click', function(){ document.getElementById('hrAttachFileInput').click(); });
+document.getElementById('hrAttachFileInput').addEventListener('change', function(ev){
+  var file = ev.target.files[0];
+  if(!file || hrDetailOpenId === null) return;
+  var e = hrEmployees.find(function(x){ return x.id === hrDetailOpenId; });
+  if(!e) return;
+  if(!e.attachments) e.attachments = [];
+  e.attachments.push({name: file.name});
+  hrRenderAttachments(e);
+  ev.target.value = '';
+});
+
+hrRenderAll();
+
 function updateThemeIcon(theme){
   document.getElementById('themeIconMoon').style.display = theme==='dark' ? 'none' : 'block';
   document.getElementById('themeIconSun').style.display = theme==='dark' ? 'block' : 'none';
@@ -611,18 +1519,185 @@ document.getElementById('themeToggle').onclick = function(){
   updateThemeIcon(next);
 };
 
-(function(){
+function getSidebarLevel(){
   try{
-    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){
-      document.getElementById('appSidebar').classList.add('collapsed');
-    }
-  }catch(e){}
-})();
-document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+    var v = localStorage.getItem('siteflow-sidebar-level');
+    if(v === 'full' || v === 'icons' || v === 'logo') return v;
+    return localStorage.getItem('siteflow-sidebar-collapsed') === '1' ? 'icons' : 'full';
+  }catch(e){ return 'full'; }
+}
+var SIDEBAR_LEVELS = ['full','icons','logo'];
+var sidebarLevel = getSidebarLevel();
+var sidebarDir = (sidebarLevel === 'logo') ? -1 : 1;
+function applySidebarLevel(){
   var sb = document.getElementById('appSidebar');
-  var collapsed = sb.classList.toggle('collapsed');
-  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+  sb.classList.toggle('collapsed', sidebarLevel === 'icons');
+  sb.classList.toggle('ultra-collapsed', sidebarLevel === 'logo');
+  try{ localStorage.setItem('siteflow-sidebar-level', sidebarLevel); }catch(e){}
+}
+applySidebarLevel();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var idx = SIDEBAR_LEVELS.indexOf(sidebarLevel) + sidebarDir;
+  if(idx >= SIDEBAR_LEVELS.length - 1){ idx = SIDEBAR_LEVELS.length - 1; sidebarDir = -1; }
+  if(idx <= 0){ idx = 0; sidebarDir = 1; }
+  sidebarLevel = SIDEBAR_LEVELS[idx];
+  applySidebarLevel();
 });
+document.getElementById('sidebarUltraCollapseBtn').addEventListener('click', function(){
+  sidebarLevel = 'logo';
+  sidebarDir = -1;
+  applySidebarLevel();
+});
+function ensureSidebarFlyout(){
+  var existing = document.getElementById('sidebarFlyoutClone');
+  if(existing) return existing;
+  var real = document.getElementById('appSidebar');
+  var clone = real.cloneNode(true);
+  clone.id = 'sidebarFlyoutClone';
+  clone.classList.remove('collapsed','ultra-collapsed');
+  clone.classList.add('sidebar-flyout-clone');
+  clone.style.display = 'none';
+  var brand = clone.querySelector('.brand');
+  if(brand) brand.remove();
+  document.body.appendChild(clone);
+  return clone;
+}
+document.getElementById('sidebarLogoCircle').addEventListener('click', function(e){
+  e.stopPropagation();
+  if(sidebarLevel === 'logo'){
+    var clone = ensureSidebarFlyout();
+    clone.style.display = (clone.style.display === 'flex') ? 'none' : 'flex';
+  } else if(sidebarLevel === 'icons'){
+    sidebarLevel = 'full'; sidebarDir = 1; applySidebarLevel();
+  }
+});
+document.addEventListener('click', function(e){
+  var clone = document.getElementById('sidebarFlyoutClone');
+  if(clone && clone.style.display === 'flex' && !clone.contains(e.target) && e.target.id !== 'sidebarLogoCircle'){
+    clone.style.display = 'none';
+  }
+});
+
+/* ===================== Dezbot — trợ lý ảo ===================== */
+(function(){
+  var fab = document.getElementById('aiFab');
+  var panel = document.getElementById('aiPanel');
+  var closeBtn = document.getElementById('aiCloseBtn');
+  var newChatBtn = document.getElementById('aiNewChatBtn');
+  var welcome = document.getElementById('aiWelcome');
+  var log = document.getElementById('aiLog');
+  var input = document.getElementById('aiInput');
+  var sendBtn = document.getElementById('aiSendBtn');
+
+  var AI_KB = {
+    tiendo: 'Dự án "Chung cư Riverside GĐ2" đang hoàn thành 62% khối lượng — đúng tiến độ tổng thể. Hạng mục "Hoàn thiện" có 2 đầu việc đang trễ hạn, cần ưu tiên xử lý trong tuần này.',
+    chamcong: 'Tháng này có 18/20 ngày công đủ giờ, 1 lần đi trễ, 0 lần nghỉ không phép. Toàn công ty: 18/21 nhân sự chấm công đúng giờ hôm nay, tỷ lệ chuyên cần 94%.',
+    dongtien: 'Dòng tiền tháng này: Thu về 1.85 tỷ, Chi ra 1.42 tỷ — dương 430 triệu. Có 3 hoá đơn nhà cung cấp sắp đến hạn thanh toán trong 7 ngày tới.',
+    khachhang: 'Hiện có 12 khách hàng đang trong giai đoạn đàm phán, 4 khách vừa ký hợp đồng trong tuần này. Cơ hội "Nhà phố Lô B12" có giá trị lớn nhất, đang chờ chốt hợp đồng.',
+    tinnhan: 'Bạn có 6 tin nhắn chưa đọc trong Chat, tập trung ở nhóm "Dự án Riverside" và "Ban giám đốc". Muốn mình tóm tắt nội dung chính không?',
+    boctach: 'Bóc tách khối lượng mới nhất từ QS ghi nhận tổng giá trị vật tư khoảng 11.93 triệu trên 5 đơn mua hàng, trong đó 2 đơn chưa đặt hàng.',
+    quytrinh: 'Quy trình thi công hiện tại gồm 5 bước: Khảo sát → Thiết kế → Xin phép → Thi công → Nghiệm thu. Bước "Thi công" đang được nhiều dự án thực hiện nhất.',
+    default: 'Mình đã tra trong dữ liệu workspace nhưng chưa tìm thấy câu trả lời chính xác cho câu hỏi này — bạn thử hỏi cụ thể hơn về tiến độ, chấm công, dòng tiền, khách hàng, bóc tách hoặc quy trình nhé.'
+  };
+
+  function matchTopic(text){
+    var t = text.toLowerCase();
+    if(t.indexOf('tiến độ') > -1 || t.indexOf('tien do') > -1 || t.indexOf('dự án') > -1) return 'tiendo';
+    if(t.indexOf('chấm công') > -1 || t.indexOf('nhân công') > -1 || t.indexOf('nhân sự') > -1 || t.indexOf('nghỉ phép') > -1 || t.indexOf('đi trễ') > -1 || t.indexOf('vắng') > -1 || t.indexOf('lương') > -1) return 'chamcong';
+    if(t.indexOf('dòng tiền') > -1 || t.indexOf('hoá đơn') > -1 || t.indexOf('hóa đơn') > -1 || t.indexOf('thu') > -1 || t.indexOf('chi') > -1) return 'dongtien';
+    if(t.indexOf('khách hàng') > -1 || t.indexOf('hợp đồng') > -1) return 'khachhang';
+    if(t.indexOf('tin nhắn') > -1 || t.indexOf('chat') > -1) return 'tinnhan';
+    if(t.indexOf('bóc tách') > -1 || t.indexOf('mua hàng') > -1 || t.indexOf('vật tư') > -1) return 'boctach';
+    if(t.indexOf('quy trình') > -1) return 'quytrinh';
+    return 'default';
+  }
+
+  function openPanel(){ panel.classList.add('open'); document.body.classList.add('ai-panel-open'); input.focus(); }
+  function closePanel(){ panel.classList.remove('open'); document.body.classList.remove('ai-panel-open'); }
+  fab.addEventListener('click', function(){ panel.classList.contains('open') ? closePanel() : openPanel(); });
+  closeBtn.addEventListener('click', closePanel);
+
+  (function(){
+    var handle = document.getElementById('aiResizeHandle');
+    var startX = 0, startWidth = 0, dragging = false;
+    var MIN_W = 320, MAX_W = 720;
+    try{
+      var savedW = localStorage.getItem('siteflow-ai-panel-width');
+      if(savedW) document.documentElement.style.setProperty('--ai-panel-width', savedW + 'px');
+    }catch(e){}
+    handle.addEventListener('mousedown', function(e){
+      dragging = true;
+      startX = e.clientX;
+      startWidth = panel.getBoundingClientRect().width;
+      document.body.classList.add('ai-panel-resizing');
+      panel.classList.add('resizing');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e){
+      if(!dragging) return;
+      var delta = startX - e.clientX;
+      var newWidth = Math.max(MIN_W, Math.min(MAX_W, startWidth + delta));
+      document.documentElement.style.setProperty('--ai-panel-width', newWidth + 'px');
+    });
+    document.addEventListener('mouseup', function(){
+      if(!dragging) return;
+      dragging = false;
+      document.body.classList.remove('ai-panel-resizing');
+      panel.classList.remove('resizing');
+      try{
+        var w = getComputedStyle(document.documentElement).getPropertyValue('--ai-panel-width');
+        localStorage.setItem('siteflow-ai-panel-width', parseInt(w, 10));
+      }catch(e){}
+    });
+  })();
+
+  function resetChat(){
+    log.innerHTML = '';
+    log.classList.remove('open');
+    welcome.style.display = 'flex';
+  }
+  newChatBtn.addEventListener('click', resetChat);
+
+  function appendMsg(role, text){
+    var msg = document.createElement('div');
+    msg.className = 'ai-msg ' + role;
+    msg.textContent = text;
+    log.appendChild(msg);
+    log.scrollTop = log.scrollHeight;
+    return msg;
+  }
+
+  function sendMessage(text){
+    text = (text || '').trim();
+    if(!text) return;
+    if(welcome.style.display !== 'none'){
+      welcome.style.display = 'none';
+      log.classList.add('open');
+    }
+    appendMsg('user', text);
+    input.value = '';
+    var thinking = appendMsg('bot', 'Đang tra dữ liệu workspace…');
+    setTimeout(function(){
+      thinking.textContent = AI_KB[matchTopic(text)] || AI_KB.default;
+    }, 550);
+  }
+
+  sendBtn.addEventListener('click', function(){ sendMessage(input.value); });
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(input.value); }
+  });
+
+  document.querySelectorAll('[data-ai-topic]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var topic = btn.getAttribute('data-ai-topic');
+      var labels = { tiendo:'Tiến độ dự án đang thế nào?', chamcong:'Tình hình chấm công hôm nay?', dongtien:'Dòng tiền tháng này ra sao?', khachhang:'Khách hàng nào đang tiềm năng?', tinnhan:'Tôi có tin nhắn nào chưa đọc?' };
+      sendMessage(labels[topic] || btn.textContent.trim());
+    });
+  });
+  document.querySelectorAll('[data-ai-prompt]').forEach(function(btn){
+    btn.addEventListener('click', function(){ sendMessage(btn.getAttribute('data-ai-prompt')); });
+  });
+})();
 </script>
 </body>
 </html>

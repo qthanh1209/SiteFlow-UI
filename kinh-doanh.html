@@ -10,9 +10,24 @@
     if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
     document.documentElement.setAttribute('data-theme', t);
   }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  try{
+    var c = JSON.parse(localStorage.getItem('siteflow-customize') || '{}');
+    document.documentElement.setAttribute('data-accent', c.accent || 'blue');
+    document.documentElement.setAttribute('data-density', c.density || 'comfortable');
+    document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left');
+    document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium');
+    if(c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily);
+  }catch(e){}
+  try{
+    var uiTheme = localStorage.getItem('siteflow-ui-theme');
+    document.documentElement.setAttribute('data-ui-theme', uiTheme || 'default');
+  }catch(e){}
 })();
 </script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="liquid-glass.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack.min.css">
+<script src="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-all.js"></script>
 <style>
 :root{
   --bg:#F3F4F7; --surface:#FFFFFF; --surface-alt:#EDEFF4; --border:#E2E5EC;
@@ -26,6 +41,7 @@
   --gold:#B7791F; --gold-tint:#FBF1DC;
   --silver:#6B7280; --silver-tint:#EDEFF4;
   --bronze:#A15C2A; --bronze-tint:#F5E7DA;
+  --scrollbar-thumb:#cbd1da;
 }
 html[data-theme="dark"]{
   --bg:#12151C; --surface:#1A1E27; --surface-alt:#20242F; --border:#2B303C;
@@ -39,14 +55,62 @@ html[data-theme="dark"]{
   --gold:#E0AC4F; --gold-tint:#3A2E14;
   --silver:#98A0B3; --silver-tint:#20242F;
   --bronze:#D69A6A; --bronze-tint:#3A2A1C;
+  --scrollbar-thumb:#333a45;
 }
+html[data-theme="light"][data-accent="purple"]{--primary:#6D4FC2; --primary-tint:#EEE9FB;}
+html[data-theme="dark"][data-accent="purple"]{--primary:#A796E8; --primary-tint:#2A2247;}
+html[data-theme="light"][data-accent="green"]{--primary:#1E8E5A; --primary-tint:#E7F6EE;}
+html[data-theme="dark"][data-accent="green"]{--primary:#4FC585; --primary-tint:#15301F;}
+html[data-theme="light"][data-accent="orange"]{--primary:#B7791F; --primary-tint:#FBF1DC;}
+html[data-theme="dark"][data-accent="orange"]{--primary:#E0AC4F; --primary-tint:#3A2E14;}
+html[data-theme="light"][data-accent="red"]{--primary:#C0392B; --primary-tint:#FBEBE9;}
+html[data-theme="dark"][data-accent="red"]{--primary:#E0685A; --primary-tint:#3A211E;}
+html[data-theme="light"][data-accent="teal"]{--primary:#0E8A82; --primary-tint:#E1F5F2;}
+html[data-theme="dark"][data-accent="teal"]{--primary:#3FC2B6; --primary-tint:#123330;}
+html[data-density="compact"]{zoom:0.88;}
+html[data-density="compact"] .app-shell{width:calc(100vw / 0.88) !important; height:calc(100vh / 0.88) !important;}
+html[data-fontsize="small"]{zoom:0.92;}
+html[data-fontsize="small"] .app-shell{width:calc(100vw / 0.92) !important; height:calc(100vh / 0.92) !important;}
+html[data-fontsize="large"]{zoom:1.12;}
+html[data-fontsize="large"] .app-shell{width:calc(100vw / 1.12) !important; height:calc(100vh / 1.12) !important;}
+html[data-sidebar-pos="right"] .app-shell{flex-direction:row-reverse;}
+html[data-sidebar-pos="right"] body{flex-direction:row-reverse;}
 *{box-sizing:border-box;}
-body{margin:0; font-family:'IBM Plex Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); transition:background .15s ease, color .15s ease;}
-h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0;}
-.mono{font-family:'IBM Plex Mono',monospace;}
+body{margin:0; font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; transition:background .15s ease, color .15s ease;}
+h1,h2,h3,h4{font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin:0;}
+.mono{font-family:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;}
+
+/* ===================== GridStack (Tổng quan dashboard) ===================== */
+.grid-stack{background:none;}
+.grid-stack-item-content{background:transparent !important; overflow:visible !important;}
+.ov-kpi-card, .ov-widget-card{
+  position:relative; height:100%; box-sizing:border-box; background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:17px 20px; overflow:auto;
+}
+.ov-kpi-card{display:flex; flex-direction:column; gap:8px; justify-content:center; cursor:grab;}
+.ov-kpi-card:active{cursor:grabbing;}
+.ov-widget-card{display:flex; flex-direction:column;}
+.ov-widget-body{flex:1; min-height:0; display:flex; flex-direction:column;}
+.grid-drag-handle{cursor:grab;}
+.grid-drag-handle:active{cursor:grabbing;}
+.ov-widget-title-handle{display:flex; align-items:center; gap:8px; padding:6px 8px 6px 4px; margin:-6px 0 -6px -4px; border-radius:8px;}
+.ov-widget-title-handle:hover{background:var(--surface-alt);}
+.ov-kpi-drag-dots{display:flex; align-items:center; justify-content:center; color:var(--text-muted); flex:none; opacity:.4; transition:opacity .15s ease;}
+.ov-kpi-card:hover .ov-kpi-drag-dots, .ov-widget-title-handle:hover .ov-kpi-drag-dots{opacity:.9;}
+.ov-kpi-card .ov-kpi-drag-dots{position:absolute; top:12px; right:12px;}
+.grid-stack-item.ui-draggable-dragging .ov-kpi-card,
+.grid-stack-item.ui-draggable-dragging .ov-widget-card{box-shadow:0 12px 32px rgba(0,0,0,.28); border-color:var(--primary);}
+.grid-stack-placeholder > .placeholder-content{
+  background:var(--primary-tint) !important; border:2px dashed var(--primary) !important;
+  border-radius:14px !important; opacity:.7;
+}
+.ui-resizable-handle{opacity:.4; transition:opacity .15s ease;}
+.grid-stack-item:hover .ui-resizable-handle{opacity:1;}
 button{font-family:inherit;}
 ::-webkit-scrollbar{width:8px; height:8px;}
-::-webkit-scrollbar-thumb{background:#cbd1da; border-radius:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:transparent; border-radius:5px; transition:background .2s ease;}
+*:hover::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);}
 
 .app-sidebar{transition:width .18s ease;}
 .app-sidebar.collapsed{width:76px !important;}
@@ -62,11 +126,23 @@ button{font-family:inherit;}
 .sidebar-collapse-btn svg{transition:transform .18s ease;}
 .app-sidebar.collapsed .sidebar-collapse-btn{margin-left:0 !important;}
 .app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.ultra-collapse-btn{width:22px; height:22px; border-radius:6px; border:1px solid #262B37; background:transparent; color:#AEB4C2; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;}
+.ultra-collapse-btn:hover{color:#fff; border-color:#3A4150;}
+.app-sidebar.collapsed .ultra-collapse-btn{margin-left:0 !important;}
+.app-sidebar.ultra-collapsed{width:60px !important;}
+.app-sidebar.ultra-collapsed .brand{flex-direction:column !important; gap:8px !important; padding-bottom:0 !important;}
+.app-sidebar.ultra-collapsed .word,
+.app-sidebar.ultra-collapsed .ultra-collapse-btn{display:none !important;}
+.app-sidebar.ultra-collapsed .sidebar-collapse-btn svg{transform:rotate(180deg);}
+.app-sidebar.ultra-collapsed > *:not(.brand){display:none !important;}
+.sidebar-flyout-clone{position:fixed !important; top:0; left:60px; height:100vh; z-index:200; box-shadow:8px 0 24px rgba(0,0,0,.35); display:none; overflow-y:auto;}
+html[data-sidebar-pos="right"] .sidebar-flyout-clone{left:auto !important; right:60px !important; box-shadow:-8px 0 24px rgba(0,0,0,.35) !important;}
 .navbadge-dot{display:none; position:absolute; top:6px; left:30px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid #12161F;}
 .app-sidebar.collapsed .navbadge-dot{display:block;}
 .app-sidebar a{position:relative;}
 
-.sales-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:13px;}
+.sales-tab{border:none; cursor:pointer; white-space:nowrap; padding:7px 14px; border-radius:8px; background:none; color:#495260; font-size:13px; font-weight:500;}
+html[data-theme="dark"] .sales-tab{color:var(--text-muted);}
 .sales-tab.active{background:var(--sales-tint); color:var(--sales); font-weight:600;}
 .field{display:flex; flex-direction:column; gap:6px;}
 .field label{font-size:12px; font-weight:600; color:var(--text-muted);}
@@ -75,9 +151,40 @@ button{font-family:inherit;}
   color:var(--text); font-size:13px; font-family:inherit;
 }
 .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--sales);}
+.lm-assignee-chip{display:flex; align-items:center; gap:6px; background:var(--surface-alt); border:1px solid var(--border); border-radius:20px; padding:4px 10px 4px 4px; margin-right:6px; font-size:12px;}
+.lm-cat-popover{position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 26px rgba(20,25,35,.18); padding:8px; z-index:150; max-height:420px; overflow-y:auto;}
+.lm-cat-group-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); padding:5px 8px 3px;}
+.lm-cat-option{display:flex; align-items:center; gap:8px; font-size:13px; padding:7px 8px; border-radius:6px; cursor:pointer;}
+.lm-cat-option:hover{background:var(--surface-alt);}
+.lm-assignee-chip .aa-avatar{width:20px; height:20px; border-radius:50%; background:var(--sales); color:#fff; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex:none;}
+.lm-assignee-chip .aa-role{color:var(--text-muted); font-size:11px;}
+.lm-assignee-chip .aa-remove{border:none; background:none; color:var(--text-muted); cursor:pointer; display:flex; padding:0; margin-left:2px;}
+.lm-assignee-popover{position:absolute; top:100%; left:0; margin-top:6px; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.18); padding:14px; width:280px; z-index:20; display:flex; flex-direction:column; gap:8px;}
+.lm-assignee-popover input{padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:12.5px; font-family:inherit;}
+.lm-assignee-btn{border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 12px; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;}
+.lm-assignee-btn.primary{border:none; background:var(--sales); color:#fff;}
+.pjm-avatar{width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8.5px; font-weight:700; color:#fff; border:1.5px solid var(--surface); flex-shrink:0;}
+.pjm-stack{display:flex; align-items:center; flex-shrink:0;}
+.pjm-stack .pjm-avatar{margin-left:-6px;}
+.pjm-stack .pjm-avatar:first-child{margin-left:0;}
+.pjm-more{width:20px; height:20px; border-radius:50%; background:var(--surface); border:1.5px solid var(--border); color:var(--text-muted); font-size:8px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-left:-6px; flex-shrink:0;}
+.pjm-add-btn{width:20px; height:20px; border-radius:50%; border:1.5px dashed var(--text-muted); background:none; color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-left:6px; flex-shrink:0;}
+.pjm-add-btn:hover{border-color:var(--sales); color:var(--sales);}
+.pjm-popover{position:absolute; top:100%; left:0; margin-top:4px; width:236px; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 10px 26px rgba(20,25,35,.18); padding:12px; z-index:60; display:flex; flex-direction:column; gap:8px;}
+.pjm-popover .pjm-title{font-size:11.5px; font-weight:600; color:var(--text); margin-bottom:2px;}
+.pjm-popover input{padding:7px 9px; border-radius:6px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:12px; font-family:inherit;}
+.pjm-popover .pjm-actions{display:flex; gap:8px; margin-top:2px;}
+.pjm-btn{flex:1; padding:6px 0; border-radius:5px; font-size:11.5px; font-family:inherit; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--surface-alt); color:var(--text-muted);}
+.pjm-btn.primary{border:none; background:var(--sales); color:#fff;}
+.pjm-popover .pjm-list{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px;}
+.pjm-popover .pjm-chip{display:flex; align-items:center; gap:5px; background:var(--surface-alt); border:1px solid var(--border); border-radius:20px; padding:3px 8px 3px 3px; font-size:10.5px; color:var(--text-muted);}
+.card-members{position:relative; display:flex; align-items:center; margin-top:4px;}
 .lead-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 12px; display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
-.stage-col{flex:1; min-width:0; display:flex; flex-direction:column; gap:10px;}
-.stage-head{display:flex; align-items:center; justify-content:space-between; padding:0 2px 8px;}
+.lead-card.dragging{opacity:.4;}
+.stage-col{flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; border-radius:12px; transition:background .12s ease, outline .12s ease;}
+.stage-col.drop-hover{background:var(--sales-tint); outline:2px dashed var(--sales); outline-offset:-2px;}
+.stage-head{display:flex; flex-direction:column; gap:4px; padding:0 2px 10px; box-sizing:border-box;}
+.stage-head span{min-width:0; overflow-wrap:break-word;}
 
 .task-tab{border:none; cursor:pointer; padding:7px 14px; border-radius:8px; background:none; color:var(--text-muted); font-size:12.5px; font-weight:600; font-family:inherit;}
 .task-tab.active{background:var(--sales-tint); color:var(--sales);}
@@ -111,71 +218,143 @@ button{font-family:inherit;}
 .task-modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px;}
 .task-modal-btn{padding:9px 18px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-family:inherit;}
 .task-modal-btn.primary{background:var(--sales); color:#fff; border-color:var(--sales);}
+.ai-fab{position:fixed; bottom:28px; right:32px; width:54px; height:54px; border-radius:50%; background:linear-gradient(160deg,#2FA3E6,#8B5CF6); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,.28); z-index:79;}
+.ai-fab:hover{filter:brightness(1.08);}
+.ai-panel{position:fixed; top:0; right:0; height:100vh; width:var(--ai-panel-width, 440px); max-width:92vw; background:var(--surface); border-left:1px solid var(--border); box-shadow:-14px 0 40px rgba(0,0,0,.18); display:flex; flex-direction:column; overflow:hidden; z-index:80; transform:translateX(100%); transition:transform .25s ease;}
+.ai-panel.open{transform:translateX(0);}
+#appMainContent{transition:margin-right .25s ease;}
+body.ai-panel-open #appMainContent{margin-right:var(--ai-panel-width, 440px);}
+body.ai-panel-resizing #appMainContent{transition:none;}
+.ai-resize-handle{position:absolute; top:0; left:-3px; width:6px; height:100%; cursor:col-resize; z-index:81; background:transparent; display:flex; align-items:center; justify-content:center;}
+.ai-resize-handle::before{content:''; position:absolute; top:0; left:2.5px; width:1px; height:100%; background:transparent; transition:background .12s ease;}
+.ai-resize-handle::after{content:''; width:4px; height:36px; border-radius:3px; background:transparent; transition:background .12s ease, height .12s ease; position:relative; z-index:1;}
+.ai-resize-handle:hover::before, body.ai-panel-resizing .ai-resize-handle::before{background:var(--primary);}
+.ai-resize-handle:hover::after, body.ai-panel-resizing .ai-resize-handle::after{background:var(--primary); height:48px;}
+.ai-panel.resizing{transition:none;}
+.ai-panel-head{flex:none; display:flex; align-items:center; gap:10px; padding:18px 18px 14px;}
+.ai-panel-head h4{font-size:15px; font-weight:800;}
+.ai-newchat-btn{margin-left:auto; background:#12161F; color:#fff; border:none; padding:8px 14px; border-radius:20px; font-size:11.5px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-close-btn{width:26px; height:26px; border-radius:50%; border:none; background:var(--surface-alt); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;}
+.ai-panel-body{flex:1; overflow-y:auto; padding:0 20px; display:flex; flex-direction:column;}
+.ai-welcome{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; padding:28px 6px 18px; gap:14px;}
+.ai-welcome h2{font-size:22px; font-weight:800; line-height:1.25;}
+.ai-welcome h2 .muted{color:var(--text-muted); font-weight:700;}
+.ai-welcome p{font-size:12px; color:var(--text-muted); line-height:1.6; max-width:300px;}
+.ai-topic-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:300px;}
+.ai-topic-chip{grid-column:span 1;}
+.ai-topic-chip.wide{grid-column:1 / -1; justify-self:center; width:auto;}
+.ai-chip{display:flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:9px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-chip:hover{background:var(--surface-alt);}
+.ai-log{flex:1; display:none; flex-direction:column; gap:12px; padding-top:12px;}
+.ai-log.open{display:flex;}
+.ai-msg{max-width:82%; padding:9px 13px; border-radius:14px; font-size:12.5px; line-height:1.55;}
+.ai-msg.user{align-self:flex-end; background:var(--primary); color:#fff; border-bottom-right-radius:4px;}
+.ai-msg.bot{align-self:flex-start; background:var(--surface-alt); color:var(--text); border-bottom-left-radius:4px;}
+.ai-suggest-row{flex:none; display:flex; gap:7px; padding:10px 18px; overflow-x:auto;}
+.ai-suggest-row::-webkit-scrollbar{display:none;}
+.ai-suggest-chip{flex:none; white-space:nowrap; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); padding:8px 12px; border-radius:18px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit;}
+.ai-suggest-chip:hover{background:var(--surface-alt); color:var(--text);}
+.ai-input-area{flex:none; margin:0 14px 14px; padding:10px 12px; border:1px solid var(--border); border-radius:20px; background:var(--surface-alt);}
+.ai-input-area textarea{width:100%; border:none; background:transparent; resize:none; font-family:inherit; font-size:12.5px; color:var(--text); outline:none; height:36px;}
+.ai-input-row{display:flex; align-items:center; gap:8px; margin-top:6px;}
+.ai-tool-btn{width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); display:flex; align-items:center; justify-content:center; flex:none;}
+.ai-send-btn{margin-left:auto; background:#12161F; color:#fff; border:none; padding:8px 18px; border-radius:16px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;}
 </style>
 </head>
 <body>
 
-<div style="width: 1680px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
+<div class="app-shell" style="width: 1680px; height: 900px; box-sizing: border-box; background: var(--bg); display: flex; overflow: hidden; font-size: 14px; margin: 0;">
 
   <!-- SIDEBAR -->
   <div class="app-sidebar" id="appSidebar" style="width: 232px; flex: none; background: #12161F; color: #AEB4C2; display: flex; flex-direction: column; box-sizing: border-box; padding: 22px 14px;">
     <div class="brand" style="display: flex; align-items: center; gap: 10px; padding: 0 8px 26px 8px;">
-      <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none;">
+      <div id="sidebarLogoCircle" title="Bấm để mở rộng dần" style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex: none; cursor: pointer;">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
       </div>
-      <div class="word" style="font-family: 'Sora'; font-weight: 700; font-size: 17px; color: #FFFFFF;">SiteFlow</div>
+      <div class="word" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 17px; color: #FFFFFF;">Dezon</div>
+      <button class="ultra-collapse-btn" id="sidebarUltraCollapseBtn" title="Thu gọn tối đa (chỉ hiện logo)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+      </button>
       <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Thu gọn menu">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2px;">
-      <a href="dashboard.html" title="Dashboard" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        <span class="nav-label">Dashboard</span>
+      <a href="dashboard.html" title="Newsfeed" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="nav-label">Newsfeed</span>
       </a>
-      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
-        <span class="nav-label">Marketing</span>
-      </a>
-      <div class="navitem" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(194,98,26,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--sales);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        <span class="nav-label">Kinh doanh</span>
-      </div>
       <a href="chat.html" title="Chat" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">Chat</span>
         <span class="navbadge" style="margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px;">6</span>
         <span class="navbadge-dot"></span>
       </a>
-      <a href="gantt.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
+      <a href="marketing.html" title="Marketing" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span class="nav-label">Marketing</span>
+      </a>
+      <div class="navitem" title="Kinh doanh" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; background: rgba(194,98,26,.35); color: #FFFFFF; font-weight: 600; border-left: 3px solid var(--sales);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span class="nav-label">Kinh doanh</span>
+      </div>
+      <a href="quan-ly-thiet-ke.html" title="Quản lý thiết kế" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>
+        <span class="nav-label">Quản lý thiết kế</span>
+      </a>
+      <a href="du-an.html" title="Quản lý dự án" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/></svg>
         <span class="nav-label">Quản lý dự án</span>
       </a>
       <a href="cham-cong.html" title="HR" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
         <span class="nav-label">HR</span>
       </a>
       <a href="tai-chinh.html" title="Tài chính" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14.5" r="1.1" fill="currentColor" stroke="none"/></svg>
         <span class="nav-label">Tài chính</span>
       </a>
       <a href="qs.html" title="QS" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         <span class="nav-label">QS</span>
       </a>
+      <a href="bim.html" title="BIM" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span class="nav-label">BIM</span>
+      </a>
       <a href="mua-hang.html" title="Mua hàng" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="nav-label">Mua hàng</span>
+      </a>
+      <a href="san-xuat.html" title="Sản xuất" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span class="nav-label">Sản xuất</span>
+      </a>
+      <a href="it.html" title="IT" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span class="nav-label">IT</span>
+      </a>
+      <a href="rd.html" title="R&amp;D" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17h6v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z"/></svg>
+        <span class="nav-label">R&amp;D</span>
       </a>
     </div>
     <div style="flex: 1;"></div>
     <div style="display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #262B37; padding-top: 10px; margin-top: 4px;">
+      <a href="ban-lam-viec.html" title="Bàn làm việc của tôi" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2 13h20"/></svg>
+        <span class="nav-label">Bàn làm việc</span>
+      </a>
+      <a href="lich.html" title="Lịch" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="nav-label">Lịch</span>
+      </a>
       <a href="wiki.html" title="Wiki" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span class="nav-label">Wiki</span>
       </a>
       <a href="cai-dat.html" title="Cài đặt" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #AEB4C2; text-decoration: none; border-left: 3px solid transparent;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         <span class="nav-label">Cài đặt</span>
       </a>
     </div>
@@ -189,7 +368,7 @@ button{font-family:inherit;}
   </div>
 
   <!-- MAIN -->
-  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+  <div id="appMainContent" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
 
     <div style="height: 64px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 12px;">
       <div style="width: 30px; height: 30px; border-radius: 8px; background: var(--sales-tint); color: var(--sales); display: flex; align-items: center; justify-content: center; flex: none;">
@@ -211,79 +390,65 @@ button{font-family:inherit;}
     <div style="height: 52px; flex: none; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 28px; box-sizing: border-box; background: var(--surface); gap: 4px;">
       <button class="sales-tab active" data-tab="overview">Tổng quan</button>
       <button class="sales-tab" data-tab="pipeline">Pipeline khách hàng</button>
-      <button class="sales-tab" data-tab="leads">Khách hàng tiềm năng</button>
       <button class="sales-tab" data-tab="design-board">Dự án (Thiết kế)</button>
       <button class="sales-tab" data-tab="construction-board">Dự án (Thi công)</button>
       <button class="sales-tab" data-tab="tasks">Nhiệm vụ &amp; điểm thưởng</button>
     </div>
 
-    <div style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden;">
+    <div id="salesContentScroll" style="flex: 1; padding: 22px 28px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden;">
 
       <!-- ================= TAB: TỔNG QUAN ================= -->
       <div class="sales-panel" data-panel="overview" style="display: flex; flex-direction: column; gap: 16px;">
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng giá trị pipeline</div>
-            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; color: var(--sales);">44.5 tỷ</div>
-            <div style="font-size: 12px; color: var(--text-muted);">16 cơ hội đang theo dõi</div>
-          </div>
-          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Khách hàng tiềm năng</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">16</div>
-            <div style="font-size: 12px; color: var(--text-muted);">+4 trong tháng này</div>
-          </div>
-          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tỷ lệ chốt hợp đồng</div>
-            <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">32%</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Trung bình 3 tháng</div>
-          </div>
-          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-            <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Đã chốt tháng này</div>
-            <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; color: var(--success);">6.3 tỷ</div>
-            <div style="font-size: 12px; color: var(--text-muted);">2 hợp đồng</div>
-          </div>
-        </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px;">
-          <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 16px;">Phễu bán hàng (Sales Funnel)</h3>
-          <div style="display: flex; align-items: flex-end; gap: 10px; height: 130px;">
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;"><div style="width:100%; height:100%; background:var(--sales-tint); border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:8px;"><span class="mono" style="font-weight:700; color:var(--sales);">5</span></div><span style="font-size:11.5px; color:var(--text-muted);">Tiếp cận</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:80%; justify-content:flex-end;"><div style="width:100%; height:100%; background:var(--sales-tint); border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:8px;"><span class="mono" style="font-weight:700; color:var(--sales);">4</span></div><span style="font-size:11.5px; color:var(--text-muted);">Tư vấn</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:62%; justify-content:flex-end;"><div style="width:100%; height:100%; background:var(--sales-tint); border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:8px;"><span class="mono" style="font-weight:700; color:var(--sales);">3</span></div><span style="font-size:11.5px; color:var(--text-muted);">Báo giá</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:42%; justify-content:flex-end;"><div style="width:100%; height:100%; background:var(--sales-tint); border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:8px;"><span class="mono" style="font-weight:700; color:var(--sales);">2</span></div><span style="font-size:11.5px; color:var(--text-muted);">Đàm phán</span></div>
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:42%; justify-content:flex-end;"><div style="width:100%; height:100%; background:var(--success); border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:8px;"><span class="mono" style="font-weight:700; color:#fff;">2</span></div><span style="font-size:11.5px; color:var(--text-muted);">Chốt HĐ</span></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+          <div style="font-size: 11.5px; color: var(--text-muted);">Số liệu tổng hợp theo phòng ban &amp; mốc thời gian đã chọn</div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div class="dept-filter-group" style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+              <button class="dept-filter-btn active" data-dept="all" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Tất cả</button>
+              <button class="dept-filter-btn" data-dept="du-an" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dự Án</button>
+              <button class="dept-filter-btn" data-dept="dan-dung" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dân dụng</button>
+            </div>
+            <select id="ovTimeFilterSelect" style="border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; background:var(--surface); color:var(--text); font-family:inherit; cursor:pointer;">
+              <option value="all">Tất cả thời gian</option>
+              <option value="today">Hôm nay</option>
+              <option value="week">Tuần này</option>
+              <option value="month">Tháng này</option>
+              <option value="quarter">Quý này</option>
+              <option value="year">Năm nay</option>
+              <option value="custom">Tự chọn khoảng ngày...</option>
+            </select>
+            <div id="ovTimeFilterCustom" style="display:none; align-items:center; gap:6px;">
+              <input type="date" id="ovTimeFilterFrom" style="border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px; background:var(--surface); color:var(--text); font-family:inherit;">
+              <span style="color:var(--text-muted); font-size:12px;">→</span>
+              <input type="date" id="ovTimeFilterTo" style="border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px; background:var(--surface); color:var(--text); font-family:inherit;">
+            </div>
           </div>
         </div>
-
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; flex: 1;">
-          <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 12px;">Cơ hội sắp chốt</h3>
-          <div style="display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border);">
-            <span style="flex: 1; font-size: 13px; font-weight: 600;">BQL Riverside — Mở rộng Giai đoạn 3</span>
-            <span style="font-size: 12px; color: var(--text-muted);">Đàm phán</span>
-            <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--sales);">15.0 tỷ</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border);">
-            <span style="flex: 1; font-size: 13px; font-weight: 600;">Chị Hải Yến — Biệt thự Nhà Bè</span>
-            <span style="font-size: 12px; color: var(--text-muted);">Đàm phán</span>
-            <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--sales);">7.2 tỷ</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px; padding: 9px 0;">
-            <span style="flex: 1; font-size: 13px; font-weight: 600;">Chị Minh Thư — Biệt thự Song lập Thảo Điền</span>
-            <span style="font-size: 12px; color: var(--text-muted);">Báo giá</span>
-            <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--sales);">6.8 tỷ</span>
-          </div>
-        </div>
+        <div class="grid-stack" id="ovGridStack"></div>
       </div>
 
       <!-- ================= TAB: PIPELINE ================= -->
       <div class="sales-panel" data-panel="pipeline" style="display: none; flex-direction: column; gap: 14px;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
           <div style="font-size: 11.5px; color: var(--text-muted);">Kéo thả thẻ giữa các cột, hoặc dùng ô chọn giai đoạn trên mỗi thẻ để chuyển. Thẻ vào cột "Dự án (Thiết kế)" / "Dự án (Thi công)" sẽ tự xuất hiện ở tab Dự án.</div>
-          <div style="display: flex; align-items: center; gap: 10px; flex: none;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: none; flex-wrap: wrap;">
             <div class="dept-filter-group" style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
               <button class="dept-filter-btn active" data-dept="all" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Tất cả</button>
               <button class="dept-filter-btn" data-dept="du-an" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dự Án</button>
               <button class="dept-filter-btn" data-dept="dan-dung" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dân dụng</button>
+            </div>
+            <select id="timeFilterSelect" style="border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:12px; font-weight:600; background:var(--surface); color:var(--text); font-family:inherit; cursor:pointer;">
+              <option value="all">Tất cả thời gian</option>
+              <option value="today">Hôm nay</option>
+              <option value="week">Tuần này</option>
+              <option value="month">Tháng này</option>
+              <option value="quarter">Quý này</option>
+              <option value="year">Năm nay</option>
+              <option value="custom">Tự chọn khoảng ngày...</option>
+            </select>
+            <div id="timeFilterCustom" style="display:none; align-items:center; gap:6px;">
+              <input type="date" id="timeFilterFrom" style="border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px; background:var(--surface); color:var(--text); font-family:inherit;">
+              <span style="color:var(--text-muted); font-size:12px;">→</span>
+              <input type="date" id="timeFilterTo" style="border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px; background:var(--surface); color:var(--text); font-family:inherit;">
             </div>
             <div style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
               <button class="view-switch-btn active" data-view="kanban" style="border:none; cursor:pointer; padding:7px 13px; font-size:12.5px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Kanban</button>
@@ -293,29 +458,6 @@ button{font-family:inherit;}
         </div>
         <div id="pipelineKanban" style="display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px;"></div>
         <div id="pipelineList" style="display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;"></div>
-      </div>
-
-      <!-- ================= TAB: KHÁCH HÀNG TIỀM NĂNG ================= -->
-      <div class="sales-panel" data-panel="leads" style="display: none; flex-direction: column; gap: 16px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-          <span style="font-size: 11.5px; color: var(--text-muted);">Lọc danh sách theo phòng ban phụ trách.</span>
-          <div class="dept-filter-group" style="display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex: none;">
-            <button class="dept-filter-btn active" data-dept="all" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:var(--sales-tint); color:var(--sales); font-family:inherit;">Tất cả</button>
-            <button class="dept-filter-btn" data-dept="du-an" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dự Án</button>
-            <button class="dept-filter-btn" data-dept="dan-dung" style="border:none; cursor:pointer; padding:7px 12px; font-size:12px; font-weight:600; background:none; color:var(--text-muted); font-family:inherit;">Phòng KD Dân dụng</button>
-          </div>
-        </div>
-        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
-          <div class="mono" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-            <span>Khách hàng</span><span>Điện thoại</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Phụ trách</span><span>Cập nhật</span>
-          </div>
-          <div class="leads-table-row" data-dept="du-an" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">BQL Riverside</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0909 123 456</span><span style="font-size:12.5px;">Chung cư (GĐ3)</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:10.5px; font-weight:600; justify-self:start;">Dự án</span><span class="mono" style="font-size:12.5px;">15.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">20/09</span></div>
-          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Hải Yến</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0918 345 221</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">7.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--sales-tint); color:var(--sales); font-size:11px; font-weight:600; justify-self:start;">Đàm phán</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">19/09</span></div>
-          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Minh Thư</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0912 887 234</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">6.8 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">17/09</span></div>
-          <div class="leads-table-row" data-dept="du-an" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Cty Đông Dương</span><span class="mono" style="font-size:12px; color:var(--text-muted);">028 3822 xxxx</span><span style="font-size:12.5px;">Văn phòng</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:10.5px; font-weight:600; justify-self:start;">Dự án</span><span class="mono" style="font-size:12.5px;">5.5 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--finance-tint); color:var(--finance); font-size:11px; font-weight:600; justify-self:start;">Báo giá</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">15/09</span></div>
-          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border);"><span style="font-size:13px; font-weight:600;">Chị Bích Ngọc</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0938 556 771</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">6.0 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--primary-tint); color:var(--primary); font-size:11px; font-weight:600; justify-self:start;">Tư vấn</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">12/09</span></div>
-          <div class="leads-table-row" data-dept="dan-dung" style="display: grid; grid-template-columns: 1.5fr 1fr 0.9fr 1.1fr 0.8fr 1fr 1fr 0.9fr; gap: 10px; align-items: center; padding: 11px 4px;"><span style="font-size:13px; font-weight:600;">Chị Lan Anh</span><span class="mono" style="font-size:12px; color:var(--text-muted);">0977 224 890</span><span style="font-size:12.5px;">Biệt thự</span><span style="padding:3px 9px; border-radius:999px; background:var(--attendance-tint); color:var(--attendance); font-size:10.5px; font-weight:600; justify-self:start;">Dân dụng</span><span class="mono" style="font-size:12.5px;">5.2 tỷ</span><span style="padding:3px 9px; border-radius:999px; background:var(--surface-alt); color:var(--text-muted); font-size:11px; font-weight:600; justify-self:start;">Tiếp cận</span><span style="font-size:12.5px; color:var(--text-muted);">Trần Anh</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">08/09</span></div>
-        </div>
       </div>
 
       <!-- ================= TAB: DỰ ÁN (THIẾT KẾ) ================= -->
@@ -344,23 +486,23 @@ button{font-family:inherit;}
         <div class="task-panel" data-kpanel="overview" style="display: flex; flex-direction: column; gap: 16px;">
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân sự tham gia</div>
-              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px;">5</div>
+              <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhân sự tham gia</div>
+              <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px;">5</div>
               <div style="font-size: 12px; color: var(--text-muted);">2 phòng KD Dự Án &amp; Dân dụng</div>
             </div>
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng điểm đã phát</div>
-              <div class="mono" style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--gold);">7.240</div>
+              <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Tổng điểm đã phát</div>
+              <div class="mono" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--gold);">7.240</div>
               <div style="font-size: 12px; color: var(--text-muted);">Từ đầu quý đến nay</div>
             </div>
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ hoàn thành tuần này</div>
-              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--success);">6</div>
+              <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Nhiệm vụ hoàn thành tuần này</div>
+              <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--success);">6</div>
               <div style="font-size: 12px; color: var(--text-muted);">+2 so với tuần trước</div>
             </div>
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 17px 20px; display: flex; flex-direction: column; gap: 8px;">
-              <div class="mono" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Quà đã đổi</div>
-              <div style="font-family: 'Sora'; font-weight: 800; font-size: 26px; color: var(--sales);">4</div>
+              <div style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">Quà đã đổi</div>
+              <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 26px; color: var(--sales);">4</div>
               <div style="font-size: 12px; color: var(--text-muted);">Xem lịch sử tại tab Đổi quà</div>
             </div>
           </div>
@@ -414,11 +556,11 @@ button{font-family:inherit;}
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
             </div>
             <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 17px; font-family: 'Sora';">Quy trình chốt hợp đồng — BQL Riverside GĐ3</div>
+              <div style="font-weight: 800; font-size: 17px; font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">Quy trình chốt hợp đồng — BQL Riverside GĐ3</div>
               <div style="font-size: 12.5px; color: var(--text-muted);">5 bước chính · Phòng KD Dự Án · Mỗi bước gồm các nhiệm vụ nhỏ, hoàn thành để nhận điểm</div>
             </div>
             <div style="text-align: right;">
-              <div class="mono" id="kdMissionPoints" style="font-family: 'Sora'; font-weight: 800; font-size: 22px; color: var(--gold);">0 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ 0 điểm</span></div>
+              <div class="mono" id="kdMissionPoints" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 22px; color: var(--gold);">0 <span style="font-size:13px; color:var(--text-muted); font-weight:600;">/ 0 điểm</span></div>
               <div style="width: 200px; height: 7px; border-radius: 4px; background: var(--surface-alt); margin-top: 6px;"><div id="kdMissionProgressBar" style="width: 0%; height: 100%; border-radius: 4px; background: var(--sales);"></div></div>
             </div>
             <button class="create-task-btn" id="kdCreateTaskBtn" title="Tạo nhiệm vụ mới">
@@ -437,7 +579,7 @@ button{font-family:inherit;}
               <div style="font-weight: 700; font-size: 14.5px;">Trần Anh — Trưởng phòng Kinh doanh</div>
               <div style="font-size: 12px; color: var(--text-muted);">Điểm khả dụng để đổi quà</div>
             </div>
-            <div class="mono" id="kdRewardsWallet" style="font-family: 'Sora'; font-weight: 800; font-size: 24px; color: var(--gold);">1.320 điểm</div>
+            <div class="mono" id="kdRewardsWallet" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; font-size: 24px; color: var(--gold);">1.320 điểm</div>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
@@ -489,7 +631,7 @@ button{font-family:inherit;}
         <!-- ---- Bảng xếp hạng ---- -->
         <div class="task-panel" data-kpanel="leaderboard" style="display: none; flex-direction: column; gap: 16px;">
           <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 14px;">
-            <div class="mono" style="display: grid; grid-template-columns: 0.6fr 2fr 1.4fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+            <div style="display: grid; grid-template-columns: 0.6fr 2fr 1.4fr 1fr 1fr; gap: 10px; padding: 12px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
               <span>Hạng</span><span>Nhân sự</span><span>Phòng ban</span><span>Điểm tuần này</span><span>Tổng điểm</span>
             </div>
             <div id="kdFullLeaderboard"></div>
@@ -506,7 +648,7 @@ button{font-family:inherit;}
   <div style="background:var(--surface); width:720px; max-width:92vw; max-height:88vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,.35);">
     <div style="display:flex; align-items:flex-start; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
       <div>
-        <div style="font-family:'Sora'; font-weight:800; font-size:17px;">Thêm khách hàng tiềm năng</div>
+        <div id="leadModalTitle" style="font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight:800; font-size:17px;">Thêm khách hàng tiềm năng</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Điền thông tin theo 3 cấp độ — càng đầy đủ, hồ sơ chuyển giao sang thi công càng chính xác.</div>
       </div>
       <button id="closeLeadModalBtn" style="border:none; background:none; cursor:pointer; color:var(--text-muted); padding:4px; flex:none;">
@@ -538,6 +680,23 @@ button{font-family:inherit;}
             <select id="lmDept"><option value="dan-dung">Phòng KD Dân dụng</option><option value="du-an">Phòng KD Dự Án</option></select>
           </div>
         </div>
+        <div class="field" style="position:relative;">
+          <label>Người phụ trách</label>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <div id="lmAssigneeStack" style="display:flex; align-items:center;"></div>
+            <button type="button" id="lmAddAssigneeBtn" title="Thêm người phụ trách" style="width:28px; height:28px; border-radius:50%; border:1.5px dashed var(--border); background:none; color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+          <div id="lmAssigneePopover" class="lm-assignee-popover" style="display:none;">
+            <input type="text" id="lmAssigneeName" placeholder="Họ tên">
+            <input type="text" id="lmAssigneeRole" placeholder="Vai trò (VD: Sale phụ trách, Kỹ thuật...)">
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+              <button type="button" id="lmAssigneeCancelBtn" class="lm-assignee-btn">Đóng</button>
+              <button type="button" id="lmAssigneeAddBtn" class="lm-assignee-btn primary">Thêm</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="lead-step" data-step="detail" style="display:none; flex-direction:column; gap:14px;">
@@ -547,19 +706,30 @@ button{font-family:inherit;}
           </div>
           <div class="field"><label>Quy mô</label><input id="lmScale" type="text" placeholder="VD: 5x20m, 1 trệt 3 lầu"></div>
         </div>
-        <div class="field"><label>Hạng mục quan tâm</label>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; border:1px solid var(--border); padding:6px 10px; border-radius:20px;"><input type="checkbox" checked> Xây dựng thô</label>
-            <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; border:1px solid var(--border); padding:6px 10px; border-radius:20px;"><input type="checkbox"> Hoàn thiện nội thất</label>
-            <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; border:1px solid var(--border); padding:6px 10px; border-radius:20px;"><input type="checkbox"> Thiết kế kiến trúc</label>
-            <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; border:1px solid var(--border); padding:6px 10px; border-radius:20px;"><input type="checkbox"> Cảnh quan sân vườn</label>
+        <div class="field" style="position:relative;">
+          <label>Hạng mục quan tâm</label>
+          <button type="button" id="lmCatTrigger" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:13px; font-family:inherit; cursor:pointer; text-align:left; width:100%; box-sizing:border-box;">
+            <span id="lmCatSummary" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Chọn hạng mục...</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="lmCatPopover" class="lm-cat-popover" style="display:none;">
+            <div class="lm-cat-group-title">Thiết kế</div>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thiết kế kiến trúc"> Thiết kế kiến trúc</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thiết kế nội thất"> Thiết kế nội thất</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thiết kế cảnh quan"> Thiết kế cảnh quan</label>
+            <div class="lm-cat-group-title" style="margin-top:8px;">Thi công</div>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thi công phần thô"> Thi công phần thô</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thi công phần hoàn thiện cơ bản"> Thi công phần hoàn thiện cơ bản</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thi công nội thất"> Thi công nội thất</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Cung cấp đồ rời"> Cung cấp đồ rời</label>
+            <label class="lm-cat-option"><input type="checkbox" class="lm-cat" value="Thi công trọn gói (chìa khóa trao tay)"> Thi công trọn gói (chìa khóa trao tay)</label>
           </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
           <div class="field"><label>Giá trị ước tính (tỷ)</label><input id="lmValue" type="text" placeholder="VD: 2.5"></div>
           <div class="field"><label>Giai đoạn hiện tại</label>
             <select id="lmStage">
-              <option value="tiep-can">Tiếp cận</option><option value="tu-van">Tư vấn</option><option value="bao-gia">Báo giá</option><option value="dam-phan">Đàm phán</option><option value="chot-hd">Chốt hợp đồng</option>
+              <option value="tiep-can">Tiếp cận</option><option value="tu-van">Tư vấn (Concept)</option><option value="bao-gia">Báo giá</option><option value="dam-phan">Đàm phán</option><option value="chot-hd">Chốt hợp đồng</option>
             </select>
           </div>
         </div>
@@ -568,13 +738,19 @@ button{font-family:inherit;}
       <div class="lead-step" data-step="advanced" style="display:none; flex-direction:column; gap:14px;">
         <div class="field">
           <label>BOQ (Bảng khối lượng dự toán)</label>
-          <div style="display:flex; align-items:center; gap:10px; border:1.5px dashed var(--border); border-radius:10px; padding:16px; justify-content:center; color:var(--text-muted); font-size:12.5px;">
+          <div id="lmBoqDrop" style="display:flex; align-items:center; gap:10px; border:1.5px dashed var(--border); border-radius:10px; padding:16px; justify-content:center; color:var(--text-muted); font-size:12.5px; cursor:pointer;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Kéo thả file hoặc bấm để tải lên (.xlsx, .pdf)
+            <span id="lmBoqLabel">Kéo thả file hoặc bấm để tải lên (.xlsx, .pdf)</span>
           </div>
         </div>
         <div class="field"><label>Concept / Ý tưởng thiết kế</label><textarea id="lmConcept" rows="3" placeholder="Mô tả phong cách, ý tưởng thiết kế mong muốn của khách hàng..."></textarea></div>
         <div class="field"><label>Ghi chú nội bộ</label><textarea id="lmNotes" rows="2" placeholder="Ghi chú cho đội kinh doanh / kỹ thuật..."></textarea></div>
+        <div class="field">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600;">
+            <input type="checkbox" id="lmPartner" style="width:15px; height:15px; accent-color:var(--primary); cursor:pointer;">
+            Chuyển giao cho đối tác thi công/thiết kế ngoài
+          </label>
+        </div>
       </div>
     </div>
 
@@ -585,6 +761,67 @@ button{font-family:inherit;}
         <button id="leadModalNextBtn" style="border:none; background:var(--sales); color:#fff; padding:9px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;">Tiếp theo</button>
         <button id="leadModalSaveBtn" style="display:none; border:none; background:var(--sales); color:#fff; padding:9px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;">Lưu khách hàng</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Modal: Chi tiết lead ===================== -->
+<div id="leadDetailOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,18,25,.5); z-index:100; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); width:640px; max-width:92vw; max-height:88vh; border-radius:16px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,.35);">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
+      <div>
+        <div id="ldName" style="font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight:800; font-size:17px;"></div>
+        <div id="ldStageBadge" style="display:inline-flex; margin-top:6px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600;"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; flex:none;">
+        <button id="editLeadDetailBtn" title="Chỉnh sửa / bổ sung thông tin" style="width:32px; height:32px; border-radius:50%; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; flex:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>
+        </button>
+        <button id="closeLeadDetailBtn" style="border:none; background:none; cursor:pointer; color:var(--text-muted); padding:4px; flex:none;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="ldBody" style="flex:1; overflow-y:auto; padding:22px 24px; display:flex; flex-direction:column; gap:16px; font-size:13px;"></div>
+  </div>
+</div>
+
+<!-- ===================== Modal: Phiếu yêu cầu báo giá (gửi Phòng QS) ===================== -->
+<div id="qsRequestOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,18,25,.5); z-index:110; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); width:460px; max-width:92vw; border-radius:16px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.35);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; justify-content:space-between;">
+      <div>
+        <div id="qsReqTitle" style="font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight:800; font-size:16px;">Phiếu yêu cầu báo giá</div>
+        <div id="qsReqSubtitle" style="font-size:12px; color:var(--text-muted); margin-top:3px;">Chuyển dự án sang Phòng QS để lập báo giá chi tiết</div>
+      </div>
+      <button id="qsReqCloseBtn" style="border:none; background:none; cursor:pointer; color:var(--text-muted); padding:4px; flex:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="padding:22px 24px; display:flex; flex-direction:column; gap:16px;">
+      <div style="background:var(--surface-alt); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:4px;">
+        <div id="qsReqLeadName" style="font-weight:700; font-size:14px;"></div>
+        <div id="qsReqLeadMeta" style="font-size:12px; color:var(--text-muted);"></div>
+      </div>
+      <div class="field">
+        <label id="qsReqDateLabel">Ngày giờ hẹn báo giá (dự kiến)</label>
+        <input type="datetime-local" id="qsReqDateTime">
+      </div>
+      <div class="field">
+        <label id="qsReqAssigneeLabel">Người phụ trách bên QS (nếu đã biết)</label>
+        <input type="text" id="qsReqAssignee" placeholder="VD: Anh Trung — QS Điều phối">
+      </div>
+      <div style="font-size:11.5px; color:var(--text-muted); background:var(--primary-tint); border-radius:8px; padding:9px 12px; display:flex; gap:8px; align-items:flex-start;">
+        <span style="flex:none;">ℹ</span>
+        <span id="qsReqNote">Phòng QS sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.</span>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; padding:16px 24px; border-top:1px solid var(--border);">
+      <div style="display:flex; gap:8px;">
+        <button id="qsReqCancelBtn" class="pjm-btn">Huỷ</button>
+        <button id="qsReqSendBtn" class="pjm-btn primary" style="flex:2;">Gửi yêu cầu đến Phòng QS</button>
+      </div>
+      <button id="qsReqSelfBtn" style="border:none; background:var(--success); color:#fff; font-size:12px; font-weight:700; padding:9px; border-radius:8px; cursor:pointer; font-family:inherit;">Phòng KD tự đề xuất báo giá</button>
     </div>
   </div>
 </div>
@@ -617,12 +854,60 @@ button{font-family:inherit;}
   </div>
 </div>
 
+<!-- AI ASSISTANT (Dezbot) -->
+<button class="ai-fab" id="aiFab" title="Trợ lý ảo Dezbot">
+  <svg width="30" height="30" viewBox="0 0 24 24"><defs><linearGradient id="dezbotGrad" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#2FA3E6"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><path d="M4 12.5a8 8 0 0 1 16 0" fill="none" stroke="url(#dezbotGrad)" stroke-width="1.8" stroke-linecap="round"/><rect x="2" y="11.3" width="3.1" height="6.2" rx="1.55" fill="url(#dezbotGrad)"/><rect x="18.9" y="11.3" width="3.1" height="6.2" rx="1.55" fill="url(#dezbotGrad)"/><line x1="12" y1="4.6" x2="12" y2="7.6" stroke="url(#dezbotGrad)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="3.3" r="1.5" fill="url(#dezbotGrad)"/><path d="M7.3 7.6h9.4a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-4.1l-2.6 2.4v-2.4H7.3a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z" fill="url(#dezbotGrad)"/><rect x="8.9" y="10.1" width="6.2" height="4.6" rx="1.3" fill="#fff"/><circle cx="10.55" cy="12.4" r="0.58" fill="url(#dezbotGrad)"/><circle cx="13.45" cy="12.4" r="0.58" fill="url(#dezbotGrad)"/><path d="M10.5 17.1a2.1 2.1 0 0 0 3 0" stroke="#fff" stroke-width="0.9" fill="none" stroke-linecap="round"/></svg>
+</button>
+
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-resize-handle" id="aiResizeHandle" title="Kéo để thu hẹp / mở rộng"></div>
+  <div class="ai-panel-head">
+    <h4>Dezbot</h4>
+    <button class="ai-newchat-btn" id="aiNewChatBtn">Hội thoại mới</button>
+    <button class="ai-close-btn" id="aiCloseBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="ai-panel-body">
+    <div class="ai-welcome" id="aiWelcome">
+      <h2>Tôi có thể giúp gì,<br><span class="muted">hôm nay?</span></h2>
+      <p>Hỏi về tiến độ, nhân công, dòng tiền, khách hàng, bóc tách hay quy trình — trợ lý đọc trực tiếp dữ liệu trong workspace.</p>
+      <div class="ai-topic-grid">
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="tiendo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="10" y2="18"/></svg>Tiến độ</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="chamcong"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Chấm công</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="dongtien"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/></svg>Dòng tiền</button></div>
+        <div class="ai-topic-chip"><button class="ai-chip" data-ai-topic="khachhang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/><path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="8" cy="7" r="4"/></svg>Khách hàng</button></div>
+        <div class="ai-topic-chip wide"><button class="ai-chip" data-ai-topic="tinnhan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Tin nhắn</button></div>
+      </div>
+    </div>
+    <div class="ai-log" id="aiLog"></div>
+  </div>
+  <div class="ai-suggest-row">
+    <button class="ai-suggest-chip" data-ai-prompt="Cơ hội nào sắp chốt hợp đồng?">Cơ hội nào sắp chốt hợp đồng?</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Tóm tắt pipeline kinh doanh tuần này">Tóm tắt pipeline kinh doanh tuần này</button>
+    <button class="ai-suggest-chip" data-ai-prompt="Khách hàng nào cần chăm sóc gấp?">Khách hàng nào cần chăm sóc gấp?</button>
+  </div>
+  <div class="ai-input-area">
+    <textarea id="aiInput" placeholder="Hỏi về tiến độ, chấm công, dòng tiền, khách hàng…"></textarea>
+    <div class="ai-input-row">
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="10" y2="18"/></svg></div>
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="ai-tool-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <button class="ai-send-btn" id="aiSendBtn">Gửi</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===================== Dữ liệu Pipeline (Kanban) ===================== */
-const STAGES = ['tiep-can','tu-van','bao-gia','dam-phan','chot-hd','thiet-ke','thi-cong'];
+const AVATAR_COLORS = ['#2F5DA8','#2f9160','#b87a1f','#7658c2','#c1443c','#0E8A82','#c26fb0','#6e8fd0'];
+function avatarColor(name){
+  let h=0; for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[Math.abs(h)];
+}
+const STAGES = ['tiep-can','tu-van','bao-gia','dam-phan','chot-hd','bao-gia-thi-cong','thiet-ke','thi-cong','truot-thau'];
 const STAGE_LABEL = {
-  'tiep-can':'Tiếp cận', 'tu-van':'Tư vấn', 'bao-gia':'Báo giá', 'dam-phan':'Đàm phán',
-  'chot-hd':'Chốt hợp đồng', 'thiet-ke':'Dự án (Thiết kế)', 'thi-cong':'Dự án (Thi công)'
+  'tiep-can':'Tiếp cận', 'tu-van':'Tư vấn (Concept)', 'bao-gia':'Báo giá (Thiết kế - Khái toán)', 'dam-phan':'Đàm phán',
+  'chot-hd':'Chốt hợp đồng', 'bao-gia-thi-cong':'Báo giá (Thi công)', 'thiet-ke':'Dự án (Thiết kế)', 'thi-cong':'Dự án (Thi công)',
+  'truot-thau':'Đã trượt thầu'
 };
 const DEPTS = ['du-an','dan-dung'];
 const DEPT_LABEL = {'du-an':'Phòng KD Dự Án', 'dan-dung':'Phòng KD Dân dụng'};
@@ -630,25 +915,26 @@ const DEPT_SHORT = {'du-an':'Dự án', 'dan-dung':'Dân dụng'};
 const DEPT_COLOR = {'du-an':'var(--primary)', 'dan-dung':'var(--attendance)'};
 const DEPT_TINT = {'du-an':'var(--primary-tint)', 'dan-dung':'var(--attendance-tint)'};
 const LEADS = [
-  {id:'l1', name:'Anh Minh Khang', type:'Nhà phố', value:1.8, stage:'tiep-can', dept:'dan-dung'},
-  {id:'l2', name:'Chị Lan Anh', type:'Biệt thự', value:5.2, stage:'tiep-can', dept:'dan-dung'},
-  {id:'l3', name:'Cty XYZ Group', type:'Văn phòng', value:3.5, stage:'tiep-can', dept:'du-an'},
-  {id:'l4', name:'Anh Đức Thịnh', type:'Nhà phố', value:2.0, stage:'tiep-can', dept:'dan-dung'},
-  {id:'l5', name:'Chị Thu Hằng', type:'Chung cư mini', value:4.1, stage:'tiep-can', dept:'dan-dung'},
-  {id:'l6', name:'Chị Bích Ngọc', type:'Biệt thự', value:6.0, stage:'tu-van', dept:'dan-dung'},
-  {id:'l7', name:'Anh Hoàng Long', type:'Nhà phố', value:2.3, stage:'tu-van', dept:'dan-dung'},
-  {id:'l8', name:'Cty Minh Phát', type:'Văn phòng', value:4.8, stage:'tu-van', dept:'du-an'},
-  {id:'l9', name:'Anh Tuấn Kiệt', type:'Nhà phố', value:1.9, stage:'tu-van', dept:'dan-dung'},
-  {id:'l10', name:'Chị Minh Thư', type:'Biệt thự Song lập — Thảo Điền', value:6.8, stage:'bao-gia', dept:'dan-dung'},
-  {id:'l11', name:'Anh Văn Sơn', type:'Nhà phố', value:2.2, stage:'bao-gia', dept:'dan-dung'},
-  {id:'l12', name:'Cty Đông Dương', type:'Văn phòng', value:5.5, stage:'bao-gia', dept:'du-an'},
-  {id:'l13', name:'BQL Riverside', type:'Mở rộng Giai đoạn 3', value:15.0, stage:'dam-phan', dept:'du-an'},
-  {id:'l14', name:'Chị Hải Yến', type:'Biệt thự Nhà Bè', value:7.2, stage:'dam-phan', dept:'dan-dung'},
-  {id:'l17', name:'Anh Phúc Nguyên', type:'Nhà phố', value:2.4, stage:'chot-hd', dept:'dan-dung'},
-  {id:'l18', name:'Chị Ngọc Diễm', type:'Nhà phố', value:2.6, stage:'thiet-ke', sub:'concept', dept:'dan-dung'},
-  {id:'l19', name:'Anh Bảo Long', type:'Biệt thự', value:5.4, stage:'thiet-ke', sub:'review', dept:'dan-dung'},
-  {id:'l15', name:'Anh Quang Huy', type:'Nhà phố Lô B12 — KDC Bình Chánh', value:2.1, stage:'thi-cong', sub:'structure', dept:'dan-dung'},
-  {id:'l16', name:'Cty TNHH ABC Logistics', type:'Văn phòng cho thuê — Q3', value:4.2, stage:'thi-cong', sub:'handover', dept:'du-an'},
+  {id:'l1', name:'Anh Minh Khang', type:'Nhà phố', value:1.8, stage:'tiep-can', dept:'dan-dung', createdAt:'2026-09-27'},
+  {id:'l2', name:'Chị Lan Anh', type:'Biệt thự', value:5.2, stage:'tiep-can', dept:'dan-dung', createdAt:'2026-09-25'},
+  {id:'l3', name:'Cty XYZ Group', type:'Văn phòng', value:3.5, stage:'tiep-can', dept:'du-an', createdAt:'2026-09-20'},
+  {id:'l4', name:'Anh Đức Thịnh', type:'Nhà phố', value:2.0, stage:'tiep-can', dept:'dan-dung', createdAt:'2026-09-10'},
+  {id:'l5', name:'Chị Thu Hằng', type:'Chung cư mini', value:4.1, stage:'tiep-can', dept:'dan-dung', createdAt:'2026-08-15'},
+  {id:'l6', name:'Chị Bích Ngọc', type:'Biệt thự', value:6.0, stage:'tu-van', dept:'dan-dung', createdAt:'2026-09-22'},
+  {id:'l7', name:'Anh Hoàng Long', type:'Nhà phố', value:2.3, stage:'tu-van', dept:'dan-dung', createdAt:'2026-09-05'},
+  {id:'l8', name:'Cty Minh Phát', type:'Văn phòng', value:4.8, stage:'tu-van', dept:'du-an', createdAt:'2026-08-28'},
+  {id:'l9', name:'Anh Tuấn Kiệt', type:'Nhà phố', value:1.9, stage:'tu-van', dept:'dan-dung', createdAt:'2026-07-30'},
+  {id:'l10', name:'Chị Minh Thư', type:'Biệt thự Song lập — Thảo Điền', value:6.8, stage:'bao-gia', dept:'dan-dung', createdAt:'2026-09-18'},
+  {id:'l11', name:'Anh Văn Sơn', type:'Nhà phố', value:2.2, stage:'bao-gia', dept:'dan-dung', createdAt:'2026-08-22'},
+  {id:'l12', name:'Cty Đông Dương', type:'Văn phòng', value:5.5, stage:'bao-gia', dept:'du-an', createdAt:'2026-06-15'},
+  {id:'l13', name:'BQL Riverside', type:'Mở rộng Giai đoạn 3', value:15.0, stage:'dam-phan', dept:'du-an', createdAt:'2026-09-23'},
+  {id:'l14', name:'Chị Hải Yến', type:'Biệt thự Nhà Bè', value:7.2, stage:'dam-phan', dept:'dan-dung', createdAt:'2026-07-12'},
+  {id:'l17', name:'Anh Phúc Nguyên', type:'Nhà phố', value:2.4, stage:'chot-hd', dept:'dan-dung', createdAt:'2026-09-01'},
+  {id:'l18', name:'Chị Ngọc Diễm', type:'Nhà phố', value:2.6, stage:'thiet-ke', sub:'concept', dept:'dan-dung', createdAt:'2026-05-20'},
+  {id:'l19', name:'Anh Bảo Long', type:'Biệt thự', value:5.4, stage:'thiet-ke', sub:'review', dept:'dan-dung', partner:true, createdAt:'2026-04-10'},
+  {id:'l15', name:'Anh Quang Huy', type:'Nhà phố Lô B12 — KDC Bình Chánh', value:2.1, stage:'thi-cong', sub:'structure', dept:'dan-dung', createdAt:'2026-03-15'},
+  {id:'l16', name:'Cty TNHH ABC Logistics', type:'Văn phòng cho thuê — Q3', value:4.2, stage:'thi-cong', sub:'handover', dept:'du-an', partner:true, createdAt:'2026-02-01'},
+  {id:'l20', name:'Anh Trọng Tấn', type:'Nhà phố', value:2.7, stage:'truot-thau', dept:'dan-dung', createdAt:'2026-09-15'},
 ];
 
 /* ===================== Bảng con: Thiết kế & Thi công (kiểu Lark Base/Task) ===================== */
@@ -672,9 +958,9 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
       <div class="stage-head"><span style="font-weight:700; font-size:13px; color:${color};">${subLabel[sub]}</span><span class="mono" style="font-size:11.5px; color:var(--text-muted);">${cards.length}</span></div>
       <div class="stage-drop" data-sub="${sub}" data-parent="${parentStage}" style="min-height:30px; border-radius:8px;">
         ${cards.map(l => `
-          <div class="lead-card" draggable="true" data-id="${l.id}" style="cursor:grab; border-left:3px solid ${color};">
-            <div style="font-weight:600; font-size:13px;">${l.name}</div>
-            <div style="font-size:11.5px; color:var(--text-muted);">${l.type}</div>
+          <div class="lead-card" draggable="true" data-id="${l.id}" style="cursor:grab; border-left:3px solid ${color}; min-height:74px; box-sizing:border-box;">
+            <div title="${l.name}" style="font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.name}</div>
+            <div title="${l.type}" style="font-size:11.5px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.type}</div>
             <div class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700; margin-top:2px;">${fmtTy(l.value)}</div>
           </div>
         `).join('')}
@@ -690,20 +976,25 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', card.getAttribute('data-id'));
       e.dataTransfer.setData('application/x-subboard', containerId);
-      card.style.opacity = '.4';
+      e.dataTransfer.effectAllowed = 'move';
+      card.classList.add('dragging');
     });
-    card.addEventListener('dragend', () => { card.style.opacity = '1'; });
+    card.addEventListener('dragend', () => { card.classList.remove('dragging'); });
   });
-  board.querySelectorAll('.stage-drop').forEach(zone => {
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.background = 'var(--accent-soft, var(--sales-tint))'; });
-    zone.addEventListener('dragleave', () => { zone.style.background = 'none'; });
-    zone.addEventListener('drop', (e) => {
+  board.querySelectorAll('.stage-col').forEach(col => {
+    col.addEventListener('dragover', (e) => {
       e.preventDefault();
-      zone.style.background = 'none';
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drop-hover');
+    });
+    col.addEventListener('dragleave', () => { col.classList.remove('drop-hover'); });
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drop-hover');
       const id = e.dataTransfer.getData('text/plain');
       const lead = LEADS.find(l => l.id === id);
       if(!lead) return;
-      lead.sub = zone.getAttribute('data-sub');
+      lead.sub = col.getAttribute('data-sub');
       renderAllBoards();
     });
   });
@@ -720,7 +1011,7 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
       function commit(){
         const name = input.value.trim();
         if(name){
-          LEADS.push({ id:'lnew'+(leadCounter++), name:name, type:'Chưa xác định', value:0, stage:row.getAttribute('data-parent'), sub:row.getAttribute('data-sub'), dept:'dan-dung' });
+          LEADS.push({ id:'lnew'+(leadCounter++), name:name, type:'Chưa xác định', value:0, stage:row.getAttribute('data-parent'), sub:row.getAttribute('data-sub'), dept:'dan-dung', createdAt:new Date().toISOString().slice(0,10) });
         }
         renderAllBoards();
       }
@@ -731,15 +1022,420 @@ function renderSubBoard(containerId, parentStage, subStages, subLabel, subColor)
 }
 
 let activeDept = 'all';
+let activeTimeFilter = 'all';
+let customFromDate = '';
+let customToDate = '';
+
+function startOfWeek(d){
+  const x = new Date(d);
+  const day = (x.getDay() + 6) % 7; // Monday = 0
+  x.setDate(x.getDate() - day);
+  x.setHours(0,0,0,0);
+  return x;
+}
+function matchesTimeFilter(lead){
+  if(activeTimeFilter === 'all') return true;
+  if(!lead.createdAt) return false;
+  const d = new Date(lead.createdAt + 'T00:00:00');
+  const now = new Date();
+  if(activeTimeFilter === 'today'){
+    return d.toDateString() === now.toDateString();
+  }
+  if(activeTimeFilter === 'week'){
+    const start = startOfWeek(now);
+    const end = new Date(start); end.setDate(end.getDate() + 7);
+    return d >= start && d < end;
+  }
+  if(activeTimeFilter === 'month'){
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  if(activeTimeFilter === 'quarter'){
+    return d.getFullYear() === now.getFullYear() && Math.floor(d.getMonth()/3) === Math.floor(now.getMonth()/3);
+  }
+  if(activeTimeFilter === 'year'){
+    return d.getFullYear() === now.getFullYear();
+  }
+  if(activeTimeFilter === 'custom'){
+    if(!customFromDate && !customToDate) return true;
+    if(customFromDate && lead.createdAt < customFromDate) return false;
+    if(customToDate && lead.createdAt > customToDate) return false;
+    return true;
+  }
+  return true;
+}
 
 function renderAllBoards(){
   renderKanban();
   renderList();
   renderSubBoard('designKanban', 'thiet-ke', DESIGN_STAGES, DESIGN_LABEL, DESIGN_COLOR);
   renderSubBoard('constructionKanban', 'thi-cong', CONSTRUCTION_STAGES, CONSTRUCTION_LABEL, CONSTRUCTION_COLOR);
+  renderOverview();
 }
 
 function fmtTy(v){ return v.toFixed(1).replace(/\.0$/,'') + ' tỷ'; }
+
+/* ===================== Tổng quan (Overview dashboard) ===================== */
+const FONT_STACK = "var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+let ovPeriod = (function(){ try{ return localStorage.getItem('siteflow-ov-period') || 'month'; }catch(e){ return 'month'; } })();
+let ovChartType = (function(){
+  try{ return Object.assign({trend:'line', funnel:'donut'}, JSON.parse(localStorage.getItem('siteflow-ov-chart-type-v2'))); }
+  catch(e){ return {trend:'line', funnel:'donut'}; }
+})();
+function ovChartTypeSelect(widget, options){
+  return `<select class="ov-chart-type-select" data-chart-widget="${widget}" title="Chọn dạng biểu đồ" style="border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-size:10.5px; font-family:inherit; background:var(--surface); color:var(--text-muted); cursor:pointer;">
+    ${options.map(([val,label]) => `<option value="${val}" ${ovChartType[widget]===val?'selected':''}>${label}</option>`).join('')}
+  </select>`;
+}
+
+function ovStatInner(label, value, caption, color){
+  return `
+      <div style="font-family:${FONT_STACK}; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);">${label}</div>
+      <div class="mono" style="font-family:${FONT_STACK}; font-weight: 800; font-size: 24px; ${color?'color:'+color+';':''}">${value}</div>
+      <div style="font-size: 12px; color: var(--text-muted);">${caption}</div>`;
+}
+
+function ovFilteredLeads(){
+  return LEADS.filter(l => (activeDept === 'all' || l.dept === activeDept) && matchesTimeFilter(l));
+}
+
+function ovComputeStats(){
+  const leads = ovFilteredLeads();
+  const total = leads.length;
+  const closedWon = leads.filter(l => l.stage==='chot-hd'||l.stage==='thiet-ke'||l.stage==='thi-cong');
+  const closedLost = leads.filter(l => l.stage==='truot-thau');
+  const pipelineValue = leads.reduce((s,l)=>s+l.value,0);
+  const closedValue = closedWon.reduce((s,l)=>s+l.value,0);
+  const closeRate = total ? (closedWon.length/total*100) : 0;
+  const lostRate = total ? (closedLost.length/total*100) : 0;
+  const partnerCount = closedWon.filter(l=>l.partner).length;
+  const partnerRate = closedWon.length ? (partnerCount/closedWon.length*100) : 0;
+  return {total, closedWon, closedLost, pipelineValue, closedValue, closeRate, lostRate, partnerRate};
+}
+
+function ovKpiInner(kpiId){
+  const s = ovComputeStats();
+  const map = {
+    'kpi-pipeline': () => ovStatInner('Tổng giá trị pipeline', fmtTy(s.pipelineValue), `${s.total} cơ hội đang theo dõi`, 'var(--sales)'),
+    'kpi-leads': () => ovStatInner('Khách hàng tiềm năng', s.total, '+4 trong tháng này'),
+    'kpi-close-rate': () => ovStatInner('Tỷ lệ chốt hợp đồng', s.closeRate.toFixed(0)+'%', 'Trên tổng số cơ hội', 'var(--success)'),
+    'kpi-closed-value': () => ovStatInner('Đã chốt tháng này', fmtTy(s.closedValue), `${s.closedWon.length} hợp đồng`, 'var(--success)'),
+    'kpi-lost-rate': () => ovStatInner('Tỷ lệ hợp đồng rớt', s.lostRate.toFixed(0)+'%', `${s.closedLost.length} cơ hội trượt thầu`, 'var(--danger)'),
+    'kpi-partner-rate': () => ovStatInner('Chuyển giao cho đối tác', s.partnerRate.toFixed(0)+'%', 'Trên các hợp đồng đã chốt', 'var(--primary)'),
+  };
+  return map[kpiId] ? map[kpiId]() : '';
+}
+
+function ovFunnelBodyBars(){
+  const leads = ovFilteredLeads();
+  const counts = STAGES.map(s => leads.filter(l=>l.stage===s).length);
+  const max = Math.max(1, ...counts);
+  return `<div style="display: flex; flex-direction: column; gap: 7px; height: 100%; min-height: 70px; overflow-y: auto; padding-right: 2px; box-sizing: border-box; justify-content: center;">
+    ${STAGES.map((s,i) => {
+      const c = counts[i];
+      const pct = Math.max(4, Math.round(c/max*100));
+      const accent = stageAccent(s);
+      const isRed = s === 'bao-gia' || s === 'bao-gia-thi-cong';
+      const barColor = isRed ? 'var(--danger)' : (accent ? accent.border : 'var(--sales)');
+      return `<div style="display:flex; align-items:center; gap:8px;">
+        <span style="width:120px; flex:none; font-size:10.5px; color:var(--text-muted); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${STAGE_LABEL[s]}">${STAGE_LABEL[s]}</span>
+        <div style="flex:1; min-width:0; background:var(--surface-alt); border-radius:5px; height:18px; position:relative; overflow:hidden;">
+          <div style="width:${pct}%; height:100%; background:${barColor}; border-radius:5px; transition:width .3s ease;"></div>
+        </div>
+        <span class="mono" style="width:22px; flex:none; font-size:11.5px; font-weight:700; text-align:right; color:${barColor};">${c}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function ovFunnelBodyColumns(){
+  const leads = ovFilteredLeads();
+  const counts = STAGES.map(s => leads.filter(l=>l.stage===s).length);
+  const max = Math.max(1, ...counts);
+  return `<div style="display: flex; align-items: flex-end; gap: 8px; height: 100%; min-height: 70px; overflow-x: auto; padding-bottom: 2px; box-sizing: border-box;">
+    ${STAGES.map((s,i) => {
+      const c = counts[i];
+      const h = Math.max(16, Math.round(c/max*100));
+      const accent = stageAccent(s);
+      const isRed = s === 'bao-gia' || s === 'bao-gia-thi-cong';
+      const barColor = isRed ? 'var(--danger)' : (accent ? accent.border : 'var(--sales-tint)');
+      const textColor = (isRed || accent) ? '#fff' : 'var(--sales)';
+      return `<div style="flex:1; min-width:80px; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end;"><div style="width:100%; height:${h}%; background:${barColor}; border-radius:6px 6px 0 0; display:flex; align-items:flex-start; justify-content:center; padding-top:4px;"><span class="mono" style="font-size:11px; font-weight:700; color:${textColor};">${c}</span></div><span style="font-size:9.5px; color:var(--text-muted); text-align:center; line-height:1.2;">${STAGE_LABEL[s]}</span></div>`;
+    }).join('')}
+  </div>`;
+}
+
+function ovFunnelBodyDonut(){
+  const leads = ovFilteredLeads();
+  const counts = STAGES.map(s => leads.filter(l=>l.stage===s).length);
+  const total = counts.reduce((a,b)=>a+b,0) || 1;
+  const colors = STAGES.map(s => {
+    const accent = stageAccent(s);
+    const isRed = s === 'bao-gia' || s === 'bao-gia-thi-cong';
+    return isRed ? 'var(--danger)' : (accent ? accent.border : 'var(--sales)');
+  });
+  const cx = 70, cy = 70, r = 55, strokeW = 26;
+  const circumference = 2 * Math.PI * r;
+  let offsetAcc = 0;
+  const segments = STAGES.map((s,i) => {
+    const frac = counts[i] / total;
+    const dash = frac * circumference;
+    const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i]}" stroke-width="${strokeW}" stroke-dasharray="${dash.toFixed(2)} ${(circumference-dash).toFixed(2)}" stroke-dashoffset="${(-offsetAcc).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offsetAcc += dash;
+    return seg;
+  }).join('');
+  const legend = STAGES.map((s,i) => `
+    <div style="display:flex; align-items:center; gap:6px; font-size:10.5px;">
+      <span style="width:9px; height:9px; border-radius:2px; background:${colors[i]}; flex:none;"></span>
+      <span style="color:var(--text-muted); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${STAGE_LABEL[s]}">${STAGE_LABEL[s]}</span>
+      <span class="mono" style="font-weight:700; color:${colors[i]};">${counts[i]}</span>
+    </div>`).join('');
+  return `<div style="display:flex; align-items:center; gap:18px; height:100%; min-height:70px;">
+    <svg width="140" height="140" viewBox="0 0 140 140" style="flex:none;">
+      ${segments}
+      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="20" font-weight="800" fill="var(--text)" font-family="${FONT_STACK}">${total}</text>
+      <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="9.5" fill="var(--text-muted)" font-family="${FONT_STACK}">cơ hội</text>
+    </svg>
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; overflow-y:auto; max-height:100%;">${legend}</div>
+  </div>`;
+}
+
+function ovFunnelBodyDispatch(){
+  if(ovChartType.funnel === 'columns') return ovFunnelBodyColumns();
+  if(ovChartType.funnel === 'donut') return ovFunnelBodyDonut();
+  return ovFunnelBodyBars();
+}
+
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function ovTrendData(){
+  const cfg = {
+    week: {labels:['T2','T3','T4','T5','T6','T7','CN'], seed:11},
+    month:{labels:['Th4','Th5','Th6','Th7','Th8','Th9'], seed:22},
+    year: {labels:['2023','2024','2025','2026'], seed:33},
+  }[ovPeriod];
+  const rand = mulberry32(cfg.seed);
+  const avg = LEADS.reduce((s,l)=>s+l.value,0) / cfg.labels.length;
+  const values = cfg.labels.map((_,i) => {
+    const trend = avg * (0.55 + i/(cfg.labels.length-1||1)*0.75);
+    const variance = (rand()-0.5) * avg * 0.7;
+    return Math.max(0.5, +(trend+variance).toFixed(1));
+  });
+  values[values.length-1] = +avg.toFixed(1);
+  return {labels: cfg.labels, values};
+}
+
+function ovTrendBodyLine(){
+  const {labels, values} = ovTrendData();
+  const max = Math.max(...values) * 1.18;
+  const w = 600, h = 190, padL = 24, padR = 24, padTop = 32, padBottom = 30;
+  const plotH = h - padTop - padBottom;
+  const stepX = (w - padL - padR) / ((labels.length-1) || 1);
+  const points = values.map((v,i) => [padL + i*stepX, padTop + (1 - v/max) * plotH]);
+  const linePath = points.map((p,i) => (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const areaPath = linePath + ` L${points[points.length-1][0].toFixed(1)},${padTop+plotH} L${points[0][0].toFixed(1)},${padTop+plotH} Z`;
+  const gridLines = [0, 0.5, 1].map(f => {
+    const y = (padTop + f*plotH).toFixed(1);
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,4"/>`;
+  }).join('');
+  const lastIdx = points.length - 1;
+  return `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:${h}px; overflow:visible;">
+      <defs>
+        <linearGradient id="ovTrendGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.38"/>
+          <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${gridLines}
+      <path d="${areaPath}" fill="url(#ovTrendGrad)"/>
+      <path d="${linePath}" fill="none" stroke="var(--primary)" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>
+      ${points.map((p,i) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===lastIdx?5:3.5}" fill="${i===lastIdx?'var(--primary)':'var(--surface)'}" stroke="var(--primary)" stroke-width="2"/>`).join('')}
+      ${points.map((p,i) => `<text x="${p[0].toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="${FONT_STACK}">${labels[i]}</text>`).join('')}
+      ${points.map((p,i) => `<text x="${p[0].toFixed(1)}" y="${(p[1]-13).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--primary)" font-family="${FONT_STACK}">${values[i]}</text>`).join('')}
+    </svg>`;
+}
+
+function ovTrendBodyBar(){
+  const {labels, values} = ovTrendData();
+  const max = Math.max(...values) * 1.18;
+  const w = 600, h = 190, padL = 24, padR = 24, padTop = 32, padBottom = 30;
+  const plotH = h - padTop - padBottom;
+  const stepX = (w - padL - padR) / labels.length;
+  const barW = stepX * 0.55;
+  const gridLines = [0, 0.5, 1].map(f => {
+    const y = (padTop + f*plotH).toFixed(1);
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,4"/>`;
+  }).join('');
+  const bars = values.map((v,i) => {
+    const cx = padL + stepX*i + stepX/2;
+    const barH = (v/max) * plotH;
+    const y = padTop + plotH - barH;
+    return {cx, y, barH, v, label: labels[i]};
+  });
+  return `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:${h}px; overflow:visible;">
+      <defs>
+        <linearGradient id="ovTrendBarGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.55"/>
+        </linearGradient>
+      </defs>
+      ${gridLines}
+      ${bars.map(b => `<rect x="${(b.cx-barW/2).toFixed(1)}" y="${b.y.toFixed(1)}" width="${barW.toFixed(1)}" height="${b.barH.toFixed(1)}" rx="4" fill="url(#ovTrendBarGrad)"/>`).join('')}
+      ${bars.map(b => `<text x="${b.cx.toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="11" fill="var(--text-muted)" font-family="${FONT_STACK}">${b.label}</text>`).join('')}
+      ${bars.map(b => `<text x="${b.cx.toFixed(1)}" y="${(b.y-8).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--primary)" font-family="${FONT_STACK}">${b.v}</text>`).join('')}
+    </svg>`;
+}
+
+function ovTrendBodyDispatch(){
+  return ovChartType.trend === 'bar' ? ovTrendBodyBar() : ovTrendBodyLine();
+}
+
+function ovPeriodButtons(){
+  const periods = [['week','Tuần'],['month','Tháng'],['year','Năm']];
+  return `<div style="display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; flex:none;">
+    ${periods.map(([key,label]) => `<button class="ov-period-btn" data-period="${key}" draggable="false" style="border:none; cursor:pointer; padding:6px 11px; font-size:11.5px; font-weight:600; font-family:inherit; background:${ovPeriod===key?'var(--primary-tint)':'none'}; color:${ovPeriod===key?'var(--primary)':'var(--text-muted)'};">${label}</button>`).join('')}
+  </div>`;
+}
+
+function ovUpcomingBody(){
+  const items = ovFilteredLeads().filter(l => l.stage==='bao-gia' || l.stage==='dam-phan').sort((a,b)=>b.value-a.value).slice(0,4);
+  if(!items.length) return `<div style="font-size:12.5px; color:var(--text-muted); padding:12px 0;">Chưa có cơ hội nào sắp chốt.</div>`;
+  return items.map((l,i) => `
+    <div style="display: flex; align-items: center; gap: 12px; padding: 9px 0; ${i<items.length-1?'border-bottom:1px solid var(--border);':''}">
+      <span style="flex: 1; font-size: 13px; font-weight: 600;">${l.name}${l.type?' — '+l.type:''}</span>
+      <span style="font-size: 12px; color: var(--text-muted);">${STAGE_LABEL[l.stage]}</span>
+      <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--sales);">${fmtTy(l.value)}</span>
+    </div>`).join('');
+}
+
+const OV_ITEM_DEFS = {
+  'kpi-pipeline':      {kind:'kpi', x:0, y:0, w:4, h:2},
+  'kpi-leads':         {kind:'kpi', x:4, y:0, w:4, h:2},
+  'kpi-close-rate':    {kind:'kpi', x:8, y:0, w:4, h:2},
+  'kpi-closed-value':  {kind:'kpi', x:0, y:2, w:4, h:2},
+  'kpi-lost-rate':     {kind:'kpi', x:4, y:2, w:4, h:2},
+  'kpi-partner-rate':  {kind:'kpi', x:8, y:2, w:4, h:2},
+  'trend':    {kind:'widget', x:0, y:4, w:6, h:5, title:'Doanh số theo thời gian', header: () => `<div style="display:flex; align-items:center; gap:8px;">${ovPeriodButtons()}${ovChartTypeSelect('trend',[['line','Đường'],['bar','Cột']])}</div>`, body: ovTrendBodyDispatch},
+  'funnel':   {kind:'widget', x:6, y:4, w:6, h:3, title:'Phễu bán hàng (Sales Funnel)', header: () => ovChartTypeSelect('funnel',[['bars','Thanh ngang'],['columns','Cột dọc'],['donut','Biểu đồ tròn']]), body: ovFunnelBodyDispatch},
+  'upcoming': {kind:'widget', x:0, y:9, w:12, h:4, title:'Cơ hội sắp chốt', header: () => '', body: ovUpcomingBody},
+};
+const OV_ITEM_ORDER = Object.keys(OV_ITEM_DEFS);
+const OV_LAYOUT_KEY = 'siteflow-overview-layout-v1';
+let ovGrid = null;
+
+function ovDragHandleSVG(){
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.6"/><circle cx="16" cy="6" r="1.6"/><circle cx="8" cy="12" r="1.6"/><circle cx="16" cy="12" r="1.6"/><circle cx="8" cy="18" r="1.6"/><circle cx="16" cy="18" r="1.6"/></svg>`;
+}
+
+function ovItemContentHTML(id){
+  const def = OV_ITEM_DEFS[id];
+  if(def.kind === 'kpi'){
+    return `<div class="ov-kpi-card grid-drag-handle" title="Kéo để di chuyển">
+      <span class="ov-kpi-drag-dots">${ovDragHandleSVG()}</span>
+      ${ovKpiInner(id)}
+    </div>`;
+  }
+  return `<div class="ov-widget-card">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">
+      <div class="grid-drag-handle ov-widget-title-handle" title="Kéo để di chuyển">
+        <span class="ov-kpi-drag-dots">${ovDragHandleSVG()}</span>
+        <h3 style="font-size: 14.5px; font-weight: 700;">${def.title}</h3>
+      </div>
+      ${def.header()}
+    </div>
+    <div class="ov-widget-body">${def.body()}</div>
+  </div>`;
+}
+
+function ovLoadSavedLayout(){
+  try{ return JSON.parse(localStorage.getItem(OV_LAYOUT_KEY)) || {}; }catch(e){ return {}; }
+}
+function ovSaveLayout(){
+  if(!ovGrid) return;
+  try{
+    const nodes = ovGrid.save(false, false);
+    const map = {};
+    nodes.forEach(n => { map[n.id] = {x:n.x, y:n.y, w:n.w, h:n.h}; });
+    localStorage.setItem(OV_LAYOUT_KEY, JSON.stringify(map));
+  }catch(e){}
+}
+
+function ovBuildAllItemsHTML(){
+  const saved = ovLoadSavedLayout();
+  return OV_ITEM_ORDER.map(id => {
+    const def = OV_ITEM_DEFS[id];
+    const pos = saved[id] || def;
+    return `<div class="grid-stack-item" gs-id="${id}" gs-x="${pos.x}" gs-y="${pos.y}" gs-w="${pos.w}" gs-h="${pos.h}">
+      <div class="grid-stack-item-content">${ovItemContentHTML(id)}</div>
+    </div>`;
+  }).join('');
+}
+
+function ovBindWidgetEvents(){
+  document.querySelectorAll('.ov-period-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ovPeriod = btn.getAttribute('data-period');
+      try{ localStorage.setItem('siteflow-ov-period', ovPeriod); }catch(err){}
+      ovRefreshContent();
+    });
+  });
+  document.querySelectorAll('.ov-chart-type-select').forEach(sel => {
+    sel.addEventListener('click', (e) => e.stopPropagation());
+    sel.addEventListener('change', (e) => {
+      const widget = sel.getAttribute('data-chart-widget');
+      ovChartType[widget] = sel.value;
+      try{ localStorage.setItem('siteflow-ov-chart-type-v2', JSON.stringify(ovChartType)); }catch(err){}
+      ovRefreshContent();
+    });
+  });
+}
+
+function ovRefreshContent(){
+  OV_ITEM_ORDER.forEach(id => {
+    const content = document.querySelector('.grid-stack-item[gs-id="'+id+'"] .grid-stack-item-content');
+    if(content) content.innerHTML = ovItemContentHTML(id);
+  });
+  ovBindWidgetEvents();
+}
+
+function initOverviewGrid(){
+  const el = document.getElementById('ovGridStack');
+  if(!el) return;
+  if(typeof GridStack === 'undefined'){
+    el.innerHTML = '<div style="padding:20px; color:var(--text-muted); font-size:12.5px;">Không tải được thư viện lưới bố cục (GridStack). Kiểm tra kết nối mạng rồi tải lại trang.</div>';
+    return;
+  }
+  el.innerHTML = ovBuildAllItemsHTML();
+  ovGrid = GridStack.init({
+    column: 12,
+    cellHeight: 56,
+    margin: 8,
+    float: true,
+    animate: true,
+    handle: '.grid-drag-handle',
+    resizable: { handles: 'e, se, s, sw, w' },
+  }, '#ovGridStack');
+  ovGrid.on('change', ovSaveLayout);
+  ovBindWidgetEvents();
+}
+
+function renderOverview(){
+  if(!document.getElementById('ovGridStack')) return;
+  if(!ovGrid){
+    initOverviewGrid();
+  } else {
+    ovRefreshContent();
+  }
+}
 
 function setDeptFilter(dept){
   activeDept = dept;
@@ -752,6 +1448,7 @@ function setDeptFilter(dept){
   renderKanban();
   renderList();
   filterLeadsTable();
+  renderOverview();
 }
 function filterLeadsTable(){
   document.querySelectorAll('.leads-table-row').forEach(row => {
@@ -762,32 +1459,75 @@ document.querySelectorAll('.dept-filter-btn').forEach(btn => {
   btn.addEventListener('click', () => setDeptFilter(btn.getAttribute('data-dept')));
 });
 
+function syncTimeFilterUI(){
+  ['timeFilterSelect','ovTimeFilterSelect'].forEach(id => { document.getElementById(id).value = activeTimeFilter; });
+  ['timeFilterCustom','ovTimeFilterCustom'].forEach(id => { document.getElementById(id).style.display = activeTimeFilter === 'custom' ? 'flex' : 'none'; });
+  ['timeFilterFrom','ovTimeFilterFrom'].forEach(id => { document.getElementById(id).value = customFromDate; });
+  ['timeFilterTo','ovTimeFilterTo'].forEach(id => { document.getElementById(id).value = customToDate; });
+}
+function applyTimeFilterChange(){
+  syncTimeFilterUI();
+  renderKanban();
+  renderList();
+  renderOverview();
+}
+['timeFilterSelect','ovTimeFilterSelect'].forEach(id => {
+  document.getElementById(id).addEventListener('change', (e) => {
+    activeTimeFilter = e.target.value;
+    applyTimeFilterChange();
+  });
+});
+['timeFilterFrom','ovTimeFilterFrom'].forEach(id => {
+  document.getElementById(id).addEventListener('change', (e) => {
+    customFromDate = e.target.value;
+    if(activeTimeFilter === 'custom') applyTimeFilterChange();
+  });
+});
+['timeFilterTo','ovTimeFilterTo'].forEach(id => {
+  document.getElementById(id).addEventListener('change', (e) => {
+    customToDate = e.target.value;
+    if(activeTimeFilter === 'custom') applyTimeFilterChange();
+  });
+});
+
+function stageAccent(stageId){
+  if(stageId === 'truot-thau') return {border:'var(--danger)', bg:'var(--danger-tint)', color:'var(--danger)'};
+  if(stageId === 'dam-phan') return {border:'var(--gold)', bg:'var(--gold-tint)', color:'var(--gold)'};
+  if(stageId === 'thiet-ke') return {border:'var(--primary)', bg:'var(--primary-tint)', color:'var(--primary)'};
+  if(stageId === 'thi-cong' || stageId === 'tu-van') return {border:'var(--success)', bg:'var(--success-tint)', color:'var(--success)'};
+  return null;
+}
+
 function renderKanban(){
   const board = document.getElementById('pipelineKanban');
   board.innerHTML = STAGES.map(stageId => {
-    const items = LEADS.filter(l => l.stage === stageId && (activeDept === 'all' || l.dept === activeDept));
+    const items = LEADS.filter(l => l.stage === stageId && (activeDept === 'all' || l.dept === activeDept) && matchesTimeFilter(l));
     const total = items.reduce((s,l)=>s+l.value, 0);
-    const isProjectStage = stageId === 'thiet-ke' || stageId === 'thi-cong';
+    const accent = stageAccent(stageId);
+    const isLostStage = stageId === 'truot-thau';
+    const headColor = accent ? accent.color : '';
     return `
-    <div class="stage-col" data-stage="${stageId}" style="min-width:220px;">
-      <div class="stage-head"><span style="font-weight:700; font-size:13px; ${isProjectStage?'color:var(--success);':''}">${STAGE_LABEL[stageId]}</span><span class="mono" style="font-size:11.5px; color:${isProjectStage?'var(--success)':'var(--text-muted)'};">${items.length} · ${fmtTy(total)}</span></div>
+    <div class="stage-col" data-stage="${stageId}" style="min-width:220px; ${isLostStage?'opacity:.85;':''}">
+      <div class="stage-head"><span style="font-weight:700; font-size:13px; ${headColor?'color:'+headColor+';':''}">${STAGE_LABEL[stageId]}</span><span style="font-size:11.5px; font-weight:600; color:${headColor||'var(--text-muted)'};">(${items.length} dự án - ${fmtTy(total)})</span></div>
       <div class="stage-drop" data-stage="${stageId}" style="min-height:40px; border-radius:8px;">
         ${items.map(l => `
-          <div class="lead-card" draggable="true" data-id="${l.id}" style="cursor:grab; ${isProjectStage?'border-color:var(--success);':''}">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-              <div style="font-weight:600; font-size:13px;">${l.name}</div>
-              ${isProjectStage?'<span style="padding:2px 7px; border-radius:20px; background:var(--success-tint); color:var(--success); font-size:9.5px; font-weight:700; white-space:nowrap;">→ Dự án</span>':''}
+          <div class="lead-card" draggable="true" data-id="${l.id}" style="cursor:pointer; height:205px; box-sizing:border-box; overflow:hidden; ${accent?'border-color:'+accent.border+';':''} ${(stageId==='bao-gia'||stageId==='bao-gia-thi-cong')?'border-color:var(--danger);':''} ${isLostStage?'background:var(--danger-tint);':''}">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:6px;">
+              <div title="${l.name}" style="font-weight:600; font-size:13px; line-height:1.3; min-height:34px; flex:1; min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${l.name}</div>
+              <button class="lead-delete-btn" data-delete-id="${l.id}" title="Xoá" style="border:none; background:none; color:var(--text-muted); cursor:pointer; padding:2px; display:flex; flex:none;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-.9 14a2 2 0 0 1-2 1.9H7.9a2 2 0 0 1-2-1.9L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
             </div>
-            <div style="font-size:11.5px; color:var(--text-muted);">${l.type}</div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+            <div title="${l.type}" style="font-size:11.5px; color:var(--text-muted); line-height:1.3; min-height:30px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${l.type}</div>
+            <div style="display:flex; align-items:flex-start; flex-wrap:wrap; gap:6px; min-height:22px; max-height:48px; overflow:hidden;">
               <span style="font-size:10px; font-weight:600; color:${DEPT_COLOR[l.dept]};">${DEPT_SHORT[l.dept]}</span>
+              ${(accent && !isLostStage)?`<span style="padding:2px 7px; border-radius:20px; background:${accent.bg}; color:${accent.color}; font-size:9.5px; font-weight:700; white-space:nowrap;">→ Dự án</span>`:''}
+              ${l.handoff && (l.handoff.status==='pending-qs'||l.handoff.status==='pending-handoff') ? `<span style="font-size:9.5px; font-weight:700; color:var(--gold); background:var(--gold-tint); padding:2px 7px; border-radius:20px; white-space:nowrap;">⏳ Chờ ${l.handoff.dept} xác nhận</span>` : ''}
+              ${l.handoff && l.handoff.status==='self-quoted' ? `<span style="font-size:9.5px; font-weight:700; color:var(--sales); background:var(--sales-tint); padding:2px 7px; border-radius:20px; white-space:nowrap;">KD tự đề xuất</span>` : ''}
             </div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:2px;">
-              <div class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700;">${fmtTy(l.value)}</div>
-              <select class="stage-move-select" data-id="${l.id}" style="font-size:10.5px; padding:3px 4px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-family:inherit;">
-                ${STAGES.map(s => `<option value="${s}" ${s===stageId?'selected':''}>${STAGE_LABEL[s]}</option>`).join('')}
-              </select>
-            </div>
+            <div class="card-members" data-lead-id="${l.id}" draggable="false" style="min-height:20px;"></div>
+            <div class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700; margin-top:2px;">${fmtTy(l.value)}</div>
+            <select class="stage-move-select" data-id="${l.id}" style="width:100%; max-width:100%; box-sizing:border-box; font-size:10.5px; padding:5px 6px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); font-family:inherit; overflow:hidden; text-overflow:ellipsis;">
+              ${STAGES.map(s => `<option value="${s}" ${s===stageId?'selected':''}>${STAGE_LABEL[s]}</option>`).join('')}
+            </select>
           </div>
         `).join('')}
       </div>
@@ -797,45 +1537,247 @@ function renderKanban(){
   board.querySelectorAll('.lead-card').forEach(card => {
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', card.getAttribute('data-id'));
-      card.style.opacity = '.4';
+      e.dataTransfer.effectAllowed = 'move';
+      card.classList.add('dragging');
     });
-    card.addEventListener('dragend', () => { card.style.opacity = '1'; });
+    card.addEventListener('dragend', () => { card.classList.remove('dragging'); });
+    card.addEventListener('click', () => openLeadDetail(card.getAttribute('data-id')));
   });
-  board.querySelectorAll('.stage-drop').forEach(zone => {
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.style.background = 'var(--accent-soft)'; });
-    zone.addEventListener('dragleave', () => { zone.style.background = 'none'; });
-    zone.addEventListener('drop', (e) => {
+  board.querySelectorAll('.stage-col').forEach(col => {
+    col.addEventListener('dragover', (e) => {
       e.preventDefault();
-      zone.style.background = 'none';
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drop-hover');
+    });
+    col.addEventListener('dragleave', () => { col.classList.remove('drop-hover'); });
+    col.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drop-hover');
       const id = e.dataTransfer.getData('text/plain');
-      moveLead(id, zone.getAttribute('data-stage'));
+      moveLead(id, col.getAttribute('data-stage'));
     });
   });
   board.querySelectorAll('.stage-move-select').forEach(sel => {
     sel.addEventListener('click', (e) => e.stopPropagation());
     sel.addEventListener('change', (e) => moveLead(sel.getAttribute('data-id'), sel.value));
   });
+  board.querySelectorAll('.lead-delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteLead(btn.getAttribute('data-delete-id'));
+    });
+  });
+  renderCardMembers();
 }
+
+/* ===================== Tự động cuộn khi kéo thẻ lead (trái/phải/lên/xuống) ===================== */
+(function(){
+  const kanban = document.getElementById('pipelineKanban');
+  const scrollWrap = document.getElementById('salesContentScroll');
+  if(!kanban || !scrollWrap) return;
+  const EDGE = 70, MAX_SPEED = 16;
+  let dragging = false;
+  let lastEvent = null;
+  let rafId = null;
+
+  function edgeSpeed(pos, min, max){
+    if(pos < min + EDGE) return -MAX_SPEED * (1 - Math.max(0, pos - min) / EDGE);
+    if(pos > max - EDGE) return MAX_SPEED * (1 - Math.max(0, max - pos) / EDGE);
+    return 0;
+  }
+
+  function tick(){
+    if(dragging && lastEvent){
+      const kRect = kanban.getBoundingClientRect();
+      const sRect = scrollWrap.getBoundingClientRect();
+      const hSpeed = edgeSpeed(lastEvent.clientX, kRect.left, kRect.right);
+      const vSpeed = edgeSpeed(lastEvent.clientY, sRect.top, sRect.bottom);
+      if(hSpeed) kanban.scrollLeft += hSpeed;
+      if(vSpeed) scrollWrap.scrollTop += vSpeed;
+      rafId = requestAnimationFrame(tick);
+    } else {
+      rafId = null;
+    }
+  }
+
+  kanban.addEventListener('dragstart', () => { dragging = true; });
+  document.addEventListener('dragover', (e) => {
+    if(!dragging) return;
+    lastEvent = e;
+    if(!rafId) rafId = requestAnimationFrame(tick);
+  });
+  document.addEventListener('dragend', () => { dragging = false; lastEvent = null; });
+  document.addEventListener('drop', () => { dragging = false; lastEvent = null; });
+})();
+
+let openCardMemberPopoverFor = null;
+function renderCardMembers(){
+  document.querySelectorAll('.card-members').forEach(wrap => {
+    const leadId = wrap.getAttribute('data-lead-id');
+    const lead = LEADS.find(l => l.id === leadId);
+    if(!lead) return;
+    const assignees = lead.assignees || [];
+    const shown = assignees.slice(0, 3);
+    const extra = assignees.length - shown.length;
+    const avatarsHTML = shown.map(a =>
+      `<span class="pjm-avatar" style="background:${avatarColor(a.name)}" title="${a.name}${a.role ? ' — ' + a.role : ''}">${initialsOfK(a.name)}</span>`
+    ).join('') + (extra > 0 ? `<span class="pjm-more" title="${extra} người khác">+${extra}</span>` : '');
+
+    wrap.innerHTML = `<div class="pjm-stack">${avatarsHTML}</div>
+      <button type="button" class="pjm-add-btn" title="Thêm người phụ trách" data-card-add-member="${leadId}">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
+      </button>`;
+
+    wrap.querySelector('[data-card-add-member]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = openCardMemberPopoverFor !== leadId;
+      openCardMemberPopoverFor = opening ? leadId : null;
+      renderCardMembers();
+    });
+
+    if(openCardMemberPopoverFor === leadId){
+      wrap.appendChild(buildCardMemberPopover(lead));
+    }
+  });
+}
+function buildCardMemberPopover(lead){
+  const pop = document.createElement('div');
+  pop.className = 'pjm-popover';
+  pop.setAttribute('draggable', 'false');
+  pop.onclick = (e) => e.stopPropagation();
+  const assignees = lead.assignees || [];
+  const chips = assignees.map((a, i) => `
+    <span class="pjm-chip">
+      <span class="pjm-avatar" style="background:${avatarColor(a.name)}; margin-right:0;">${initialsOfK(a.name)}</span>
+      ${a.name}${a.role ? ` <span style="opacity:.7;">· ${a.role}</span>` : ''}
+      <span data-card-remove="${i}" style="cursor:pointer; color:var(--text-muted); margin-left:2px;">✕</span>
+    </span>`).join('');
+  pop.innerHTML = `
+    <div class="pjm-title">Người phụ trách — ${lead.name}</div>
+    <div class="pjm-list">${chips || '<span style="color:var(--text-muted); font-size:11px;">Chưa có người phụ trách</span>'}</div>
+    <input type="text" placeholder="Họ tên" id="cmName">
+    <input type="text" placeholder="Vai trò (VD: Sale phụ trách, Kỹ thuật...)" id="cmRole">
+    <div class="pjm-actions">
+      <button type="button" class="pjm-btn" id="cmCancel">Đóng</button>
+      <button type="button" class="pjm-btn primary" id="cmAdd">Thêm</button>
+    </div>`;
+  pop.querySelector('#cmCancel').onclick = () => { openCardMemberPopoverFor = null; renderCardMembers(); };
+  pop.querySelector('#cmAdd').onclick = () => {
+    const nameEl = pop.querySelector('#cmName');
+    const roleEl = pop.querySelector('#cmRole');
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    if(!lead.assignees) lead.assignees = [];
+    lead.assignees.push({name, role: roleEl.value.trim()});
+    renderCardMembers();
+  };
+  pop.querySelectorAll('[data-card-remove]').forEach(el => {
+    el.onclick = () => {
+      lead.assignees.splice(Number(el.getAttribute('data-card-remove')), 1);
+      renderCardMembers();
+    };
+  });
+  return pop;
+}
+document.addEventListener('click', () => { if(openCardMemberPopoverFor){ openCardMemberPopoverFor = null; renderCardMembers(); } });
+
+function deleteLead(id){
+  const lead = LEADS.find(l => l.id === id);
+  if(!lead) return;
+  if(!confirm('Xoá lead "' + lead.name + '"? Hành động này không thể hoàn tác.')) return;
+  const idx = LEADS.findIndex(l => l.id === id);
+  if(idx !== -1) LEADS.splice(idx, 1);
+  removeSyncedProject(id);
+  renderAllBoards();
+}
+
+/* ===================== Chi tiết lead (đầy đủ thông tin đã nhập từ modal +Thêm) ===================== */
+function ldRow(label, value){
+  if(value === undefined || value === null || value === '') return '';
+  return `<div><div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px;">${label}</div><div style="font-size:13px; font-weight:600;">${value}</div></div>`;
+}
+let currentDetailLeadId = null;
+function openLeadDetail(id){
+  const l = LEADS.find(x => x.id === id);
+  if(!l) return;
+  currentDetailLeadId = id;
+  document.getElementById('ldName').textContent = l.name;
+  const accent = stageAccent(l.stage);
+  const badge = document.getElementById('ldStageBadge');
+  badge.textContent = STAGE_LABEL[l.stage];
+  badge.style.background = accent ? accent.bg : 'var(--sales-tint)';
+  badge.style.color = accent ? accent.color : 'var(--sales)';
+
+  const body = document.getElementById('ldBody');
+  body.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      ${ldRow('Số điện thoại', l.phone)}
+      ${ldRow('Email', l.email)}
+      ${ldRow('Nguồn khách hàng', l.source)}
+      ${ldRow('Địa chỉ', l.address)}
+      ${ldRow('Phòng ban phụ trách', DEPT_LABEL[l.dept])}
+      ${ldRow('Loại dự án', l.projectType || l.type)}
+      ${ldRow('Quy mô', l.scale)}
+      ${ldRow('Giá trị ước tính', fmtTy(l.value))}
+      ${l.partner ? ldRow('Đối tác thi công/thiết kế', '<span style="color:var(--primary);">Có chuyển giao đối tác ngoài</span>') : ''}
+      ${l.handoff && (l.handoff.status==='pending-qs'||l.handoff.status==='pending-handoff') ? ldRow('Bàn giao / Báo giá', `<span style="color:var(--gold);">Đang chờ Phòng ${l.handoff.dept} xác nhận${l.handoff.requestedAt?' — hẹn '+new Date(l.handoff.requestedAt).toLocaleString('vi-VN'):''}${l.handoff.assignee?' — '+l.handoff.assignee:''}</span>`) : ''}
+      ${l.handoff && l.handoff.status==='self-quoted' ? ldRow('Bàn giao / Báo giá', '<span style="color:var(--sales);">Phòng KD tự đề xuất báo giá</span>') : ''}
+    </div>
+    ${l.assignees && l.assignees.length ? `<div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">Người phụ trách</div>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">${l.assignees.map(a => `<span class="lm-assignee-chip" style="margin-right:0;"><span class="aa-avatar">${lmInitials(a.name)}</span>${a.name}${a.role?`<span class="aa-role">· ${a.role}</span>`:''}</span>`).join('')}</div>
+    </div>` : ''}
+    ${l.categories && l.categories.length ? `<div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">Hạng mục quan tâm</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">${l.categories.map(c => `<span style="padding:3px 10px; border-radius:20px; background:var(--surface-alt); font-size:11.5px; font-weight:600;">${c}</span>`).join('')}</div>
+    </div>` : ''}
+    ${l.boqFile ? `<div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">File đính kèm</div>
+      <div style="display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:12.5px; font-weight:600;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        ${l.boqFile}
+      </div>
+    </div>` : ''}
+    ${l.concept ? `<div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">Concept / Ý tưởng thiết kế</div>
+      <div style="font-size:12.5px; line-height:1.6; background:var(--surface-alt); border-radius:10px; padding:10px 12px;">${l.concept}</div>
+    </div>` : ''}
+    ${l.notes ? `<div>
+      <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">Ghi chú nội bộ</div>
+      <div style="font-size:12.5px; line-height:1.6; background:var(--surface-alt); border-radius:10px; padding:10px 12px;">${l.notes}</div>
+    </div>` : ''}
+    ${(!l.phone && !l.email && !l.source && !l.address && !l.scale && (!l.categories||!l.categories.length) && (!l.assignees||!l.assignees.length) && !l.boqFile && !l.concept && !l.notes) ? `<div style="text-align:center; color:var(--text-muted); font-size:12.5px; padding:12px 0;">Lead này chưa có thông tin chi tiết (được tạo trước khi có form đầy đủ).</div>` : ''}
+  `;
+  document.getElementById('leadDetailOverlay').style.display = 'flex';
+}
+function closeLeadDetail(){ document.getElementById('leadDetailOverlay').style.display = 'none'; }
+document.getElementById('closeLeadDetailBtn').addEventListener('click', closeLeadDetail);
+document.getElementById('leadDetailOverlay').addEventListener('click', (e) => { if(e.target.id === 'leadDetailOverlay') closeLeadDetail(); });
+document.getElementById('editLeadDetailBtn').addEventListener('click', () => {
+  const id = currentDetailLeadId;
+  closeLeadDetail();
+  openLeadModal(id);
+});
 
 function renderList(){
   const wrap = document.getElementById('pipelineList');
-  const filtered = LEADS.filter(l => activeDept === 'all' || l.dept === activeDept);
+  const filtered = LEADS.filter(l => (activeDept === 'all' || l.dept === activeDept) && matchesTimeFilter(l));
   wrap.innerHTML = `
-    <div class="mono" style="display:grid; grid-template-columns:1.4fr 1.2fr 1fr 0.9fr 1.2fr 1fr; gap:10px; padding:12px 4px; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border);">
-      <span>Khách hàng</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Chuyển tới</span>
+    <div style="display:grid; grid-template-columns:1.4fr 1.2fr 1fr 0.9fr 1.2fr 1fr; gap:10px; padding:12px 4px; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border);">
+      <span>Lead khách hàng</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Chuyển tới</span>
     </div>
-    ${filtered.map((l,i) => `
+    ${filtered.map((l,i) => { const a = stageAccent(l.stage); return `
       <div style="display:grid; grid-template-columns:1.4fr 1.2fr 1fr 0.9fr 1.2fr 1fr; gap:10px; align-items:center; padding:11px 4px; ${i<filtered.length-1?'border-bottom:1px solid var(--border);':''}">
         <span style="font-size:13px; font-weight:600;">${l.name}</span>
         <span style="font-size:12.5px; color:var(--text-muted);">${l.type}</span>
         <span style="padding:3px 9px; border-radius:999px; background:${DEPT_TINT[l.dept]}; color:${DEPT_COLOR[l.dept]}; font-size:10.5px; font-weight:600; justify-self:start;">${DEPT_SHORT[l.dept]}</span>
         <span class="mono" style="font-size:12.5px; color:var(--sales); font-weight:700;">${fmtTy(l.value)}</span>
-        <span style="padding:3px 9px; border-radius:999px; background:${l.stage==='thiet-ke'||l.stage==='thi-cong'?'var(--success-tint)':'var(--sales-tint)'}; color:${l.stage==='thiet-ke'||l.stage==='thi-cong'?'var(--success)':'var(--sales)'}; font-size:11px; font-weight:600; justify-self:start;">${STAGE_LABEL[l.stage]}</span>
-        <select class="stage-move-select" data-id="${l.id}" style="font-size:11px; padding:5px 6px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit;">
+        <span style="padding:3px 9px; border-radius:999px; background:${a?a.bg:'var(--sales-tint)'}; color:${a?a.color:'var(--sales)'}; font-size:11px; font-weight:600; justify-self:start;">${STAGE_LABEL[l.stage]}</span>
+        <select class="stage-move-select" data-id="${l.id}" style="width:100%; max-width:100%; min-width:0; box-sizing:border-box; font-size:11px; padding:5px 6px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit;">
           ${STAGES.map(s => `<option value="${s}" ${s===l.stage?'selected':''}>${STAGE_LABEL[s]}</option>`).join('')}
         </select>
       </div>
-    `).join('')}
+    `; }).join('')}
   `;
   wrap.querySelectorAll('.stage-move-select').forEach(sel => {
     sel.addEventListener('change', (e) => moveLead(sel.getAttribute('data-id'), sel.value));
@@ -845,14 +1787,107 @@ function renderList(){
 function moveLead(id, newStage){
   const lead = LEADS.find(l => l.id === id);
   if(!lead || lead.stage === newStage) return;
+  const fromStage = lead.stage;
   lead.stage = newStage;
-  if(newStage === 'thiet-ke' || newStage === 'thi-cong'){
+  if(newStage === 'thiet-ke' || newStage === 'thi-cong' || newStage === 'tu-van' || newStage === 'dam-phan'){
     pushSyncedProject(lead);
   } else {
     removeSyncedProject(lead.id);
   }
   renderAllBoards();
+  const cfg = HANDOFF_CONFIG[newStage];
+  const shouldNotify = cfg && (newStage === 'bao-gia' ? fromStage === 'tu-van' : true);
+  if(shouldNotify){
+    openHandoffModal(lead.id, newStage);
+  }
 }
+
+/* ===================== Modal: Thông báo bàn giao sang phòng ban ===================== */
+const HANDOFF_CONFIG = {
+  'bao-gia': {
+    dept:'QS', title:'Phiếu yêu cầu báo giá', subtitle:'Chuyển dự án sang Phòng QS để lập báo giá chi tiết',
+    dateLabel:'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel:'Người phụ trách bên QS (nếu đã biết)',
+    assigneePlaceholder:'VD: Anh Trung — QS Điều phối', note:'Phòng QS sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel:'Gửi yêu cầu đến Phòng QS', role:'QS - Điều phối báo giá',
+    selfLabel:'Phòng KD tự đề xuất báo giá', selfStatus:'self-quoted', pendingStatus:'pending-qs',
+  },
+  'bao-gia-thi-cong': {
+    dept:'QS', title:'Phiếu yêu cầu báo giá thi công', subtitle:'Chuyển dự án sang Phòng QS để lập báo giá thi công chi tiết',
+    dateLabel:'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel:'Người phụ trách bên QS (nếu đã biết)',
+    assigneePlaceholder:'VD: Anh Trung — QS Điều phối', note:'Phòng QS sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel:'Gửi yêu cầu đến Phòng QS', role:'QS - Điều phối báo giá thi công',
+    selfLabel:'Phòng KD tự đề xuất báo giá', selfStatus:'self-quoted', pendingStatus:'pending-qs',
+  },
+  'thiet-ke': {
+    dept:'Thiết kế', title:'Phiếu bàn giao dự án', subtitle:'Chuyển dự án sang Phòng Thiết kế để triển khai',
+    dateLabel:'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel:'Người phụ trách bên Thiết kế (nếu đã biết)',
+    assigneePlaceholder:'VD: Chị Lan — Trưởng nhóm Thiết kế', note:'Phòng Thiết kế sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel:'Gửi thông báo đến Phòng Thiết kế', role:'Thiết kế - Tiếp nhận dự án',
+    selfLabel:null, selfStatus:null, pendingStatus:'pending-handoff',
+  },
+  'thi-cong': {
+    dept:'Thi công', title:'Phiếu bàn giao dự án', subtitle:'Chuyển dự án sang Phòng Thi công để triển khai',
+    dateLabel:'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel:'Người phụ trách bên Thi công (nếu đã biết)',
+    assigneePlaceholder:'VD: Anh Sơn — Đội trưởng Thi công', note:'Phòng Thi công sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel:'Gửi thông báo đến Phòng Thi công', role:'Thi công - Tiếp nhận dự án',
+    selfLabel:null, selfStatus:null, pendingStatus:'pending-handoff',
+  },
+};
+
+let handoffLeadId = null;
+let handoffStageKey = null;
+function openHandoffModal(leadId, stageKey){
+  const lead = LEADS.find(l => l.id === leadId);
+  const cfg = HANDOFF_CONFIG[stageKey];
+  if(!lead || !cfg) return;
+  handoffLeadId = leadId;
+  handoffStageKey = stageKey;
+  document.getElementById('qsReqTitle').textContent = cfg.title;
+  document.getElementById('qsReqSubtitle').textContent = cfg.subtitle;
+  document.getElementById('qsReqDateLabel').textContent = cfg.dateLabel;
+  document.getElementById('qsReqAssigneeLabel').textContent = cfg.assigneeLabel;
+  document.getElementById('qsReqAssignee').placeholder = cfg.assigneePlaceholder;
+  document.getElementById('qsReqNote').textContent = cfg.note;
+  document.getElementById('qsReqSendBtn').textContent = cfg.sendLabel;
+  const selfBtn = document.getElementById('qsReqSelfBtn');
+  selfBtn.style.display = cfg.selfLabel ? 'block' : 'none';
+  if(cfg.selfLabel) selfBtn.textContent = cfg.selfLabel;
+  document.getElementById('qsReqLeadName').textContent = lead.name;
+  document.getElementById('qsReqLeadMeta').textContent = `${lead.type} · ${fmtTy(lead.value)} · ${DEPT_LABEL[lead.dept]}`;
+  document.getElementById('qsReqDateTime').value = '';
+  document.getElementById('qsReqAssignee').value = '';
+  document.getElementById('qsRequestOverlay').style.display = 'flex';
+}
+function closeHandoffModal(){
+  handoffLeadId = null;
+  handoffStageKey = null;
+  document.getElementById('qsRequestOverlay').style.display = 'none';
+}
+document.getElementById('qsReqCloseBtn').addEventListener('click', closeHandoffModal);
+document.getElementById('qsReqCancelBtn').addEventListener('click', closeHandoffModal);
+document.getElementById('qsRequestOverlay').addEventListener('click', (e) => { if(e.target.id === 'qsRequestOverlay') closeHandoffModal(); });
+document.getElementById('qsReqSendBtn').addEventListener('click', () => {
+  const lead = LEADS.find(l => l.id === handoffLeadId);
+  const cfg = HANDOFF_CONFIG[handoffStageKey];
+  if(!lead || !cfg) return;
+  const dt = document.getElementById('qsReqDateTime').value;
+  const assigneeName = document.getElementById('qsReqAssignee').value.trim();
+  lead.handoff = {status: cfg.pendingStatus, dept: cfg.dept, requestedAt: dt || null, assignee: assigneeName || null};
+  if(assigneeName){
+    if(!lead.assignees) lead.assignees = [];
+    lead.assignees.push({name: assigneeName, role: cfg.role});
+  }
+  closeHandoffModal();
+  renderAllBoards();
+});
+document.getElementById('qsReqSelfBtn').addEventListener('click', () => {
+  const lead = LEADS.find(l => l.id === handoffLeadId);
+  const cfg = HANDOFF_CONFIG[handoffStageKey];
+  if(!lead || !cfg || !cfg.selfStatus) return;
+  lead.handoff = {status: cfg.selfStatus, dept: cfg.dept, requestedAt: null, assignee: null};
+  closeHandoffModal();
+  renderAllBoards();
+});
 
 /* ===================== Đồng bộ sang tab Dự án (localStorage) ===================== */
 function pushSyncedProject(lead){
@@ -898,9 +1933,112 @@ function renderLeadStep(){
   document.getElementById('leadModalNextBtn').style.display = currentLeadStep === LEAD_STEPS.length-1 ? 'none' : 'inline-block';
   document.getElementById('leadModalSaveBtn').style.display = currentLeadStep === LEAD_STEPS.length-1 ? 'inline-block' : 'none';
 }
-function openLeadModal(){
+let lmBoqFileName = '';
+document.getElementById('lmBoqDrop').addEventListener('click', () => {
+  const name = prompt('Tên file BOQ (mô phỏng tải lên):', 'BOQ_du_toan.xlsx');
+  if(name === null || !name.trim()) return;
+  lmBoqFileName = name.trim();
+  document.getElementById('lmBoqLabel').textContent = '📎 ' + lmBoqFileName;
+});
+/* ===================== Người phụ trách (nhiều người + vai trò) trong modal thêm lead ===================== */
+let lmAssignees = [];
+function lmInitials(name){
+  return name.trim().split(/\s+/).slice(-2).map(w => w[0]).join('').toUpperCase();
+}
+function renderLmAssignees(){
+  const stack = document.getElementById('lmAssigneeStack');
+  stack.innerHTML = lmAssignees.map((a, i) => `
+    <span class="lm-assignee-chip">
+      <span class="aa-avatar">${lmInitials(a.name)}</span>
+      ${a.name}${a.role ? `<span class="aa-role">· ${a.role}</span>` : ''}
+      <button type="button" class="aa-remove" data-remove-assignee="${i}" title="Xoá"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </span>`).join('');
+  stack.querySelectorAll('[data-remove-assignee]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      lmAssignees.splice(Number(btn.getAttribute('data-remove-assignee')), 1);
+      renderLmAssignees();
+    });
+  });
+}
+const lmAssigneePopover = document.getElementById('lmAssigneePopover');
+document.getElementById('lmAddAssigneeBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('lmAssigneeName').value = '';
+  document.getElementById('lmAssigneeRole').value = '';
+  lmAssigneePopover.style.display = lmAssigneePopover.style.display === 'flex' ? 'none' : 'flex';
+  if(lmAssigneePopover.style.display === 'flex') document.getElementById('lmAssigneeName').focus();
+});
+lmAssigneePopover.addEventListener('click', (e) => e.stopPropagation());
+document.getElementById('lmAssigneeCancelBtn').addEventListener('click', () => { lmAssigneePopover.style.display = 'none'; });
+document.getElementById('lmAssigneeAddBtn').addEventListener('click', () => {
+  const name = document.getElementById('lmAssigneeName').value.trim();
+  const role = document.getElementById('lmAssigneeRole').value.trim();
+  if(!name){ document.getElementById('lmAssigneeName').focus(); return; }
+  lmAssignees.push({name, role});
+  renderLmAssignees();
+  document.getElementById('lmAssigneeName').value = '';
+  document.getElementById('lmAssigneeRole').value = '';
+  document.getElementById('lmAssigneeName').focus();
+});
+document.addEventListener('click', () => { lmAssigneePopover.style.display = 'none'; });
+
+function updateLmCatSummary(){
+  const checked = Array.from(document.querySelectorAll('.lm-cat:checked')).map(cb => cb.value);
+  document.getElementById('lmCatSummary').textContent = checked.length ? checked.join(', ') : 'Chọn hạng mục...';
+}
+document.querySelectorAll('.lm-cat').forEach(cb => {
+  cb.addEventListener('change', updateLmCatSummary);
+});
+document.body.appendChild(document.getElementById('lmCatPopover'));
+document.getElementById('lmCatTrigger').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const pop = document.getElementById('lmCatPopover');
+  const willOpen = pop.style.display !== 'block';
+  if(willOpen){
+    const r = e.currentTarget.getBoundingClientRect();
+    pop.style.left = r.left + 'px';
+    pop.style.width = r.width + 'px';
+    pop.style.top = (r.bottom + 4) + 'px';
+    pop.style.maxHeight = Math.min(420, window.innerHeight - r.bottom - 16) + 'px';
+    pop.style.display = 'block';
+  } else {
+    pop.style.display = 'none';
+  }
+});
+document.getElementById('lmCatPopover').addEventListener('click', (e) => e.stopPropagation());
+document.addEventListener('click', () => { document.getElementById('lmCatPopover').style.display = 'none'; });
+document.getElementById('leadModalOverlay').addEventListener('scroll', () => { document.getElementById('lmCatPopover').style.display = 'none'; }, true);
+
+let editingLeadId = null;
+function openLeadModal(leadId){
   currentLeadStep = 0;
-  ['lmName','lmPhone','lmEmail','lmAddress','lmScale','lmValue','lmConcept','lmNotes'].forEach(id => { document.getElementById(id).value = ''; });
+  editingLeadId = leadId || null;
+  const lead = editingLeadId ? LEADS.find(l => l.id === editingLeadId) : null;
+
+  document.getElementById('leadModalTitle').textContent = lead ? 'Chỉnh sửa lead' : 'Thêm khách hàng tiềm năng';
+  document.getElementById('leadModalSaveBtn').textContent = lead ? 'Lưu thay đổi' : 'Lưu khách hàng';
+
+  document.getElementById('lmName').value = lead ? lead.name : '';
+  document.getElementById('lmPhone').value = lead ? (lead.phone || '') : '';
+  document.getElementById('lmEmail').value = lead ? (lead.email || '') : '';
+  document.getElementById('lmAddress').value = lead ? (lead.address || '') : '';
+  document.getElementById('lmScale').value = lead ? (lead.scale || '') : '';
+  document.getElementById('lmValue').value = lead ? (lead.value || '') : '';
+  document.getElementById('lmConcept').value = lead ? (lead.concept || '') : '';
+  document.getElementById('lmNotes').value = lead ? (lead.notes || '') : '';
+  document.getElementById('lmPartner').checked = lead ? !!lead.partner : false;
+  document.getElementById('lmSource').value = lead && lead.source ? lead.source : 'Giới thiệu';
+  document.getElementById('lmDept').value = lead ? (lead.dept || 'dan-dung') : 'dan-dung';
+  document.getElementById('lmType').value = lead && lead.projectType ? lead.projectType : 'Nhà phố';
+  document.getElementById('lmStage').value = lead ? lead.stage : 'tiep-can';
+  document.querySelectorAll('.lm-cat').forEach(cb => {
+    cb.checked = !!(lead && lead.categories && lead.categories.indexOf(cb.value) !== -1);
+  });
+  updateLmCatSummary();
+  lmBoqFileName = lead ? (lead.boqFile || '') : '';
+  document.getElementById('lmBoqLabel').textContent = lmBoqFileName ? '📎 ' + lmBoqFileName : 'Kéo thả file hoặc bấm để tải lên (.xlsx, .pdf)';
+  lmAssignees = lead && lead.assignees ? lead.assignees.slice() : [];
+  renderLmAssignees();
   renderLeadStep();
   document.getElementById('leadModalOverlay').style.display = 'flex';
 }
@@ -932,14 +2070,39 @@ document.getElementById('leadModalSaveBtn').addEventListener('click', () => {
   const value = parseFloat(document.getElementById('lmValue').value.replace(',', '.')) || 0;
   const stage = document.getElementById('lmStage').value;
   const dept = document.getElementById('lmDept').value || 'dan-dung';
-  LEADS.push({
-    id: 'lnew' + (leadCounter++),
+  const categories = Array.from(document.querySelectorAll('.lm-cat:checked')).map(cb => cb.value);
+  const data = {
     name: name,
     type: scale ? `${type} (${scale})` : type,
     value: value,
     stage: stage,
-    dept: dept
-  });
+    dept: dept,
+    phone: document.getElementById('lmPhone').value.trim(),
+    email: document.getElementById('lmEmail').value.trim(),
+    source: document.getElementById('lmSource').value,
+    address: document.getElementById('lmAddress').value.trim(),
+    projectType: type,
+    scale: scale,
+    categories: categories,
+    boqFile: lmBoqFileName,
+    concept: document.getElementById('lmConcept').value.trim(),
+    notes: document.getElementById('lmNotes').value.trim(),
+    partner: document.getElementById('lmPartner').checked,
+    assignees: lmAssignees.slice()
+  };
+  if(editingLeadId){
+    const lead = LEADS.find(l => l.id === editingLeadId);
+    if(lead){
+      Object.assign(lead, data);
+      if(lead.stage === 'thiet-ke' || lead.stage === 'thi-cong' || lead.stage === 'tu-van' || lead.stage === 'dam-phan') pushSyncedProject(lead);
+      else removeSyncedProject(lead.id);
+    }
+  } else {
+    data.id = 'lnew' + (leadCounter++);
+    data.createdAt = new Date().toISOString().slice(0,10);
+    LEADS.push(data);
+    if(data.stage === 'thiet-ke' || data.stage === 'thi-cong' || data.stage === 'tu-van' || data.stage === 'dam-phan') pushSyncedProject(data);
+  }
   closeLeadModal();
   renderAllBoards();
 });
@@ -1195,18 +2358,185 @@ document.getElementById('themeToggle').onclick = function(){
   updateThemeIcon(next);
 };
 
-(function(){
+function getSidebarLevel(){
   try{
-    if(localStorage.getItem('siteflow-sidebar-collapsed') === '1'){
-      document.getElementById('appSidebar').classList.add('collapsed');
-    }
-  }catch(e){}
-})();
-document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+    var v = localStorage.getItem('siteflow-sidebar-level');
+    if(v === 'full' || v === 'icons' || v === 'logo') return v;
+    return localStorage.getItem('siteflow-sidebar-collapsed') === '1' ? 'icons' : 'full';
+  }catch(e){ return 'full'; }
+}
+var SIDEBAR_LEVELS = ['full','icons','logo'];
+var sidebarLevel = getSidebarLevel();
+var sidebarDir = (sidebarLevel === 'logo') ? -1 : 1;
+function applySidebarLevel(){
   var sb = document.getElementById('appSidebar');
-  var collapsed = sb.classList.toggle('collapsed');
-  try{ localStorage.setItem('siteflow-sidebar-collapsed', collapsed ? '1' : '0'); }catch(e){}
+  sb.classList.toggle('collapsed', sidebarLevel === 'icons');
+  sb.classList.toggle('ultra-collapsed', sidebarLevel === 'logo');
+  try{ localStorage.setItem('siteflow-sidebar-level', sidebarLevel); }catch(e){}
+}
+applySidebarLevel();
+document.getElementById('sidebarCollapseBtn').addEventListener('click', function(){
+  var idx = SIDEBAR_LEVELS.indexOf(sidebarLevel) + sidebarDir;
+  if(idx >= SIDEBAR_LEVELS.length - 1){ idx = SIDEBAR_LEVELS.length - 1; sidebarDir = -1; }
+  if(idx <= 0){ idx = 0; sidebarDir = 1; }
+  sidebarLevel = SIDEBAR_LEVELS[idx];
+  applySidebarLevel();
 });
+document.getElementById('sidebarUltraCollapseBtn').addEventListener('click', function(){
+  sidebarLevel = 'logo';
+  sidebarDir = -1;
+  applySidebarLevel();
+});
+function ensureSidebarFlyout(){
+  var existing = document.getElementById('sidebarFlyoutClone');
+  if(existing) return existing;
+  var real = document.getElementById('appSidebar');
+  var clone = real.cloneNode(true);
+  clone.id = 'sidebarFlyoutClone';
+  clone.classList.remove('collapsed','ultra-collapsed');
+  clone.classList.add('sidebar-flyout-clone');
+  clone.style.display = 'none';
+  var brand = clone.querySelector('.brand');
+  if(brand) brand.remove();
+  document.body.appendChild(clone);
+  return clone;
+}
+document.getElementById('sidebarLogoCircle').addEventListener('click', function(e){
+  e.stopPropagation();
+  if(sidebarLevel === 'logo'){
+    var clone = ensureSidebarFlyout();
+    clone.style.display = (clone.style.display === 'flex') ? 'none' : 'flex';
+  } else if(sidebarLevel === 'icons'){
+    sidebarLevel = 'full'; sidebarDir = 1; applySidebarLevel();
+  }
+});
+document.addEventListener('click', function(e){
+  var clone = document.getElementById('sidebarFlyoutClone');
+  if(clone && clone.style.display === 'flex' && !clone.contains(e.target) && e.target.id !== 'sidebarLogoCircle'){
+    clone.style.display = 'none';
+  }
+});
+
+/* ===================== Dezbot — trợ lý ảo ===================== */
+(function(){
+  var fab = document.getElementById('aiFab');
+  var panel = document.getElementById('aiPanel');
+  var closeBtn = document.getElementById('aiCloseBtn');
+  var newChatBtn = document.getElementById('aiNewChatBtn');
+  var welcome = document.getElementById('aiWelcome');
+  var log = document.getElementById('aiLog');
+  var input = document.getElementById('aiInput');
+  var sendBtn = document.getElementById('aiSendBtn');
+
+  var AI_KB = {
+    tiendo: 'Dự án "Chung cư Riverside GĐ2" đang hoàn thành 62% khối lượng — đúng tiến độ tổng thể. Hạng mục "Hoàn thiện" có 2 đầu việc đang trễ hạn, cần ưu tiên xử lý trong tuần này.',
+    chamcong: 'Hôm nay có 18/21 nhân sự đã chấm công đúng giờ, 2 người chấm công trễ và 1 người xin nghỉ phép. Tỷ lệ chuyên cần tuần này đạt 94%.',
+    dongtien: 'Dòng tiền tháng này: Thu về 1.85 tỷ, Chi ra 1.42 tỷ — dương 430 triệu. Có 3 hoá đơn nhà cung cấp sắp đến hạn thanh toán trong 7 ngày tới.',
+    khachhang: 'Hiện có 12 khách hàng đang trong giai đoạn đàm phán, 4 khách vừa ký hợp đồng trong tuần này. Cơ hội "Nhà phố Lô B12" có giá trị lớn nhất, đang chờ chốt hợp đồng.',
+    tinnhan: 'Bạn có 6 tin nhắn chưa đọc trong Chat, tập trung ở nhóm "Dự án Riverside" và "Ban giám đốc". Muốn mình tóm tắt nội dung chính không?',
+    boctach: 'Bóc tách khối lượng mới nhất từ QS ghi nhận tổng giá trị vật tư khoảng 11.93 triệu trên 5 đơn mua hàng, trong đó 2 đơn chưa đặt hàng.',
+    quytrinh: 'Quy trình thi công hiện tại gồm 5 bước: Khảo sát → Thiết kế → Xin phép → Thi công → Nghiệm thu. Bước "Thi công" đang được nhiều dự án thực hiện nhất.',
+    default: 'Mình đã tra trong dữ liệu workspace nhưng chưa tìm thấy câu trả lời chính xác cho câu hỏi này — bạn thử hỏi cụ thể hơn về tiến độ, chấm công, dòng tiền, khách hàng, bóc tách hoặc quy trình nhé.'
+  };
+
+  function matchTopic(text){
+    var t = text.toLowerCase();
+    if(t.indexOf('tiến độ') > -1 || t.indexOf('tien do') > -1 || t.indexOf('dự án') > -1) return 'tiendo';
+    if(t.indexOf('chấm công') > -1 || t.indexOf('nhân công') > -1 || t.indexOf('nhân sự') > -1 || t.indexOf('nghỉ phép') > -1) return 'chamcong';
+    if(t.indexOf('dòng tiền') > -1 || t.indexOf('hoá đơn') > -1 || t.indexOf('hóa đơn') > -1 || t.indexOf('thu') > -1 || t.indexOf('chi') > -1) return 'dongtien';
+    if(t.indexOf('khách hàng') > -1 || t.indexOf('hợp đồng') > -1 || t.indexOf('cơ hội') > -1 || t.indexOf('pipeline') > -1) return 'khachhang';
+    if(t.indexOf('tin nhắn') > -1 || t.indexOf('chat') > -1) return 'tinnhan';
+    if(t.indexOf('bóc tách') > -1 || t.indexOf('mua hàng') > -1 || t.indexOf('vật tư') > -1) return 'boctach';
+    if(t.indexOf('quy trình') > -1) return 'quytrinh';
+    return 'default';
+  }
+
+  function openPanel(){ panel.classList.add('open'); document.body.classList.add('ai-panel-open'); input.focus(); }
+  function closePanel(){ panel.classList.remove('open'); document.body.classList.remove('ai-panel-open'); }
+  fab.addEventListener('click', function(){ panel.classList.contains('open') ? closePanel() : openPanel(); });
+  closeBtn.addEventListener('click', closePanel);
+
+  (function(){
+    var handle = document.getElementById('aiResizeHandle');
+    var startX = 0, startWidth = 0, dragging = false;
+    var MIN_W = 320, MAX_W = 720;
+    try{
+      var savedW = localStorage.getItem('siteflow-ai-panel-width');
+      if(savedW) document.documentElement.style.setProperty('--ai-panel-width', savedW + 'px');
+    }catch(e){}
+    handle.addEventListener('mousedown', function(e){
+      dragging = true;
+      startX = e.clientX;
+      startWidth = panel.getBoundingClientRect().width;
+      document.body.classList.add('ai-panel-resizing');
+      panel.classList.add('resizing');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e){
+      if(!dragging) return;
+      var delta = startX - e.clientX;
+      var newWidth = Math.max(MIN_W, Math.min(MAX_W, startWidth + delta));
+      document.documentElement.style.setProperty('--ai-panel-width', newWidth + 'px');
+    });
+    document.addEventListener('mouseup', function(){
+      if(!dragging) return;
+      dragging = false;
+      document.body.classList.remove('ai-panel-resizing');
+      panel.classList.remove('resizing');
+      try{
+        var w = getComputedStyle(document.documentElement).getPropertyValue('--ai-panel-width');
+        localStorage.setItem('siteflow-ai-panel-width', parseInt(w, 10));
+      }catch(e){}
+    });
+  })();
+
+  function resetChat(){
+    log.innerHTML = '';
+    log.classList.remove('open');
+    welcome.style.display = 'flex';
+  }
+  newChatBtn.addEventListener('click', resetChat);
+
+  function appendMsg(role, text){
+    var msg = document.createElement('div');
+    msg.className = 'ai-msg ' + role;
+    msg.textContent = text;
+    log.appendChild(msg);
+    log.scrollTop = log.scrollHeight;
+    return msg;
+  }
+
+  function sendMessage(text){
+    text = (text || '').trim();
+    if(!text) return;
+    if(welcome.style.display !== 'none'){
+      welcome.style.display = 'none';
+      log.classList.add('open');
+    }
+    appendMsg('user', text);
+    input.value = '';
+    var thinking = appendMsg('bot', 'Đang tra dữ liệu workspace…');
+    setTimeout(function(){
+      thinking.textContent = AI_KB[matchTopic(text)] || AI_KB.default;
+    }, 550);
+  }
+
+  sendBtn.addEventListener('click', function(){ sendMessage(input.value); });
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(input.value); }
+  });
+
+  document.querySelectorAll('[data-ai-topic]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var topic = btn.getAttribute('data-ai-topic');
+      var labels = { tiendo:'Tiến độ dự án đang thế nào?', chamcong:'Tình hình chấm công hôm nay?', dongtien:'Dòng tiền tháng này ra sao?', khachhang:'Khách hàng nào đang tiềm năng?', tinnhan:'Tôi có tin nhắn nào chưa đọc?' };
+      sendMessage(labels[topic] || btn.textContent.trim());
+    });
+  });
+  document.querySelectorAll('[data-ai-prompt]').forEach(function(btn){
+    btn.addEventListener('click', function(){ sendMessage(btn.getAttribute('data-ai-prompt')); });
+  });
+})();
 </script>
 </body>
 </html>
