@@ -33,7 +33,7 @@ function statusStyle(s) {
 function progressColor(p) {
   if (p >= 80) return '#22c55e'
   if (p >= 50) return '#f59e0b'
-  return '#3b82f6'
+  return '#252526'
 }
 
 export default function RD() {

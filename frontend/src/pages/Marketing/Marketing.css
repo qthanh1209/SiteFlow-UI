@@ -1,0 +1,116 @@
+/* Hover & transition effects for Marketing page */
+.marketing-page button {
+  transition: filter 0.14s ease, opacity 0.14s ease, transform 0.1s ease,
+              box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease;
+}
+
+/* Tab bar buttons — smooth pill background transition */
+.marketing-page .tab-bar button {
+  transition: background 0.15s ease, color 0.15s ease, font-weight 0.1s ease;
+}
+
+/* Generic subtle lift on hover */
+.marketing-page button:hover {
+  filter: brightness(0.93);
+  transform: translateY(-1px);
+}
+
+.marketing-page button:active {
+  filter: brightness(0.87);
+  transform: translateY(0);
+  transition-duration: 0.06s;
+}
+
+/* Solid-fill primary buttons (marketing pink, no border) */
+.marketing-page button[class~="btn-primary"]:hover,
+.marketing-page .btn-primary:hover {
+  filter: brightness(0.9);
+  box-shadow: 0 4px 14px rgba(194, 59, 120, 0.32);
+  transform: translateY(-1px);
+}
+
+/* Tab bar buttons — pill background fill on hover, no lift */
+.marketing-page .tab-bar button:hover {
+  transform: none;
+  filter: none;
+  background: var(--surface-alt) !important;
+}
+.marketing-page .tab-bar button:active {
+  transform: none;
+  filter: none;
+  background: var(--marketing-tint) !important;
+}
+
+/* Sidebar pill / export buttons */
+.marketing-page .sidebar-section button:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.91);
+}
+
+/* Template picker buttons */
+.marketing-page .template-picker button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+  filter: none;
+}
+
+/* Campaign cards — pointer feedback on interactive elements inside */
+.marketing-page .campaign-card:hover {
+  box-shadow: 0 4px 18px rgba(20,22,30,0.11);
+  transform: translateY(-2px);
+  transition: box-shadow 0.16s ease, transform 0.14s ease;
+}
+.marketing-page .campaign-card {
+  transition: box-shadow 0.16s ease, transform 0.14s ease;
+}
+
+/* Catalog item rows */
+.marketing-page .catalog-row:hover {
+  background: var(--marketing-tint) !important;
+  transition: background 0.12s ease;
+}
+.marketing-page .catalog-row {
+  transition: background 0.12s ease;
+}
+
+/* Add-row button at bottom of each group */
+.marketing-page .catalog-add-row {
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.marketing-page .catalog-add-row:hover {
+  background: var(--marketing-tint) !important;
+  color: var(--marketing) !important;
+}
+
+/* Back / secondary icon buttons */
+.marketing-page button.icon-btn:hover {
+  background: var(--surface-alt) !important;
+  filter: none;
+  transform: none;
+}
+
+/* Modal close / nav buttons */
+.marketing-page .modal-close:hover {
+  background: var(--danger-tint) !important;
+  color: var(--danger) !important;
+  filter: none;
+  transform: none;
+}
+
+/* Step mission rows */
+.marketing-page .step-row:hover {
+  background: var(--surface-alt) !important;
+  transition: background 0.12s ease;
+}
+.marketing-page .step-row {
+  transition: background 0.12s ease;
+}
+
+/* Leaderboard rows */
+.marketing-page .lb-row:hover {
+  background: var(--surface-alt) !important;
+  transition: background 0.12s ease;
+}
+.marketing-page .lb-row {
+  transition: background 0.12s ease;
+}

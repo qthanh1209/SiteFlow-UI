@@ -149,14 +149,14 @@
 .kd-rank-row span { flex: 1; }
 .kd-rank-row strong { color: var(--gold); }
 
-.kd-board { display: flex; align-items: flex-start; gap: 14px; min-height: 240px; overflow-x: auto; padding: 1px 2px 10px; }
+.kd-board { display: flex; align-items: stretch; gap: 14px; min-height: 240px; overflow-x: auto; padding: 1px 2px 10px; }
 .stage-col { display: flex; flex: 1 0 230px; flex-direction: column; gap: 9px; min-width: 230px; max-width: 340px; padding: 2px; border-radius: 12px; transition: background .12s ease, outline .12s ease; }
 .stage-col.drop-hover { background: var(--sales-tint); outline: 2px dashed var(--sales); outline-offset: -2px; }
 .stage-col.lost { opacity: .86; }
 .stage-head { display: flex; flex-direction: column; gap: 4px; padding: 2px 2px 9px; }
 .stage-head strong { font-size: 13px; }
 .stage-head span { color: var(--text-muted); font-size: 11px; font-weight: 600; }
-.stage-drop { display: flex; flex-direction: column; gap: 10px; min-height: 42px; border-radius: 8px; }
+.stage-drop { display: flex; flex: 1; flex-direction: column; gap: 10px; min-height: 200px; border-radius: 8px; }
 .lead-card { display: flex; flex: none; flex-direction: column; gap: 6px; height: 205px; overflow: hidden; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; }
 .lead-card:hover { box-shadow: 0 4px 18px rgba(20,22,30,.13); transform: translateY(-2px); }
 .kd-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
@@ -306,6 +306,15 @@
 .kd-handoff-lead span { color: var(--text-muted); font-size: 12px; }
 .kd-handoff-content .kd-modal-footer { padding: 12px 0 0; }
 .kd-self-quote { border: 0; border-radius: 8px; padding: 9px; background: var(--success); color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; }
+
+.kd-widget-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.kd-widget-header h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.ov-period-btns { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ov-period-btns button { border: none; cursor: pointer; padding: 6px 11px; font-size: 11.5px; font-weight: 600; font-family: inherit; background: none; color: var(--text-muted); }
+.ov-period-btns button.active { background: var(--primary-tint); color: var(--primary); }
+.ov-chart-select { border: 1px solid var(--border); border-radius: 6px; padding: 5px 7px; font-size: 10.5px; font-family: inherit; background: var(--surface); color: var(--text-muted); cursor: pointer; }
+.ov-chart-body { min-height: 70px; overflow: hidden; }
+.kd-upcoming-widget h3 { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
 
 @media (max-width: 1000px) {
   .kd-task-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
