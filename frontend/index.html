@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiteFlow</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('siteflow-theme');
+          if (!t) { t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+        try {
+          var c = JSON.parse(localStorage.getItem('siteflow-customize') || '{}');
+          document.documentElement.setAttribute('data-accent', c.accent || 'blue');
+          document.documentElement.setAttribute('data-density', c.density || 'comfortable');
+          document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left');
+          document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium');
+          if (c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily);
+        } catch (e) {}
+        try {
+          var uiTheme = localStorage.getItem('siteflow-ui-theme');
+          document.documentElement.setAttribute('data-ui-theme', uiTheme || 'default');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
