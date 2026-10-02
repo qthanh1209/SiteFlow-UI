@@ -119,6 +119,16 @@ html[data-sidebar-pos="right"] .sidebar-flyout-clone{left:auto !important; right
 .mini-cal-day.in-week{background:var(--primary-tint);}
 .mini-cal-day.today{background:var(--primary); color:#fff; font-weight:700;}
 
+.cal-month-cell{border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:6px; display:flex; flex-direction:column; gap:3px; min-height:0; overflow:hidden; cursor:pointer;}
+.cal-month-cell:hover{background:var(--surface-alt);}
+.cal-month-cell.muted{opacity:.4;}
+.cal-month-cell.today{background:var(--primary-tint);}
+.cmc-date{font-size:12px; font-weight:700; font-family:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; flex:none;}
+.cal-month-cell.today .cmc-date{color:var(--primary);}
+.cmc-events{display:flex; flex-direction:column; gap:2px; min-height:0; overflow:hidden;}
+.cmc-chip{font-size:10px; font-weight:600; padding:2px 6px; border-radius:4px; background:color-mix(in srgb, var(--chip-c) 16%, transparent); color:var(--chip-c); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left:2px solid var(--chip-c);}
+.cmc-more{font-size:10px; color:var(--text-muted); font-weight:600; padding:1px 6px;}
+
 .cal-list-row{display:flex; align-items:center; gap:9px; padding:5px 2px; font-size:12.5px; cursor:pointer;}
 .cal-list-dot{width:14px; height:14px; border-radius:4px; flex:none; border:1.5px solid var(--dot-c); position:relative; cursor:pointer;}
 .cal-list-dot.checked{background:var(--dot-c);}
@@ -456,9 +466,9 @@ body.ai-panel-resizing #appMainContent{transition:none;}
       <!-- TOOLBAR -->
       <div style="display: flex; align-items: center; gap: 10px; flex: none;">
         <button class="cal-today-btn" id="calToday">Hôm nay</button>
-        <button class="cal-icon-btn" title="Tuần trước"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-        <button class="cal-icon-btn" title="Tuần sau"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-        <div style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 15px;">20 – 26/9/2026</div>
+        <button class="cal-icon-btn" id="calPrevBtn" title="Trước"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button class="cal-icon-btn" id="calNextBtn" title="Sau"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div id="calRangeLabel" style="font-family: var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 15px;">20 – 26/9/2026</div>
         <div style="flex: 1;"></div>
         <div class="cal-view-toggle">
           <button class="cal-view-btn" data-view="day">Ngày</button>
@@ -561,18 +571,18 @@ body.ai-panel-resizing #appMainContent{transition:none;}
         </div>
         </div>
 
-        <!-- CALENDAR GRID -->
-        <div style="flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; min-width: 0;">
+        <!-- CALENDAR GRID (Tuan / Ngay) -->
+        <div id="calWeekGridWrap" style="flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; min-width: 0;">
           <div style="display: flex; border-bottom: 1px solid var(--border); flex: none;">
             <div style="width: 52px; flex: none;"></div>
-            <div style="flex: 1; display: grid; grid-template-columns: repeat(7,1fr);">
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">CN</div><div class="mono" style="font-size:13px; font-weight:700;">20</div></div>
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T2</div><div class="mono" style="font-size:13px; font-weight:700;">21</div></div>
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T3</div><div class="mono" style="font-size:13px; font-weight:700;">22</div></div>
-              <div style="text-align:center; padding:9px 0; background:var(--primary-tint);"><div style="font-size:10.5px; color:var(--primary); font-weight:700;">T4</div><div class="mono" style="font-size:13px; font-weight:800; color:var(--primary);">23</div></div>
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T5</div><div class="mono" style="font-size:13px; font-weight:700;">24</div></div>
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T6</div><div class="mono" style="font-size:13px; font-weight:700;">25</div></div>
-              <div style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T7</div><div class="mono" style="font-size:13px; font-weight:700;">26</div></div>
+            <div id="calWeekHeaderGrid" style="flex: 1; display: grid; grid-template-columns: repeat(7,1fr);">
+              <div class="cal-week-header-cell" data-dayidx="0" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">CN</div><div class="mono" style="font-size:13px; font-weight:700;">20</div></div>
+              <div class="cal-week-header-cell" data-dayidx="1" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T2</div><div class="mono" style="font-size:13px; font-weight:700;">21</div></div>
+              <div class="cal-week-header-cell" data-dayidx="2" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T3</div><div class="mono" style="font-size:13px; font-weight:700;">22</div></div>
+              <div class="cal-week-header-cell" data-dayidx="3" style="text-align:center; padding:9px 0; background:var(--primary-tint);"><div style="font-size:10.5px; color:var(--primary); font-weight:700;">T4</div><div class="mono" style="font-size:13px; font-weight:800; color:var(--primary);">23</div></div>
+              <div class="cal-week-header-cell" data-dayidx="4" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T5</div><div class="mono" style="font-size:13px; font-weight:700;">24</div></div>
+              <div class="cal-week-header-cell" data-dayidx="5" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T6</div><div class="mono" style="font-size:13px; font-weight:700;">25</div></div>
+              <div class="cal-week-header-cell" data-dayidx="6" style="text-align:center; padding:9px 0;"><div style="font-size:10.5px; color:var(--text-muted); font-weight:600;">T7</div><div class="mono" style="font-size:13px; font-weight:700;">26</div></div>
             </div>
           </div>
 
@@ -618,8 +628,7 @@ body.ai-panel-resizing #appMainContent{transition:none;}
               </div>
 
               <!-- T4 (today) -->
-              <div class="cal-daycol" style="background: var(--primary-tint); opacity:.35;"></div>
-              <div class="cal-daycol" id="daycol3" data-date="23/09" style="position:absolute; left:calc(3 * (100% / 7)); width:calc(100% / 7); top:0; bottom:0;">
+              <div class="cal-daycol" id="daycol3" data-date="23/09" style="background: var(--primary-tint);">
                 <div class="cal-event" data-cal="finance" style="--ev-c: var(--finance); --ev-tint: var(--finance-tint); top:80px; height:40px;"><div class="t">Họp tài chính &amp; Review</div><div class="s">10:00 - 11:00</div></div>
                 <div class="cal-event" data-cal="qs" style="--ev-c: var(--qs); --ev-tint: var(--qs-tint); top:140px; height:40px;"><div class="t">Họp bóc tách thi công</div><div class="s">11:30 - 12:30</div></div>
                 <div class="cal-event" data-cal="me" style="--ev-c: var(--primary); --ev-tint: var(--primary-tint); top:220px; height:60px;"><div class="t">Review App</div><div class="s">13:30 - 15:00</div></div>
@@ -647,6 +656,60 @@ body.ai-panel-resizing #appMainContent{transition:none;}
               <!-- hour gridlines (14 rows x 40px) -->
               <div style="position:absolute; left:0; right:0; top:0; bottom:0; pointer-events:none; background-image: repeating-linear-gradient(to bottom, var(--border) 0, var(--border) 1px, transparent 1px, transparent 40px); opacity:.6;"></div>
             </div>
+          </div>
+        </div>
+
+        <!-- CALENDAR GRID (Thang) -->
+        <div id="calMonthGridWrap" style="display:none; flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; flex-direction: column; min-width: 0;">
+          <div style="display: grid; grid-template-columns: repeat(7,1fr); border-bottom: 1px solid var(--border); flex: none;">
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">CN</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T2</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T3</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T4</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T5</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T6</div>
+            <div style="text-align:center; padding:9px 0; font-size:10.5px; color:var(--text-muted); font-weight:600;">T7</div>
+          </div>
+          <div class="cal-month-grid" id="calMonthGrid" style="flex: 1; display: grid; grid-template-columns: repeat(7,1fr); grid-template-rows: repeat(5,1fr); overflow-y:auto;">
+            <div class="cal-month-cell muted" data-dayidx="0"><div class="cmc-date">30</div></div>
+            <div class="cal-month-cell muted" data-dayidx="1"><div class="cmc-date">31</div></div>
+            <div class="cal-month-cell" data-dayidx="2"><div class="cmc-date">1</div></div>
+            <div class="cal-month-cell" data-dayidx="3"><div class="cmc-date">2</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--success);">Họp phòng ban</div></div></div>
+            <div class="cal-month-cell" data-dayidx="4"><div class="cmc-date">3</div></div>
+            <div class="cal-month-cell" data-dayidx="5"><div class="cmc-date">4</div></div>
+            <div class="cal-month-cell" data-dayidx="6"><div class="cmc-date">5</div></div>
+
+            <div class="cal-month-cell" data-dayidx="7"><div class="cmc-date">6</div></div>
+            <div class="cal-month-cell" data-dayidx="8"><div class="cmc-date">7</div></div>
+            <div class="cal-month-cell" data-dayidx="9"><div class="cmc-date">8</div></div>
+            <div class="cal-month-cell" data-dayidx="10"><div class="cmc-date">9</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--attendance);">Review thiết kế</div></div></div>
+            <div class="cal-month-cell" data-dayidx="11"><div class="cmc-date">10</div></div>
+            <div class="cal-month-cell" data-dayidx="12"><div class="cmc-date">11</div></div>
+            <div class="cal-month-cell" data-dayidx="13"><div class="cmc-date">12</div></div>
+
+            <div class="cal-month-cell" data-dayidx="14"><div class="cmc-date">13</div></div>
+            <div class="cal-month-cell" data-dayidx="15"><div class="cmc-date">14</div></div>
+            <div class="cal-month-cell" data-dayidx="16"><div class="cmc-date">15</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--qs);">Khách hàng ABC ghé thăm</div></div></div>
+            <div class="cal-month-cell" data-dayidx="17"><div class="cmc-date">16</div></div>
+            <div class="cal-month-cell" data-dayidx="18"><div class="cmc-date">17</div></div>
+            <div class="cal-month-cell" data-dayidx="19"><div class="cmc-date">18</div></div>
+            <div class="cal-month-cell" data-dayidx="20"><div class="cmc-date">19</div></div>
+
+            <div class="cal-month-cell" data-dayidx="21" data-gotoday="0"><div class="cmc-date">20</div></div>
+            <div class="cal-month-cell" data-dayidx="22" data-gotoday="1"><div class="cmc-date">21</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--finance);">Họp nhanh tài chính</div><div class="cmc-chip" style="--chip-c: var(--qs);">Check-in ứng dụng</div><div class="cmc-chip" style="--chip-c: var(--attendance);">Họp Vua Thầu</div></div></div>
+            <div class="cal-month-cell" data-dayidx="23" data-gotoday="2"><div class="cmc-date">22</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--primary);">Dashboard MKT</div><div class="cmc-chip" style="--chip-c: var(--qs);">Check-in Alpha</div></div></div>
+            <div class="cal-month-cell today" data-dayidx="24" data-gotoday="3"><div class="cmc-date">23</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--finance);">Họp tài chính &amp; Review</div><div class="cmc-chip" style="--chip-c: var(--qs);">Họp bóc tách thi công</div><div class="cmc-more">+3 khác</div></div></div>
+            <div class="cal-month-cell" data-dayidx="25" data-gotoday="4"><div class="cmc-date">24</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--attendance);">Họp team Dự án</div><div class="cmc-chip" style="--chip-c: var(--success);">Họp kế hoạch nhân sự</div><div class="cmc-more">+1 khác</div></div></div>
+            <div class="cal-month-cell" data-dayidx="26" data-gotoday="5"><div class="cmc-date">25</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--attendance);">Họp vua thầu</div><div class="cmc-chip" style="--chip-c: var(--primary);">Họp RnD tuần</div><div class="cmc-more">+1 khác</div></div></div>
+            <div class="cal-month-cell" data-dayidx="27" data-gotoday="6"><div class="cmc-date">26</div></div>
+
+            <div class="cal-month-cell" data-dayidx="28"><div class="cmc-date">27</div></div>
+            <div class="cal-month-cell" data-dayidx="29"><div class="cmc-date">28</div></div>
+            <div class="cal-month-cell" data-dayidx="30"><div class="cmc-date">29</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--finance);">Chốt báo cáo tháng</div></div></div>
+            <div class="cal-month-cell" data-dayidx="31"><div class="cmc-date">30</div><div class="cmc-events"><div class="cmc-chip" style="--chip-c: var(--primary);">Tổng kết tháng 9</div></div></div>
+            <div class="cal-month-cell muted" data-dayidx="32"><div class="cmc-date">1</div></div>
+            <div class="cal-month-cell muted" data-dayidx="33"><div class="cmc-date">2</div></div>
+            <div class="cal-month-cell muted" data-dayidx="34"><div class="cmc-date">3</div></div>
           </div>
         </div>
       </div>
@@ -1391,10 +1454,72 @@ document.getElementById('addColleagueSelect').addEventListener('change', functio
   document.getElementById('daycol' + slot.day).appendChild(ev);
 });
 
-document.querySelectorAll('.cal-view-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+/* ---- Doi dang xem: Ngay / Tuan / Thang ---- */
+var CAL_DOW = ['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+var WEEK_DATES = ['20','21','22','23','24','25','26'];
+var currentCalView = 'week';
+var currentDayIdx = 3; // Thu 23/09 = "hom nay" trong du lieu mau
+
+function updateRangeLabel(){
+  var label = document.getElementById('calRangeLabel');
+  if(currentCalView === 'day'){
+    label.textContent = CAL_DOW[currentDayIdx] + ', ' + WEEK_DATES[currentDayIdx] + '/9/2026';
+  } else if(currentCalView === 'week'){
+    label.textContent = '20 – 26/9/2026';
+  } else {
+    label.textContent = 'Tháng 9, 2026';
+  }
+}
+
+function applyCalView(view){
+  currentCalView = view;
+  document.querySelectorAll('.cal-view-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-view') === view); });
+  document.getElementById('calWeekGridWrap').style.display = (view === 'month') ? 'none' : 'flex';
+  document.getElementById('calMonthGridWrap').style.display = (view === 'month') ? 'flex' : 'none';
+
+  if(view === 'day'){
+    document.getElementById('calWeekHeaderGrid').style.gridTemplateColumns = '1fr';
+    document.getElementById('calGridBody').style.gridTemplateColumns = '1fr';
+    document.querySelectorAll('.cal-week-header-cell').forEach(function(c){
+      c.style.display = (parseInt(c.getAttribute('data-dayidx'), 10) === currentDayIdx) ? '' : 'none';
+    });
+    for(var i = 0; i < 7; i++){ document.getElementById('daycol' + i).style.display = (i === currentDayIdx) ? '' : 'none'; }
+  } else if(view === 'week'){
+    document.getElementById('calWeekHeaderGrid').style.gridTemplateColumns = 'repeat(7,1fr)';
+    document.getElementById('calGridBody').style.gridTemplateColumns = 'repeat(7,1fr)';
+    document.querySelectorAll('.cal-week-header-cell').forEach(function(c){ c.style.display = ''; });
+    for(var j = 0; j < 7; j++){ document.getElementById('daycol' + j).style.display = ''; }
+  }
+  updateRangeLabel();
+}
+
+document.querySelectorAll('.cal-view-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){ applyCalView(btn.getAttribute('data-view')); });
+});
+
+document.getElementById('calPrevBtn').addEventListener('click', function(){
+  if(currentCalView === 'day'){
+    currentDayIdx = Math.max(0, currentDayIdx - 1);
+    applyCalView('day');
+  }
+});
+document.getElementById('calNextBtn').addEventListener('click', function(){
+  if(currentCalView === 'day'){
+    currentDayIdx = Math.min(6, currentDayIdx + 1);
+    applyCalView('day');
+  }
+});
+document.getElementById('calToday').addEventListener('click', function(){
+  if(currentCalView === 'day'){
+    currentDayIdx = 3;
+    applyCalView('day');
+  }
+});
+
+document.querySelectorAll('.cal-month-cell[data-gotoday]').forEach(function(cell){
+  cell.addEventListener('click', function(){
+    currentDayIdx = parseInt(cell.getAttribute('data-gotoday'), 10);
+    applyCalView('day');
   });
 });
 

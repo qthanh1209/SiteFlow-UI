@@ -312,6 +312,10 @@ body.ai-panel-resizing #appMainContent{transition:none;}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
           Workspace
         </button>
+        <button class="settings-tab" data-tab="rewards">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          Đổi thưởng
+        </button>
         <button class="settings-tab" data-tab="security">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
           Bảo mật
@@ -544,6 +548,32 @@ body.ai-panel-resizing #appMainContent{transition:none;}
             <div style="display: grid; grid-template-columns: 2fr 1.4fr 1fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);"><span style="font-size: 12.5px; font-weight: 600;">Trần Anh</span><span style="font-size: 12px; color: var(--text-muted);">Quản lý dự án</span><span style="padding: 2px 8px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 10.5px; font-weight: 600; justify-self: start;">Quản trị</span></div>
             <div style="display: grid; grid-template-columns: 2fr 1.4fr 1fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);"><span style="font-size: 12.5px; font-weight: 600;">Đỗ Thảo Vy</span><span style="font-size: 12px; color: var(--text-muted);">Head Marketing</span><span style="padding: 2px 8px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 10.5px; font-weight: 600; justify-self: start;">Thành viên</span></div>
             <div style="display: grid; grid-template-columns: 2fr 1.4fr 1fr; gap: 10px; align-items: center; padding: 10px 4px;"><span style="font-size: 12.5px; font-weight: 600;">Nguyễn Đức Anh</span><span style="font-size: 12px; color: var(--text-muted);">Chỉ huy trưởng</span><span style="padding: 2px 8px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); font-size: 10.5px; font-weight: 600; justify-self: start;">Thành viên</span></div>
+          </div>
+        </div>
+
+        <!-- Đổi thưởng -->
+        <div class="settings-panel" data-panel="rewards" style="display: none; flex-direction: column; gap: 16px;">
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px;">
+            <h3 style="font-size: 14.5px; font-weight: 700; margin-bottom: 4px;">Quản lý đổi thưởng</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Thiết lập sản phẩm nhân sự có thể đổi bằng điểm tích luỹ từ hoàn thành nhiệm vụ. Áp dụng cho ví điểm thưởng trên toàn hệ thống (Kinh doanh, Newsfeed…).</p>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 6px 20px 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 4px;">
+              <h3 style="font-size: 13px; font-weight: 700;">Danh sách phần thưởng</h3>
+              <button type="button" id="addRewardBtn" style="border: none; background: var(--primary); color: #fff; padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;">+ Thêm phần thưởng</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 0.6fr; gap: 10px; padding: 8px 4px; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+              <span>Phần thưởng</span><span>Điểm quy đổi</span><span>Trạng thái</span><span></span>
+            </div>
+            <div id="rewardRows"></div>
+          </div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px;">
+            <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Quy định quy đổi điểm</h3>
+            <ul style="margin:0; padding-left:18px; font-size:12.5px; color:var(--text-muted); line-height:1.9;">
+              <li>Nhân sự tích điểm khi hoàn thành nhiệm vụ được gắn điểm thưởng tại các phòng ban (Kinh doanh, Dự án…).</li>
+              <li>Điểm được cộng vào ví điểm cá nhân ngay khi nhiệm vụ được xác nhận hoàn thành.</li>
+              <li>Phần thưởng ở trạng thái "Tạm ẩn" sẽ không hiển thị trong ví đổi thưởng của nhân sự.</li>
+            </ul>
           </div>
         </div>
 
@@ -1086,6 +1116,56 @@ document.addEventListener('click', function(e){
     btn.addEventListener('click', function(){ sendAiMessage(btn.getAttribute('data-ai-prompt')); });
   });
 })();
+
+/* ===================== Quan ly doi thuong ===================== */
+var REWARDS = [
+  { name: 'Phiếu ăn trưa miễn phí (1 tuần)', cost: 300, active: true },
+  { name: 'Voucher nhà hàng 500.000đ', cost: 500, active: true },
+  { name: 'Áo thun đồng phục cao cấp', cost: 400, active: true },
+  { name: 'Khoá học kỹ năng đàm phán', cost: 700, active: true },
+  { name: 'Ngày nghỉ phép thêm (1 ngày)', cost: 1000, active: true },
+  { name: 'iPad Gen 10', cost: 1800, active: true },
+  { name: 'Vé máy bay khứ hồi nội địa', cost: 2200, active: true },
+  { name: 'Chuyến du lịch team quý (2 ngày 1 đêm)', cost: 2500, active: true },
+  { name: 'iPhone 15', cost: 5000, active: true },
+  { name: 'Thưởng tiền mặt 1.000.000đ', cost: 3000, active: false }
+];
+function renderRewards(){
+  var wrap = document.getElementById('rewardRows');
+  wrap.innerHTML = REWARDS.map(function(r, i){
+    return '<div style="display: grid; grid-template-columns: 2.2fr 1fr 1fr 0.6fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border);">' +
+      '<span style="font-size: 13px; font-weight: 600;' + (r.active ? '' : ' color:var(--text-muted); text-decoration:line-through;') + '">' + r.name + '</span>' +
+      '<span class="mono" style="font-size: 12.5px; font-weight: 700; color: var(--finance);">' + r.cost.toLocaleString('vi-VN') + ' điểm</span>' +
+      '<span><button type="button" class="reward-toggle-btn" data-idx="' + i + '" style="border:1px solid var(--border); background:' + (r.active ? 'var(--success-tint)' : 'var(--surface-alt)') + '; color:' + (r.active ? 'var(--success)' : 'var(--text-muted)') + '; padding:4px 10px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit;">' + (r.active ? 'Hoạt động' : 'Tạm ẩn') + '</button></span>' +
+      '<button type="button" class="reward-delete-btn" data-idx="' + i + '" style="border:none; background:none; color:var(--text-muted); cursor:pointer; padding:4px; justify-self:start;" title="Xoá"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+    '</div>';
+  }).join('');
+  wrap.querySelectorAll('.reward-toggle-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.getAttribute('data-idx'), 10);
+      REWARDS[idx].active = !REWARDS[idx].active;
+      renderRewards();
+    });
+  });
+  wrap.querySelectorAll('.reward-delete-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(btn.getAttribute('data-idx'), 10);
+      if(confirm('Xoá phần thưởng "' + REWARDS[idx].name + '"?')){
+        REWARDS.splice(idx, 1);
+        renderRewards();
+      }
+    });
+  });
+}
+document.getElementById('addRewardBtn').addEventListener('click', function(){
+  var name = (prompt('Tên phần thưởng:') || '').trim();
+  if(!name) return;
+  var costRaw = prompt('Điểm quy đổi:', '500') || '0';
+  var cost = parseInt(costRaw.replace(/[^\d]/g, ''), 10) || 0;
+  REWARDS.push({ name: name, cost: cost, active: true });
+  renderRewards();
+});
+renderRewards();
 </script>
 </body>
 </html>
