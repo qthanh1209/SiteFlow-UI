@@ -32,6 +32,7 @@ export function ThemeProvider({ children }) {
     document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left')
     document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium')
     if (c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily)
+    else document.documentElement.style.removeProperty('--app-font')
     try { localStorage.setItem('siteflow-customize', JSON.stringify(c)) } catch {}
   }, [customize])
 

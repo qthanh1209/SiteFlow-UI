@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 
+function defaultLevel() {
+  try { return localStorage.getItem('siteflow-sidebar-collapsed') === '1' ? 'icons' : 'full' } catch { return 'full' }
+}
+
 export function useSidebar() {
   const LEVELS = ['full', 'icons', 'logo']
 
-  const [level, setLevel] = useLocalStorage('siteflow-sidebar-level', 'full')
+  // Chưa có level đã lưu → dùng cờ "Thu gọn menu mặc định" ở trang Cài đặt (giống getSidebarLevel của bản HTML)
+  const [level, setLevel] = useLocalStorage('siteflow-sidebar-level', defaultLevel())
   const [dir, setDir] = useState(level === 'logo' ? -1 : 1)
 
   function cycle() {

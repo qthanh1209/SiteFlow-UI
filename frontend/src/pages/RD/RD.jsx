@@ -1,78 +1,145 @@
-import PageShell from '../../components/layout/PageShell'
+import { useState } from 'react'
+import './RD.css'
+import { useTheme } from '../../hooks/useTheme'
+import { PROJECTS, STAGE_LABEL, IDEAS, IDEA_STATUS, isActiveProject, initialsOf } from '../../data/rdData'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const projects = [
-  {
-    title: 'Nghiên cứu keo dán kính chịu nhiệt thế hệ mới',
-    status: 'Đang tiến hành',
-    progress: 62,
-    lead: 'TS. Nguyễn Minh Khoa',
-    start: '01/06/2024',
-  },
-  {
-    title: 'Quy trình cán kính phủ nano chống bám bẩn',
-    status: 'Thử nghiệm',
-    progress: 85,
-    lead: 'KS. Trần Thị Hương',
-    start: '15/03/2024',
-  },
-  {
-    title: 'Hợp kim nhôm siêu nhẹ cho khung cửa cao tầng',
-    status: 'Nghiên cứu cơ bản',
-    progress: 28,
-    lead: 'TS. Lê Văn Phúc',
-    start: '10/09/2024',
-  },
-]
-
-function statusStyle(s) {
-  if (s === 'Thử nghiệm') return { bg: '#eff6ff', color: '#2563eb' }
-  if (s === 'Đang tiến hành') return { bg: '#fef3c7', color: '#d97706' }
-  return { bg: '#f0fdf4', color: '#16a34a' }
+function Kpi({ label, value, valueColor, children }) {
+  return (
+    <div className="rd-card rd-kpi-card">
+      <div className="rd-kpi-label">{label}</div>
+      <div className="rd-kpi-num" style={valueColor ? { color: valueColor } : undefined}>{value}</div>
+      {children}
+    </div>
+  )
 }
 
-function progressColor(p) {
-  if (p >= 80) return '#22c55e'
-  if (p >= 50) return '#f59e0b'
-  return '#252526'
+function SectionHead({ icon, title, meta }) {
+  return (
+    <div className="rd-section-head">
+      <div className="rd-section-icon">{icon}</div>
+      <h3>{title}</h3>
+      <span style={{ flex: 1 }} />
+      <span className="rd-section-meta">{meta}</span>
+    </div>
+  )
 }
+
+const iconProps = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }
+const BULB_PATHS = (
+  <>
+    <path d="M9 18h6" /><path d="M10 22h4" />
+    <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2.05V17h6v-.25c0-.85.4-1.55 1-2.05A7 7 0 0 0 12 2z" />
+  </>
+)
 
 export default function RD() {
+  const { theme, toggleTheme } = useTheme()
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  const activeProjects = PROJECTS.filter(isActiveProject).length
+
   return (
-    <PageShell title="R&D" subtitle="Nghiên cứu vật liệu & quy trình mới">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {projects.map((p, i) => {
-          const sc = statusStyle(p.status)
-          return (
-            <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '14px' }}>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, lineHeight: 1.4 }}>{p.title}</h3>
-                <span style={{ flexShrink: 0, fontSize: '11.5px', fontWeight: 600, padding: '3px 10px', borderRadius: '99px', background: sc.bg, color: sc.color }}>
-                  {p.status}
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  <span>Tiến độ</span>
-                  <span style={{ fontWeight: 700, color: progressColor(p.progress) }}>{p.progress}%</span>
-                </div>
-                <div style={{ height: '8px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${p.progress}%`, background: progressColor(p.progress), borderRadius: '99px', transition: 'width 0.4s' }} />
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '24px', fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                <span>
-                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>Chủ trì: </span>{p.lead}
-                </span>
-                <span>
-                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>Bắt đầu: </span>{p.start}
-                </span>
-              </div>
-            </div>
-          )
-        })}
+    <div
+      className={`rd-page${aiOpen ? ' rd-ai-open' : ''}${aiResizing ? ' rd-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="rd-header">
+        <div className="rd-header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{BULB_PATHS}</svg>
+        </div>
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>R&amp;D</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nghiên cứu vật liệu mới, quy trình thi công &amp; sáng kiến cải tiến</span>
+        <span style={{ flex: 1 }} />
+        <button className="rd-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
       </div>
-    </PageShell>
+
+      <div className="rd-scroll">
+        <div className="rd-content">
+          <div className="rd-kpi-grid">
+            <Kpi label="Dự án R&D đang triển khai" value={activeProjects}>
+              <div className="rd-kpi-sub">Vật liệu, quy trình &amp; công nghệ</div>
+            </Kpi>
+            <Kpi label="Sáng kiến đã áp dụng" value="11" valueColor="var(--success)">
+              <div className="rd-kpi-sub">Trong 12 tháng gần nhất</div>
+            </Kpi>
+            <Kpi label="Ngân sách R&D đã dùng" value="62%">
+              <div className="rd-badge" style={{ background: 'var(--rd-tint)', color: 'var(--rd)' }}>2.4 tỷ / 3.9 tỷ năm 2026</div>
+            </Kpi>
+            <Kpi label="Bằng sáng chế / tiêu chuẩn đang theo đuổi" value="3">
+              <div className="rd-badge" style={{ background: 'var(--warn-tint)', color: 'var(--warn)' }}>Đang thẩm định</div>
+            </Kpi>
+          </div>
+
+          <div className="rd-card rd-section-card">
+            <SectionHead
+              title="Dự án nghiên cứu"
+              meta={`${PROJECTS.length} dự án đang theo dõi`}
+              icon={<svg {...iconProps}><path d="M10 2v6.5L4.5 18a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 8.5V2" /><path d="M8.5 2h7" /><path d="M7 15h10" /></svg>}
+            />
+            <div className="rd-table-wrap">
+              <table className="rd-table">
+                <thead><tr><th>Tên dự án</th><th>Người phụ trách</th><th>Giai đoạn</th><th>Tiến độ</th></tr></thead>
+                <tbody>
+                  {PROJECTS.map(p => {
+                    const [label, color] = STAGE_LABEL[p.stage]
+                    return (
+                      <tr key={p.name}>
+                        <td style={{ fontWeight: 700 }}>{p.name}</td>
+                        <td>{p.owner}</td>
+                        <td><span style={{ color, fontWeight: 600 }}>{label}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div className="rd-progress-track"><div className="rd-progress-fill" style={{ width: `${p.progress}%` }} /></div>
+                            <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{p.progress}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rd-card rd-section-card rd-pad-full">
+            <SectionHead
+              title="Ý tưởng & đề xuất"
+              meta={`${IDEAS.length} đề xuất gần đây`}
+              icon={<svg {...iconProps}>{BULB_PATHS}</svg>}
+            />
+            <div className="rd-idea-list">
+              {IDEAS.map(idea => {
+                const [label, color, bg] = IDEA_STATUS[idea.status]
+                return (
+                  <div key={idea.author} className="rd-card rd-idea-card">
+                    <div className="rd-idea-avatar">{initialsOf(idea.author)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700 }}>{idea.author}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{idea.text}</div>
+                    </div>
+                    <span className="rd-badge" style={{ background: bg, color }}>{label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Dezbot
+        open={aiOpen}
+        onOpen={() => setAiOpen(true)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }

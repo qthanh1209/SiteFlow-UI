@@ -1,68 +1,131 @@
-import PageShell from '../../components/layout/PageShell'
+import { useState } from 'react'
+import './IT.css'
+import { useTheme } from '../../hooks/useTheme'
+import { TICKETS, PRIO_LABEL, PRIO_COLOR, TICKET_STATUS, ASSETS, ASSET_STATUS, isOpenTicket } from '../../data/itData'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const stats = [
-  { label: 'Thiết bị online', value: '47 / 52', sub: '90% hoạt động', color: '#22c55e' },
-  { label: 'Ticket đang xử lý', value: '12', sub: '3 ưu tiên cao', color: '#f59e0b' },
-  { label: 'Uptime hệ thống', value: '99.8%', sub: '30 ngày qua', color: '#3b82f6' },
-]
-
-const tickets = [
-  { id: 'TK-091', title: 'Máy in tầng 3 không kết nối được', priority: 'Cao', status: 'Đang xử lý', owner: 'Minh Tuấn' },
-  { id: 'TK-092', title: 'Lỗi VPN khi truy cập từ xa', priority: 'Cao', status: 'Chờ phân công', owner: '—' },
-  { id: 'TK-093', title: 'Cài đặt phần mềm kế toán mới', priority: 'Thường', status: 'Hoàn thành', owner: 'Lan Anh' },
-  { id: 'TK-094', title: 'Bàn phím laptop bị liệt một số phím', priority: 'Thấp', status: 'Đang xử lý', owner: 'Quang Huy' },
-]
-
-function priorityColor(p) {
-  if (p === 'Cao') return { bg: '#fee2e2', color: '#dc2626' }
-  if (p === 'Thường') return { bg: '#fef3c7', color: '#d97706' }
-  return { bg: '#f0fdf4', color: '#16a34a' }
+function StatusBadge({ status }) {
+  const [label, color, bg] = status
+  return <span className="it-badge" style={{ background: bg, color }}>{label}</span>
 }
-function statusColor(s) {
-  if (s === 'Hoàn thành') return { bg: '#f0fdf4', color: '#16a34a' }
-  if (s === 'Đang xử lý') return { bg: '#eff6ff', color: '#2563eb' }
-  return { bg: '#f9fafb', color: '#6b7280' }
-}
-const badge = (colors) => ({ fontSize: '11.5px', fontWeight: 600, padding: '2px 8px', borderRadius: '99px', background: colors.bg, color: colors.color })
 
-export default function IT() {
-  const td = { padding: '11px 14px', fontSize: '13.5px', borderBottom: '1px solid var(--border)', verticalAlign: 'middle' }
-
+function Kpi({ label, value, valueColor, children }) {
   return (
-    <PageShell title="IT" subtitle="Hạ tầng công nghệ & hỗ trợ kỹ thuật">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginBottom: '24px' }}>
-        {stats.map(s => (
-          <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>{s.label}</p>
-            <p style={{ fontSize: '28px', fontWeight: 800, margin: '0 0 4px', color: s.color }}>{s.value}</p>
-            <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: 0 }}>{s.sub}</p>
-          </div>
-        ))}
-      </div>
+    <div className="it-card it-kpi-card">
+      <div className="it-kpi-label">{label}</div>
+      <div className="it-kpi-num" style={valueColor ? { color: valueColor } : undefined}>{value}</div>
+      {children}
+    </div>
+  )
+}
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontWeight: 700, fontSize: '15px' }}>Danh sách Support Ticket</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {['ID', 'Vấn đề', 'Ưu tiên', 'Trạng thái', 'Phụ trách'].map(h => (
-                <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--border)' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map(t => (
-              <tr key={t.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-alt)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
-                <td style={td}><span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{t.id}</span></td>
-                <td style={td}>{t.title}</td>
-                <td style={td}><span style={badge(priorityColor(t.priority))}>{t.priority}</span></td>
-                <td style={td}><span style={badge(statusColor(t.status))}>{t.status}</span></td>
-                <td style={{ ...td, borderBottom: 'none' }}>{t.owner}</td>
-              </tr>
-            ))}
-          </tbody>
+function Section({ icon, title, meta, headers, children }) {
+  return (
+    <div className="it-card it-section-card">
+      <div className="it-section-head">
+        <div className="it-section-icon">{icon}</div>
+        <h3>{title}</h3>
+        <span style={{ flex: 1 }} />
+        <span className="it-section-meta">{meta}</span>
+      </div>
+      <div className="it-table-wrap">
+        <table className="it-table">
+          <thead><tr>{headers.map(h => <th key={h}>{h}</th>)}</tr></thead>
+          <tbody>{children}</tbody>
         </table>
       </div>
-    </PageShell>
+    </div>
+  )
+}
+
+const iconProps = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }
+
+export default function IT() {
+  const { theme, toggleTheme } = useTheme()
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  const openTickets = TICKETS.filter(isOpenTicket).length
+
+  return (
+    <div
+      className={`it-page${aiOpen ? ' it-ai-open' : ''}${aiResizing ? ' it-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="it-header">
+        <div className="it-header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
+        </div>
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>IT</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quản lý hạ tầng CNTT, thiết bị &amp; yêu cầu hỗ trợ</span>
+        <span style={{ flex: 1 }} />
+        <button className="it-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
+      </div>
+
+      <div className="it-scroll">
+        <div className="it-content">
+          <div className="it-kpi-grid">
+            <Kpi label="Ticket đang mở" value={openTickets}>
+              <div className="it-badge" style={{ background: 'var(--warn-tint)', color: 'var(--warn)' }}>Cần theo dõi</div>
+            </Kpi>
+            <Kpi label="Thiết bị đang quản lý" value="186">
+              <div className="it-kpi-sub">Laptop, máy chủ, camera, mạng</div>
+            </Kpi>
+            <Kpi label="Uptime hệ thống tháng này" value="99.8%" valueColor="var(--success)">
+              <div className="it-kpi-sub">Máy chủ &amp; hạ tầng mạng</div>
+            </Kpi>
+            <Kpi label="Yêu cầu hoàn thành tuần này" value="27">
+              <div className="it-badge" style={{ background: 'var(--success-tint)', color: 'var(--success)' }}>+5 so với tuần trước</div>
+            </Kpi>
+          </div>
+
+          <Section
+            title="Yêu cầu hỗ trợ"
+            meta={`${TICKETS.length} yêu cầu gần đây`}
+            headers={['Người yêu cầu', 'Vấn đề', 'Mức độ ưu tiên', 'Trạng thái', 'Ngày tạo']}
+            icon={<svg {...iconProps}><path d="M2 9a3 3 0 0 1 0 6v3a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3a3 3 0 0 1 0-6V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z" /></svg>}
+          >
+            {TICKETS.map(t => (
+              <tr key={t.requester + t.date}>
+                <td style={{ fontWeight: 700 }}>{t.requester}</td>
+                <td>{t.issue}</td>
+                <td><span className="it-prio-dot" style={{ background: PRIO_COLOR[t.priority] }} />{PRIO_LABEL[t.priority]}</td>
+                <td><StatusBadge status={TICKET_STATUS[t.status]} /></td>
+                <td className="mono">{t.date}</td>
+              </tr>
+            ))}
+          </Section>
+
+          <Section
+            title="Thiết bị & tài sản CNTT"
+            meta="Đang theo dõi 186 thiết bị"
+            headers={['Thiết bị', 'Loại', 'Người / vị trí sử dụng', 'Trạng thái']}
+            icon={<svg {...iconProps}><rect x="2" y="2" width="20" height="8" rx="2" ry="2" /><rect x="2" y="14" width="20" height="8" rx="2" ry="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" /></svg>}
+          >
+            {ASSETS.map(a => (
+              <tr key={a.name}>
+                <td style={{ fontWeight: 700 }}>{a.name}</td>
+                <td>{a.type}</td>
+                <td>{a.owner}</td>
+                <td><StatusBadge status={ASSET_STATUS[a.status]} /></td>
+              </tr>
+            ))}
+          </Section>
+        </div>
+      </div>
+
+      <Dezbot
+        open={aiOpen}
+        onOpen={() => setAiOpen(true)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }

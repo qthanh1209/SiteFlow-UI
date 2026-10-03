@@ -1,66 +1,105 @@
-import PageShell from '../../components/layout/PageShell'
+import { useState } from 'react'
+import './DuAn.css'
+import { useTheme } from '../../hooks/useTheme'
+import { MembersProvider } from './components/ProjectMembers'
+import ProjectListTab from './components/ProjectListTab'
+import SetupTab from './components/SetupTab'
+import TienDoTab from './components/TienDoTab'
+import NhiemVuTab from './components/NhiemVuTab'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const projects = [
-  { name: 'Biệt thự Đông Anh – Gói hoàn thiện', phase: 'Thi công thô', pm: 'Nguyễn Văn An', pct: 65, status: 'Đúng tiến độ', color: '#27b08b' },
-  { name: 'Căn hộ Sky Park tầng 12-15', phase: 'Hoàn thiện nội thất', pm: 'Trần Thị Bình', pct: 42, status: 'Chậm tiến độ', color: '#f5a623' },
-  { name: 'Văn phòng Mỹ Đình Tower', phase: 'Nghiệm thu', pm: 'Lê Hoàng Cường', pct: 88, status: 'Đúng tiến độ', color: '#27b08b' },
-  { name: 'Shophouse Cầu Giấy – Block B', phase: 'Thiết kế', pm: 'Phạm Minh Đức', pct: 20, status: 'Đúng tiến độ', color: '#4f8ef7' },
+const MAIN_TABS = [
+  { key: 'list', label: 'Danh sách dự án' },
+  { key: 'create', label: 'Thiết lập thi công' },
+  { key: 'tiendo', label: 'Tiến độ' },
+  { key: 'nhiemvu', label: 'Nhiệm vụ' },
 ]
+const VALID_TABS = ['list', 'create', 'tiendo', 'nhiemvu', 'detail']
+const VALID_GTABS = ['overview', 'mission', 'rewards', 'leaderboard']
 
-const phaseColors = {
-  'Thiết kế': '#a259ff',
-  'Thi công thô': '#f5a623',
-  'Hoàn thiện nội thất': '#4f8ef7',
-  'Nghiệm thu': '#27b08b',
+/* Đọc tab ban đầu từ hash (#tiendo, #detail, #nhiemvu-rewards...) giống bản HTML */
+function initialRoute() {
+  const hash = (window.location.hash || '').replace('#', '')
+  if (hash.startsWith('nhiemvu-')) {
+    const gtab = hash.slice('nhiemvu-'.length)
+    return { tab: 'nhiemvu', sub: 'setup', gtab: VALID_GTABS.includes(gtab) ? gtab : 'overview' }
+  }
+  if (hash === 'detail') return { tab: 'create', sub: 'detail', gtab: 'overview' }
+  return { tab: VALID_TABS.includes(hash) ? hash : 'list', sub: 'setup', gtab: 'overview' }
 }
 
 export default function DuAn() {
+  const { theme, toggleTheme } = useTheme()
+  const [route] = useState(initialRoute)
+  const [tab, setTab] = useState(route.tab)
+  const [createSub, setCreateSub] = useState(route.sub)
+  const [gtab, setGtab] = useState(route.gtab)
+
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  function goToTab(name) {
+    if (name === 'detail') {
+      setTab('create')
+      setCreateSub('detail')
+      return
+    }
+    setTab(name)
+  }
+
+  const panelStyle = key => ({ display: tab === key ? 'flex' : 'none' })
+
   return (
-    <PageShell title="Quản lý dự án" subtitle="Danh sách và tiến độ dự án thi công">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-          {[
-            { label: 'Tổng dự án', value: '4', color: '#4f8ef7' },
-            { label: 'Đang thực hiện', value: '3', color: '#27b08b' },
-            { label: 'Chậm tiến độ', value: '1', color: '#f5a623' },
-            { label: 'Hoàn thành tháng này', value: '1', color: '#a259ff' },
-          ].map(s => (
-            <div key={s.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', borderTop: `3px solid ${s.color}` }}>
-              <div style={{ fontSize: '24px', fontWeight: 800, marginBottom: '4px' }}>{s.value}</div>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{s.label}</div>
-            </div>
+    <MembersProvider>
+      <div
+        className={`da-page${aiOpen ? ' da-ai-open' : ''}${aiResizing ? ' da-ai-resizing' : ''}`}
+        style={{ '--ai-panel-width': `${aiWidth}px` }}
+      >
+        <div className="da-header">
+          <div className="da-header-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+          </div>
+          <span className="da-header-title">Quản lý dự án</span>
+          <span className="da-header-sub">Điểm khởi đầu — danh sách dự án, thiết lập thi công, tiến độ, nhiệm vụ &amp; luồng dữ liệu trong một nơi</span>
+          <span style={{ flex: 1 }} />
+          <button className="da-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+            {theme === 'dark'
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+          </button>
+        </div>
+
+        <div className="da-tabs-row">
+          {MAIN_TABS.map(t => (
+            <button key={t.key} className={`da-proj-tab${tab === t.key ? ' active' : ''}`} onClick={() => goToTab(t.key)}>{t.label}</button>
           ))}
         </div>
 
-        {/* Project list */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 700 }}>Danh sách dự án</h2>
-            <button style={{ padding: '7px 16px', borderRadius: '8px', background: 'var(--primary)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>+ Thêm dự án</button>
+        {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái khi chuyển tab, giống bản HTML */}
+        <div className="da-content">
+          <div className="da-panel" style={panelStyle('tiendo')}>
+            <TienDoTab active={tab === 'tiendo'} />
           </div>
-          <div style={{ padding: '8px 0' }}>
-            {projects.map((p, i) => (
-              <div key={i} style={{ padding: '16px 20px', borderBottom: i < projects.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>{p.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '20px', background: `${phaseColors[p.phase]}22`, color: phaseColors[p.phase], fontWeight: 600 }}>{p.phase}</span>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>PM: {p.pm}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ flex: 1, height: '6px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${p.pct}%`, background: p.color, borderRadius: '4px', transition: 'width 0.4s' }} />
-                    </div>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: p.color, minWidth: '34px', textAlign: 'right' }}>{p.pct}%</span>
-                  </div>
-                </div>
-                <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', fontWeight: 600, background: p.status === 'Đúng tiến độ' ? '#e8f5e9' : '#fff8e1', color: p.status === 'Đúng tiến độ' ? '#27b08b' : '#f5a623', whiteSpace: 'nowrap' }}>{p.status}</span>
-              </div>
-            ))}
+          <div className="da-panel-scroll" style={panelStyle('list')}>
+            <ProjectListTab onGoto={goToTab} />
+          </div>
+          <div className="da-panel-scroll" style={panelStyle('create')}>
+            <SetupTab sub={createSub} onSubChange={setCreateSub} onGoto={goToTab} />
+          </div>
+          <div className="da-panel-scroll" style={panelStyle('nhiemvu')}>
+            <NhiemVuTab gtab={gtab} onGtabChange={setGtab} />
           </div>
         </div>
+
+        <Dezbot
+          open={aiOpen}
+          onToggle={() => setAiOpen(o => !o)}
+          onClose={() => setAiOpen(false)}
+          onResize={setAiWidth}
+          onResizingChange={setAiResizing}
+        />
       </div>
-    </PageShell>
+    </MembersProvider>
   )
 }

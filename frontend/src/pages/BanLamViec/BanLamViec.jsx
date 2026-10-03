@@ -1,74 +1,92 @@
-import { useState } from 'react'
-import PageShell from '../../components/layout/PageShell'
-
-const initialTasks = [
-  { id: 1, text: 'Hoàn thành báo cáo tuần cho quản lý', done: false },
-  { id: 2, text: 'Review hợp đồng với đối tác ABC', done: true },
-  { id: 3, text: 'Cập nhật tiến độ dự án SiteFlow v2', done: false },
-]
+import { useRef, useState } from 'react'
+import './BanLamViec.css'
+import { useTheme } from '../../hooks/useTheme'
+import { INITIAL_TASKS, INITIAL_REQUESTS } from '../../data/banLamViecData'
+import OverviewTab from './components/OverviewTab'
+import DonTuTab from './components/DonTuTab'
+import AddTaskModal from './components/AddTaskModal'
+import DonTuModal from './components/DonTuModal'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
 export default function BanLamViec() {
-  const [tasks, setTasks] = useState(initialTasks)
+  const { theme, toggleTheme } = useTheme()
+  const [tab, setTab] = useState('tongquan')
+  const [tasks, setTasks] = useState(INITIAL_TASKS)
+  const [requests, setRequests] = useState(INITIAL_REQUESTS)
+  const seq = useRef(100)
 
-  const toggle = (id) => setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done } : t))
+  const [taskModalOpen, setTaskModalOpen] = useState(false)
+  // Loại đơn đang chọn được giữ lại sau khi đóng modal (giống currentDonTuType)
+  const [donTuType, setDonTuType] = useState(null)
+  const [donTuOpen, setDonTuOpen] = useState(false)
 
-  const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }
-  const label = { fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '14px' }
-  const row = { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: '1px solid var(--border)' }
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  /* ---------- Thao tác dữ liệu ---------- */
+  function toggleTask(id) {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
+  }
+  function addTask(data) {
+    setTasks(prev => [{ id: ++seq.current, done: false, ...data }, ...prev])
+  }
+  function addRequest(data) {
+    setRequests(prev => [{ id: ++seq.current, ...data }, ...prev])
+  }
+  function pickDonTuType(type) {
+    setDonTuType(type)
+    setDonTuOpen(true)
+  }
+
+  const panel = key => `blv-panel${tab === key ? ' active' : ''}`
 
   return (
-    <PageShell title="Bàn làm việc" subtitle="Nhiệm vụ cá nhân & chấm công của tôi">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-
-        {/* My tasks today */}
-        <div style={{ ...card, gridColumn: '1 / -1' }}>
-          <p style={label}>Nhiệm vụ hôm nay</p>
-          {tasks.map((t, i) => (
-            <div key={t.id} style={{ ...row, borderBottom: i === tasks.length - 1 ? 'none' : '1px solid var(--border)' }}>
-              <input
-                type="checkbox"
-                checked={t.done}
-                onChange={() => toggle(t.id)}
-                style={{ width: '16px', height: '16px', accentColor: 'var(--primary)', cursor: 'pointer', flexShrink: 0 }}
-              />
-              <span style={{ fontSize: '14px', textDecoration: t.done ? 'line-through' : 'none', color: t.done ? 'var(--text-muted)' : 'var(--text)' }}>
-                {t.text}
-              </span>
-              <span style={{ marginLeft: 'auto', fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                {t.done ? 'Hoàn thành' : 'Đang làm'}
-              </span>
-            </div>
-          ))}
+    <div
+      className={`blv-page${aiOpen ? ' blv-ai-open' : ''}${aiResizing ? ' blv-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="blv-header">
+        <div className="blv-header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="13" rx="2.5" /><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7" /><path d="M2 13h20" /></svg>
         </div>
-
-        {/* Attendance summary */}
-        <div style={card}>
-          <p style={label}>Chấm công hôm nay</p>
-          {[['Giờ vào', '08:02'], ['Giờ ra', '--:--'], ['Tổng giờ', '0h 0m'], ['Trạng thái', 'Đang làm việc']].map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', fontSize: '13.5px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{k}</span>
-              <span style={{ fontWeight: 600 }}>{v}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Leave balance */}
-        <div style={card}>
-          <p style={label}>Số ngày phép còn lại</p>
-          {[['Phép năm', 12, 14], ['Phép bệnh', 3, 5], ['Phép không lương', 0, 10]].map(([name, used, total]) => (
-            <div key={name} style={{ marginBottom: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '5px' }}>
-                <span>{name}</span>
-                <span style={{ fontWeight: 600 }}>{total - used} / {total} ngày</span>
-              </div>
-              <div style={{ height: '6px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${(used / total) * 100}%`, background: 'var(--primary)', borderRadius: '99px' }} />
-              </div>
-            </div>
-          ))}
-        </div>
-
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>Bàn làm việc của tôi</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nhiệm vụ, chấm công &amp; ngày phép cá nhân</span>
+        <span style={{ flex: 1 }} />
+        <button className="blv-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
       </div>
-    </PageShell>
+
+      <div className="blv-body">
+
+        {/* Tab con: Tổng quan / Đơn từ */}
+        <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
+          <button className={`blv-tab${tab === 'tongquan' ? ' active' : ''}`} onClick={() => setTab('tongquan')}>Tổng quan</button>
+          <button className={`blv-tab${tab === 'dontu' ? ' active' : ''}`} onClick={() => setTab('dontu')}>Đơn từ</button>
+        </div>
+
+        {/* Các tab luôn được mount (ẩn bằng class .active) để giữ vị trí cuộn, giống bản HTML */}
+        <div className={panel('tongquan')} style={{ overflowY: 'auto', overflowX: 'hidden' }}>
+          <OverviewTab tasks={tasks} onToggleTask={toggleTask} onAddTask={() => setTaskModalOpen(true)} />
+        </div>
+        <div className={panel('dontu')} style={{ overflowY: 'auto', overflowX: 'hidden', gap: 16 }}>
+          <DonTuTab requests={requests} onPickType={pickDonTuType} />
+        </div>
+      </div>
+
+      <AddTaskModal open={taskModalOpen} onClose={() => setTaskModalOpen(false)} onAdd={addTask} />
+      <DonTuModal open={donTuOpen} type={donTuType} onClose={() => setDonTuOpen(false)} onSubmit={addRequest} />
+
+      <Dezbot
+        open={aiOpen}
+        onToggle={() => setAiOpen(o => !o)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }

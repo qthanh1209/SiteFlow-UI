@@ -1,84 +1,74 @@
-import PageShell from '../../components/layout/PageShell'
+import { useState } from 'react'
+import './QS.css'
+import { useTheme } from '../../hooks/useTheme'
+import { QS_TABS } from '../../data/qsData'
+import OverviewTab from './components/OverviewTab'
+import ProjectsTab from './components/ProjectsTab'
+import BreakdownTab from './components/BreakdownTab'
+import ProductsTab from './components/ProductsTab'
+import QuoteTab from './components/QuoteTab'
+import PurchaseTab from './components/PurchaseTab'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const rows = [
-  { hangMuc: 'Đào đắp nền móng', donVi: 'm³', khoiLuong: 320, donGia: 85000 },
-  { hangMuc: 'Bê tông móng đơn', donVi: 'm³', khoiLuong: 48, donGia: 1450000 },
-  { hangMuc: 'Thép cột Ø16', donVi: 'kg', khoiLuong: 1240, donGia: 22000 },
-  { hangMuc: 'Gạch xây tường 200×100', donVi: 'viên', khoiLuong: 8500, donGia: 1800 },
-  { hangMuc: 'Sơn nước nội thất', donVi: 'm²', khoiLuong: 620, donGia: 45000 },
-]
-
-const fmt = (n) => n.toLocaleString('vi-VN') + ' đ'
-const total = rows.reduce((s, r) => s + r.khoiLuong * r.donGia, 0)
-
-const thStyle = {
-  textAlign: 'left', padding: '10px 14px', fontSize: '12px',
-  fontWeight: 700, color: 'var(--text-muted)', borderBottom: '2px solid var(--border)',
-  background: 'var(--surface-alt)', whiteSpace: 'nowrap',
-}
-const tdStyle = {
-  padding: '11px 14px', fontSize: '13.5px', borderBottom: '1px solid var(--border)',
+/* Hướng bố cục và khoảng cách của từng tab (giống style inline của các .qs-panel trong bản HTML) */
+const PANEL_LAYOUT = {
+  overview: { flexDirection: 'column', gap: 16 },
+  projects: { flexDirection: 'column', gap: 16 },
+  breakdown: { flexDirection: 'column', gap: 14 },
+  products: { flexDirection: 'row', gap: 16, minHeight: 0 },
+  quote: { flexDirection: 'column', gap: 14 },
+  po: { flexDirection: 'column', gap: 16 },
 }
 
 export default function QS() {
-  return (
-    <PageShell title="QS · Bóc tách khối lượng" subtitle="Quản lý bóc tách & báo giá">
+  const { theme, toggleTheme } = useTheme()
+  const [tab, setTab] = useState('overview')
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
 
-      {/* Summary cards */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-        {[
-          { label: 'Tổng hạng mục', value: rows.length },
-          { label: 'Tổng khối lượng', value: '10.728 đơn vị' },
-          { label: 'Tổng giá trị', value: fmt(total) },
-          { label: 'Đã duyệt', value: '3 / 5' },
-        ].map((c) => (
-          <div key={c.label} style={{
-            flex: '1 1 160px', background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: '12px', padding: '16px 20px',
-          }}>
-            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginBottom: '6px' }}>{c.label}</div>
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>{c.value}</div>
-          </div>
+  const panel = key => ({ display: tab === key ? 'flex' : 'none', ...PANEL_LAYOUT[key] })
+
+  return (
+    <div
+      className={`qs-page${aiOpen ? ' qs-ai-open' : ''}${aiResizing ? ' qs-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="qs-header">
+        <span className="qs-crumb">Chung cư Riverside</span>
+        <span className="qs-crumb">/</span>
+        <span className="qs-crumb-current">QS — Bóc tách &amp; Báo giá</span>
+        <span style={{ flex: 1 }} />
+        <button className="qs-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
+      </div>
+
+      <div className="qs-tabs-row">
+        {QS_TABS.map(t => (
+          <button key={t.key} className={`qs-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>
         ))}
       </div>
 
-      {/* Table */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, fontSize: '14px' }}>Bảng bóc tách khối lượng</span>
-          <button style={{
-            padding: '7px 16px', borderRadius: '8px', border: 'none',
-            background: 'var(--primary)', color: '#fff', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-          }}>+ Thêm hạng mục</button>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {['Hạng mục', 'Đơn vị', 'Khối lượng', 'Đơn giá', 'Thành tiền'].map((h) => (
-                  <th key={h} style={thStyle}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} style={{ background: i % 2 === 1 ? 'var(--surface-alt)' : undefined }}>
-                  <td style={tdStyle}>{r.hangMuc}</td>
-                  <td style={{ ...tdStyle, color: 'var(--text-muted)' }}>{r.donVi}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>{r.khoiLuong.toLocaleString('vi-VN')}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right' }}>{fmt(r.donGia)}</td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600 }}>{fmt(r.khoiLuong * r.donGia)}</td>
-                </tr>
-              ))}
-              {/* Totals row */}
-              <tr style={{ background: 'var(--primary-tint)', fontWeight: 700 }}>
-                <td style={{ ...tdStyle, color: 'var(--primary)' }} colSpan={4}>Tổng cộng</td>
-                <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--primary)', fontSize: '15px' }}>{fmt(total)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái bộ lọc, giống bản HTML */}
+      <div className="qs-scroll">
+        <div style={panel('overview')}><OverviewTab onGoto={setTab} /></div>
+        <div style={panel('projects')}><ProjectsTab onGoto={setTab} /></div>
+        <div style={panel('breakdown')}><BreakdownTab /></div>
+        <div style={panel('products')}><ProductsTab /></div>
+        <div style={panel('quote')}><QuoteTab /></div>
+        <div style={panel('po')}><PurchaseTab /></div>
       </div>
-    </PageShell>
+
+      <Dezbot
+        open={aiOpen}
+        onToggle={() => setAiOpen(o => !o)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }

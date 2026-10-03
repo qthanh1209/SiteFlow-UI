@@ -1,63 +1,110 @@
-import PageShell from '../../components/layout/PageShell'
-
-const orders = [
-  { ma: 'LX-2024-001', sanpham: 'Khung cửa nhôm A40', soluong: 120, tiendo: 75, deadline: '10/10/2024' },
-  { ma: 'LX-2024-002', sanpham: 'Kính cường lực 8mm', soluong: 200, tiendo: 40, deadline: '15/10/2024' },
-  { ma: 'LX-2024-003', sanpham: 'Vách ngăn văn phòng V12', soluong: 45, tiendo: 90, deadline: '08/10/2024' },
-  { ma: 'LX-2024-004', sanpham: 'Cửa trượt tự động TS3', soluong: 18, tiendo: 20, deadline: '25/10/2024' },
-]
-
-function progressColor(p) {
-  if (p >= 80) return '#22c55e'
-  if (p >= 50) return '#f59e0b'
-  return '#ef4444'
-}
+import { useState } from 'react'
+import './SanXuat.css'
+import { useTheme } from '../../hooks/useTheme'
+import { SX_TABS, INITIAL_ORDERS, INITIAL_MATERIALS, ME } from '../../data/sanXuatData'
+import OverviewTab from './components/OverviewTab'
+import OrdersTab from './components/OrdersTab'
+import KanbanTab from './components/KanbanTab'
+import MaterialsTab from './components/MaterialsTab'
+import { WorkersTab, EquipmentTab } from './components/ResourceTabs'
+import CreateOrderModal from './components/CreateOrderModal'
+import StockModal from './components/StockModal'
+import DetailModal from './components/DetailModal'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
 export default function SanXuat() {
-  const th = { padding: '10px 14px', textAlign: 'left', fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }
-  const td = { padding: '12px 14px', fontSize: '13.5px', borderBottom: '1px solid var(--border)', verticalAlign: 'middle' }
+  const { theme, toggleTheme } = useTheme()
+  const [tab, setTab] = useState('tongquan')
+  const [orders, setOrders] = useState(INITIAL_ORDERS)
+  const [orderSeq, setOrderSeq] = useState(7)
+  const [materials, setMaterials] = useState(INITIAL_MATERIALS)
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const [stockMode, setStockMode] = useState(null)
+  const [detail, setDetail] = useState({ code: null, open: false })
+
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  /* ---------- Thao tác dữ liệu ---------- */
+  function createOrder(data) {
+    const next = orderSeq + 1
+    setOrderSeq(next)
+    setOrders(prev => [{ code: 'SX-' + String(next).padStart(3, '0'), stage: 'doVe', progress: 0, late: false, comments: [], ...data }, ...prev])
+    setCreateOpen(false)
+  }
+  function moveOrder(code, stageKey) {
+    setOrders(prev => prev.map(o => {
+      if (o.code !== code || o.stage === stageKey) return o
+      return stageKey === 'hoanThanh' ? { ...o, stage: stageKey, progress: 100, late: false } : { ...o, stage: stageKey }
+    }))
+  }
+  function addComment(code, text) {
+    setOrders(prev => prev.map(o => o.code === code ? { ...o, comments: [...o.comments, { author: ME, text, time: 'Vừa xong' }] } : o))
+  }
+  function adjustStock(idx, delta) {
+    setMaterials(prev => prev.map((m, i) => i === idx ? { ...m, qty: m.qty + delta } : m))
+    setStockMode(null)
+  }
+
+  const panel = key => `sx-panel${tab === key ? ' active' : ''}`
+  const detailOrder = orders.find(o => o.code === detail.code) || null
 
   return (
-    <PageShell title="Sản xuất" subtitle="Quản lý xưởng gia công & sản xuất">
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 700, fontSize: '15px' }}>Lệnh sản xuất</span>
-          <span style={{ fontSize: '12px', background: 'var(--primary-tint)', color: 'var(--primary)', borderRadius: '6px', padding: '3px 10px', fontWeight: 600 }}>
-            {orders.length} lệnh đang chạy
-          </span>
+    <div
+      className={`sx-page${aiOpen ? ' sx-ai-open' : ''}${aiResizing ? ' sx-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="sx-header">
+        <div className="sx-header-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {['Mã lệnh', 'Sản phẩm', 'Số lượng', 'Tiến độ', 'Deadline'].map(h => (
-                  <th key={h} style={th}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => (
-                <tr key={o.ma} style={{ transition: 'background 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-alt)'}
-                  onMouseLeave={e => e.currentTarget.style.background = ''}>
-                  <td style={td}><span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '13px' }}>{o.ma}</span></td>
-                  <td style={td}>{o.sanpham}</td>
-                  <td style={{ ...td, textAlign: 'right' }}>{o.soluong.toLocaleString()}</td>
-                  <td style={{ ...td, minWidth: '160px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ flex: 1, height: '7px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${o.tiendo}%`, background: progressColor(o.tiendo), borderRadius: '99px', transition: 'width 0.3s' }} />
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: progressColor(o.tiendo), width: '34px' }}>{o.tiendo}%</span>
-                    </div>
-                  </td>
-                  <td style={td}>{o.deadline}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>Sản xuất</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Quản lý sản xuất xưởng mộc</span>
+        <span style={{ flex: 1 }} />
+        <button className="sx-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
       </div>
-    </PageShell>
+
+      <div className="sx-tabs-row">
+        {SX_TABS.map(t => (
+          <button key={t.key} className={`sx-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>
+        ))}
+        <span style={{ flex: 1 }} />
+        <button className="sx-add-btn" onClick={() => setCreateOpen(true)}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Tạo đơn sản xuất
+        </button>
+      </div>
+
+      {/* Các tab luôn được mount (ẩn bằng class .active) để giữ bộ lọc đang chọn, giống bản HTML */}
+      <div className="sx-scroll">
+        <div className={panel('tongquan')}><OverviewTab orders={orders} /></div>
+        <div className={panel('donsx')}><OrdersTab orders={orders} /></div>
+        <div className={panel('quytrinh')} style={{ minHeight: 0 }}>
+          <KanbanTab orders={orders} onMoveOrder={moveOrder} onOpenOrder={code => setDetail({ code, open: true })} />
+        </div>
+        <div className={panel('khovattu')}><MaterialsTab materials={materials} onStock={setStockMode} /></div>
+        <div className={panel('nhancong')}><WorkersTab /></div>
+        <div className={panel('maymoc')}><EquipmentTab /></div>
+      </div>
+
+      <CreateOrderModal open={createOpen} onClose={() => setCreateOpen(false)} onCreate={createOrder} />
+      <StockModal mode={stockMode} materials={materials} onClose={() => setStockMode(null)} onSubmit={adjustStock} />
+      <DetailModal order={detailOrder} open={detail.open} onClose={() => setDetail(d => ({ ...d, open: false }))} onComment={addComment} />
+
+      <Dezbot
+        open={aiOpen}
+        onOpen={() => setAiOpen(true)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+        data={{ orders, materials }}
+      />
+    </div>
   )
 }

@@ -1,66 +1,84 @@
-import PageShell from '../../components/layout/PageShell'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import './ChamCong.css'
+import { useTheme } from '../../hooks/useTheme'
+import AttendanceTab from './components/AttendanceTab'
+import HoSoTab from './components/HoSoTab'
+import BangLuongTab from './components/BangLuongTab'
+import HanhChinhTab from './components/HanhChinhTab'
+import TuyenDungTab from './components/TuyenDungTab'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const stats = [
-  { label: 'Có mặt',   value: 42, color: '#10b981', bg: '#d1fae5' },
-  { label: 'Nghỉ phép', value: 5,  color: '#f59e0b', bg: '#fef3c7' },
-  { label: 'Trễ giờ',   value: 3,  color: '#ef4444', bg: '#fee2e2' },
+const HR_TABS = [
+  { key: 'cham-cong', label: 'Chấm công' },
+  { key: 'ho-so', label: 'Hồ sơ nhân sự' },
+  { key: 'bang-luong', label: 'Bảng lương' },
+  { key: 'hanh-chinh', label: 'Hành chính' },
+  { key: 'tuyen-dung', label: 'Tuyển dụng' },
 ]
-
-const rows = [
-  { name: 'Nguyễn An',  dept: 'Kỹ thuật', checkin: '08:02', checkout: '17:30', status: 'Đúng giờ' },
-  { name: 'Trần Bình',  dept: 'Thiết kế', checkin: '08:45', checkout: '17:30', status: 'Trễ giờ'  },
-  { name: 'Lê Châu',    dept: 'Kinh doanh', checkin: '07:55', checkout: '17:00', status: 'Đúng giờ' },
-  { name: 'Phạm Dung',  dept: 'Kế toán',  checkin: '-',     checkout: '-',      status: 'Nghỉ phép' },
-  { name: 'Hoàng Ê',    dept: 'Kỹ thuật', checkin: '09:10', checkout: '18:00', status: 'Trễ giờ'  },
-]
-
-const STATUS_STYLE = {
-  'Đúng giờ': { bg: '#d1fae5', color: '#059669' },
-  'Trễ giờ':  { bg: '#fee2e2', color: '#dc2626' },
-  'Nghỉ phép': { bg: '#fef3c7', color: '#d97706' },
-}
-
-const th = { padding: '10px 16px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 13, borderBottom: '1px solid #f0f0f0' }
-const td = { padding: '12px 16px', fontSize: 14, color: '#374151' }
 
 export default function ChamCong() {
+  const { theme, toggleTheme } = useTheme()
+  const [tab, setTab] = useState('cham-cong')
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  const show = key => ({ display: tab === key ? 'flex' : 'none' })
+
   return (
-    <PageShell title="HR · Chấm công" subtitle="Quản lý chấm công & phê duyệt">
-      {/* Stats */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-        {stats.map(s => (
-          <div key={s.label} style={{ flex: '1 1 140px', background: s.bg, borderRadius: 10, padding: '18px 22px' }}>
-            <div style={{ fontSize: 28, fontWeight: 700, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 13, color: s.color, marginTop: 4 }}>{s.label}</div>
-          </div>
+    <div
+      className={`cc-page${aiOpen ? ' cc-ai-open' : ''}${aiResizing ? ' cc-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="cc-header">
+        <span className="cc-crumb">Chung cư Riverside</span>
+        <span className="cc-crumb">/</span>
+        <span className="cc-crumb">Giai đoạn 2</span>
+        <span className="cc-crumb">/</span>
+        <span className="cc-crumb-current">HR</span>
+        <span style={{ flex: 1 }} />
+        <Link to="/cham-cong-mobile" className="cc-mobile-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="7" y="2" width="10" height="20" rx="2" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+          Xem giao diện mobile
+        </Link>
+        <button className="cc-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
+      </div>
+
+      <div className="cc-tabs-row">
+        {HR_TABS.map(t => (
+          <button key={t.key} className={`cc-hr-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>
         ))}
       </div>
 
-      {/* Table */}
-      <div style={{ background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,.08)', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              {['Nhân viên', 'Phòng ban', 'Giờ vào', 'Giờ ra', 'Trạng thái'].map(h => (
-                <th key={h} style={th}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #f9fafb' }}>
-                <td style={{ ...td, fontWeight: 500 }}>{r.name}</td>
-                <td style={td}>{r.dept}</td>
-                <td style={td}>{r.checkin}</td>
-                <td style={td}>{r.checkout}</td>
-                <td style={td}>
-                  <span style={{ ...STATUS_STYLE[r.status], borderRadius: 6, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>{r.status}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái khi chuyển tab, giống bản HTML */}
+      <div className="cc-hr-panel" style={show('cham-cong')}>
+        <AttendanceTab />
       </div>
-    </PageShell>
+      <div className="cc-hr-panel cc-scroll" style={{ ...show('ho-so'), gap: 16 }}>
+        <HoSoTab />
+      </div>
+      <div className="cc-hr-panel cc-scroll" style={{ ...show('bang-luong'), gap: 16 }}>
+        <BangLuongTab />
+      </div>
+      <div className="cc-hr-panel cc-scroll" style={{ ...show('hanh-chinh'), gap: 16 }}>
+        <HanhChinhTab />
+      </div>
+      <div className="cc-hr-panel cc-scroll" style={{ ...show('tuyen-dung'), gap: 16 }}>
+        <TuyenDungTab />
+      </div>
+
+      <Dezbot
+        open={aiOpen}
+        onToggle={() => setAiOpen(o => !o)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }

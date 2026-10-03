@@ -1,95 +1,138 @@
 import { useState } from 'react'
-import PageShell from '../../components/layout/PageShell'
+import './BIM.css'
+import { useTheme } from '../../hooks/useTheme'
+import { BIM_STORAGE, INITIAL_PROJECTS, INITIAL_LEVELS, INITIAL_MATERIALS, answerTopic } from '../../data/bimData'
+import { Icon } from './components/shared'
+import UnlinkedView from './components/UnlinkedView'
+import ProjectListView from './components/ProjectListView'
+import LinkedView from './components/LinkedView'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
-const TABS = ['Đối tượng', 'Tầng', 'Phòng', 'Vật liệu']
+const DEFAULT_SUBTITLE = 'Không gian dữ liệu BIM liên kết SketchUp'
 
-const objects = [
-  { ma: 'COL-001', ten: 'Cột vuông 300×300', loai: 'Cột', tang: 'Tầng 1', dienTich: '0.09 m²' },
-  { ma: 'WAL-014', ten: 'Tường ngoại vi 200mm', loai: 'Tường', tang: 'Tầng 2', dienTich: '48.6 m²' },
-  { ma: 'FLR-003', ten: 'Sàn bê tông cốt thép', loai: 'Sàn', tang: 'Tầng 3', dienTich: '124.0 m²' },
-  { ma: 'STR-007', ten: 'Dầm chính DG1', loai: 'Dầm', tang: 'Tầng 1', dienTich: '0.45 m²' },
-  { ma: 'WIN-022', ten: 'Cửa sổ nhôm kính', loai: 'Cửa sổ', tang: 'Tầng 4', dienTich: '3.6 m²' },
-]
-
-const typeBadge = {
-  Cột: '#3b82f6', Tường: '#10b981', Sàn: '#f59e0b', Dầm: '#8b5cf6', 'Cửa sổ': '#06b6d4',
+function readStorage(key) {
+  try { return localStorage.getItem(key) } catch { return null }
+}
+function writeStorage(key, value) {
+  try { value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value) } catch { /* bỏ qua */ }
 }
 
-const thStyle = {
-  textAlign: 'left', padding: '10px 14px', fontSize: '12px',
-  fontWeight: 700, color: 'var(--text-muted)', borderBottom: '2px solid var(--border)',
-  background: 'var(--surface-alt)',
+/* Màn hình ban đầu theo trạng thái liên kết đã lưu (giống IIFE khởi tạo của bản HTML) */
+function initialView() {
+  if (readStorage(BIM_STORAGE.linked) !== '1') return { view: 'unlinked', project: null }
+  const saved = readStorage(BIM_STORAGE.project)
+  return saved ? { view: 'linked', project: saved } : { view: 'list', project: null }
 }
-const tdStyle = { padding: '11px 14px', fontSize: '13.5px', borderBottom: '1px solid var(--border)' }
+
+const UNLINK_CONFIRM = 'Ngắt liên kết với Dezon Bim? Dữ liệu BIM đã đồng bộ sẽ được giữ lại, chỉ ngắt kết nối realtime.'
 
 export default function BIM() {
-  const [activeTab, setActiveTab] = useState(0)
+  const { theme, toggleTheme } = useTheme()
+  const [{ view, project: projectCode }, setNav] = useState(initialView)
+  const [projects, setProjects] = useState(INITIAL_PROJECTS)
+  const [levels, setLevels] = useState(INITIAL_LEVELS)
+  const [materials, setMaterials] = useState(INITIAL_MATERIALS)
+
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  const project = projects.find(p => p.code === projectCode) || null
+  const subtitle = view === 'linked' && project ? `${project.name} · ${DEFAULT_SUBTITLE}` : DEFAULT_SUBTITLE
+
+  /* ---------- Điều hướng giữa 3 màn hình ---------- */
+  function showList() {
+    writeStorage(BIM_STORAGE.linked, '1')
+    setNav({ view: 'list', project: null })
+  }
+  function openProject(code) {
+    writeStorage(BIM_STORAGE.project, code)
+    setNav({ view: 'linked', project: code })
+  }
+  function backToList() {
+    writeStorage(BIM_STORAGE.project, null)
+    setNav({ view: 'list', project: null })
+  }
+  function unlink() {
+    if (!confirm(UNLINK_CONFIRM)) return
+    writeStorage(BIM_STORAGE.linked, null)
+    writeStorage(BIM_STORAGE.project, null)
+    setNav({ view: 'unlinked', project: null })
+  }
+
+  /* ---------- Thêm liên kết file SketchUp ---------- */
+  function addFileLink(form) {
+    const fileName = form.fileName.trim()
+    if (form.project === '__new__') {
+      const name = form.newName.trim()
+      const code = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 3) || 'NEW'
+      setProjects(prev => [{
+        code, name,
+        projectCode: form.newCode.trim() || `MOA-26-${code}`,
+        client: form.newClient.trim() || '— Chưa cập nhật —',
+        models: 1, objects: 0, pct: 0, primaryFile: fileName, guid: '—', lastSync: 'Chưa đồng bộ',
+      }, ...prev])
+    } else {
+      setProjects(prev => prev.map(p => p.code === form.project ? { ...p, models: p.models + 1 } : p))
+    }
+  }
+
+  /* ---------- Level & Material (Dezbot đọc trực tiếp dữ liệu này) ---------- */
+  function createLevel() {
+    setLevels(prev => {
+      const last = prev[prev.length - 1]
+      return [...prev, { code: 'L0' + prev.length, name: 'Tầng mới', elevation: last.elevation + last.height, height: 3.0, status: 'recorded' }]
+    })
+  }
+  function toggleMaterial(idx, checked) {
+    setMaterials(prev => prev.map((m, i) => i === idx ? { ...m, checked } : m))
+  }
+  function assignMaterials() {
+    setMaterials(prev => prev.map(m => m.checked ? { ...m, status: 'linked', checked: false } : m))
+  }
 
   return (
-    <PageShell title="BIM" subtitle="Building Information Modeling">
-
-      {/* Stats */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-        {[
-          { label: 'Tổng đối tượng', value: '1.248' },
-          { label: 'Số tầng', value: '12' },
-          { label: 'Tổng diện tích sàn', value: '6.840 m²' },
-          { label: 'Vật liệu', value: '34 loại' },
-        ].map((c) => (
-          <div key={c.label} style={{
-            flex: '1 1 140px', background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: '12px', padding: '16px 20px',
-          }}>
-            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginBottom: '6px' }}>{c.label}</div>
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>{c.value}</div>
-          </div>
-        ))}
+    <div
+      className={`bim-page${aiOpen ? ' bim-ai-open' : ''}${aiResizing ? ' bim-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      <div className="bim-header">
+        <div className="bim-header-icon"><Icon name="cube" size={16} /></div>
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>BIM</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{subtitle}</span>
+        <span style={{ flex: 1 }} />
+        <button className="bim-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
       </div>
 
-      {/* Main card */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-        {/* Tab chips */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {TABS.map((tab, i) => (
-            <button key={tab} onClick={() => setActiveTab(i)} style={{
-              padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--border)',
-              background: activeTab === i ? 'var(--primary)' : 'var(--surface-alt)',
-              color: activeTab === i ? '#fff' : 'var(--text)',
-              fontWeight: activeTab === i ? 700 : 500, fontSize: '13px', cursor: 'pointer',
-            }}>{tab}</button>
-          ))}
-        </div>
-
-        {/* Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {['Mã', 'Tên', 'Loại', 'Tầng', 'Diện tích'].map((h) => (
-                  <th key={h} style={thStyle}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {objects.map((o, i) => (
-                <tr key={o.ma} style={{ background: i % 2 === 1 ? 'var(--surface-alt)' : undefined }}>
-                  <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '12.5px', color: 'var(--text-muted)' }}>{o.ma}</td>
-                  <td style={{ ...tdStyle, fontWeight: 600 }}>{o.ten}</td>
-                  <td style={tdStyle}>
-                    <span style={{
-                      padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600,
-                      background: (typeBadge[o.loai] || '#6b7280') + '22',
-                      color: typeBadge[o.loai] || '#6b7280',
-                    }}>{o.loai}</span>
-                  </td>
-                  <td style={tdStyle}>{o.tang}</td>
-                  <td style={tdStyle}>{o.dienTich}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Cả 3 màn hình luôn được mount (ẩn bằng display) để giữ dữ liệu đã thao tác, giống bản HTML */}
+      <div className="bim-scroll">
+        <UnlinkedView visible={view === 'unlinked'} onLinked={showList} />
+        <ProjectListView visible={view === 'list'} projects={projects} onOpen={openProject} onUnlink={unlink} onAddFileLink={addFileLink} />
+        <LinkedView
+          visible={view === 'linked'}
+          project={project}
+          onBack={backToList}
+          onUnlink={unlink}
+          levels={levels}
+          onCreateLevel={createLevel}
+          materials={materials}
+          onToggleMaterial={toggleMaterial}
+          onAssignMaterials={assignMaterials}
+        />
       </div>
-    </PageShell>
+
+      <Dezbot
+        open={aiOpen}
+        onToggle={() => setAiOpen(o => !o)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+        answer={topic => answerTopic(topic, { levels, materials })}
+      />
+    </div>
   )
 }
