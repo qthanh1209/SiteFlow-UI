@@ -1,73 +1,105 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import './QuanLyThietKe.css'
 import { useTheme } from '../../hooks/useTheme'
-
-import GanttTab from './components/GanttTab'
+import { MembersProvider } from './components/ProjectMembers'
 import ProjectListTab from './components/ProjectListTab'
 import SetupTab from './components/SetupTab'
+import GanttTab from './components/GanttTab'
 import TaskGameTab from './components/TaskGameTab'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
 const MAIN_TABS = [
   { key: 'list', label: 'Danh sách dự án' },
-  { key: 'create', label: 'Thiết lập thi công' },
+  { key: 'create', label: 'Thiết lập thiết kế' },
   { key: 'tiendo', label: 'Tiến độ' },
   { key: 'nhiemvu', label: 'Nhiệm vụ' },
 ]
+const VALID_TABS = ['list', 'create', 'tiendo', 'nhiemvu', 'detail']
+const VALID_GTABS = ['overview', 'mission', 'rewards', 'leaderboard']
+
+/* Đọc tab ban đầu từ hash (#tiendo, #detail, #nhiemvu-rewards...) giống bản HTML */
+function initialRoute() {
+  const hash = (window.location.hash || '').replace('#', '')
+  if (hash.startsWith('nhiemvu-')) {
+    const gtab = hash.slice('nhiemvu-'.length)
+    return { tab: 'nhiemvu', sub: 'setup', gtab: VALID_GTABS.includes(gtab) ? gtab : 'overview' }
+  }
+  if (hash === 'detail') return { tab: 'create', sub: 'detail', gtab: 'overview' }
+  return { tab: VALID_TABS.includes(hash) ? hash : 'list', sub: 'setup', gtab: 'overview' }
+}
 
 export default function QuanLyThietKe() {
   const { theme, toggleTheme } = useTheme()
-  const [mainTab, setMainTab] = useState('list')
+  const [route] = useState(initialRoute)
+  const [tab, setTab] = useState(route.tab)
+  const [createSub, setCreateSub] = useState(route.sub)
+  const [gtab, setGtab] = useState(route.gtab)
 
-  const [aiInput, setAiInput] = useState('')
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
+
+  function goToTab(name) {
+    if (name === 'detail') {
+      setTab('create')
+      setCreateSub('detail')
+      return
+    }
+    setTab(name)
+  }
+
+  const panelStyle = key => ({ display: tab === key ? 'flex' : 'none' })
 
   return (
-    <div className="qlt-shell">
-      {/* Topbar: title row */}
-      <header className="qlt-topbar">
-        <div className="qlt-topbar-left">
-          <span className="qlt-page-icon" aria-hidden="true">
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H10l2 2h7.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/>
-            </svg>
-          </span>
-          <span className="qlt-topbar-title">Quản lý dự án</span>
-          <span className="qlt-topbar-subtitle">
-            Điểm khởi đầu — danh sách dự án, thiết lập thi công, tiến độ, nhiệm vụ &amp; luồng dữ liệu trong một nơi
-          </span>
-        </div>
-        <div className="qlt-topbar-right">
-          <button
-            className="qlt-theme-toggle"
-            onClick={toggleTheme}
-            title="Đổi giao diện sáng/tối"
-            aria-label="Đổi giao diện sáng/tối"
-          >
+    <MembersProvider>
+      <div
+        className={`tk-page${aiOpen ? ' tk-ai-open' : ''}${aiResizing ? ' tk-ai-resizing' : ''}`}
+        style={{ '--ai-panel-width': `${aiWidth}px` }}
+      >
+        <div className="tk-header">
+          <div className="tk-header-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+          </div>
+          <span className="tk-header-title">Quản lý thiết kế</span>
+          <span className="tk-header-sub">Điểm khởi đầu — danh sách dự án, thiết lập thiết kế, tiến độ, nhiệm vụ &amp; luồng dữ liệu trong một nơi</span>
+          <span style={{ flex: 1 }} />
+          <button className="tk-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
             {theme === 'dark'
-              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
-              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-            }
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
           </button>
         </div>
-      </header>
 
-      {/* Tab nav row */}
-      <div className="qlt-tabs-row">
-        <nav className="qlt-nav">
+        <div className="tk-tabs-row">
           {MAIN_TABS.map(t => (
-            <button key={t.key} className={mainTab === t.key ? 'active' : ''} onClick={() => setMainTab(t.key)}>
-              {t.label}
-            </button>
+            <button key={t.key} className={`tk-proj-tab${tab === t.key ? ' active' : ''}`} onClick={() => goToTab(t.key)}>{t.label}</button>
           ))}
-        </nav>
-      </div>
+        </div>
 
-      {/* Main content */}
-      <div className="qlt-body">
-        {mainTab === 'list'     && <ProjectListTab />}
-        {mainTab === 'create'   && <SetupTab onGotoTab={setMainTab} />}
-        {mainTab === 'tiendo'   && <GanttTab />}
-        {mainTab === 'nhiemvu'  && <TaskGameTab />}
+        {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái khi chuyển tab, giống bản HTML */}
+        <div className="tk-content">
+          <div className="tk-panel" style={panelStyle('tiendo')}>
+            <GanttTab active={tab === 'tiendo'} />
+          </div>
+          <div className="tk-panel-scroll" style={panelStyle('list')}>
+            <ProjectListTab onGoto={goToTab} />
+          </div>
+          <div className="tk-panel-scroll" style={panelStyle('create')}>
+            <SetupTab sub={createSub} onSubChange={setCreateSub} onGoto={goToTab} />
+          </div>
+          <div className="tk-panel-scroll" style={panelStyle('nhiemvu')}>
+            <TaskGameTab gtab={gtab} onGtabChange={setGtab} />
+          </div>
+        </div>
+
+        <Dezbot
+          open={aiOpen}
+          onToggle={() => setAiOpen(o => !o)}
+          onClose={() => setAiOpen(false)}
+          onResize={setAiWidth}
+          onResizingChange={setAiResizing}
+        />
       </div>
-    </div>
+    </MembersProvider>
   )
 }

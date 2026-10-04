@@ -207,7 +207,8 @@ export default function Sidebar() {
 
         {/* Main nav */}
         {!isUltra && (
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+          // Màn hình thấp (laptop, cỡ chữ lớn): menu tự cuộn thay vì bị cắt mất các mục cuối
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
             {NAV_MAIN.map(item => (
               <NavItem key={item.path} item={item} collapsed={isCollapsed} />
             ))}
@@ -226,7 +227,7 @@ export default function Sidebar() {
         {!isUltra && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 6px 0', marginTop: 8,
+            padding: '10px 6px 0', marginTop: 8, flex: 'none',
             borderTop: '1px solid #262B37',
             justifyContent: isCollapsed ? 'center' : undefined,
           }}>

@@ -1,41 +1,60 @@
-import Modal from './Modal'
-import Field from './Field'
-import { buttonStyle, primaryButton } from '../utils'
+import { useEffect, useRef, useState } from 'react'
 
-export default function TaskModal({ taskForm, setTaskForm, tasks, setTasks, onClose }) {
-  function handleCreate() {
-    if (!taskForm.name.trim()) return
-    setTasks(current => current.map((task, i) =>
-      i === taskForm.step
-        ? { ...task, status: task.status === 'done' ? 'current' : task.status, subtasks: [...task.subtasks, { text: taskForm.name.trim(), who: taskForm.assignee.trim() || 'Chưa gán', pts: Math.max(0, Number(taskForm.points) || 0), done: false }] }
-        : task,
-    ))
-    onClose()
+/* ===================== Modal: Tạo nhiệm vụ mới =====================
+   Mount sẵn, bật/tắt bằng class .open; trang cha đổi `key` mỗi lần mở để form trở về mặc định
+   (openCreateTaskModalK: xoá tên / nhân sự, điểm = 20, chọn sẵn bước đang "current"). */
+
+export default function TaskModal({ open, steps, onClose, onSubmit }) {
+  const [name, setName] = useState('')
+  const [stepIdx, setStepIdx] = useState(() => {
+    const currentIdx = steps.findIndex(s => s.status === 'current')
+    return currentIdx >= 0 ? currentIdx : 0
+  })
+  const [assignee, setAssignee] = useState('')
+  const [points, setPoints] = useState('20')
+  const nameRef = useRef(null)
+
+  useEffect(() => { if (open && nameRef.current) nameRef.current.focus() }, [open])
+
+  function submit() {
+    const n = name.trim()
+    if (!n) { nameRef.current.focus(); return }
+    onSubmit({
+      stepIdx: Number(stepIdx),
+      text: n,
+      who: assignee.trim() || 'Chưa gán',
+      pts: Math.max(0, Number(points) || 0),
+    })
   }
 
   return (
-    <Modal title="Tạo nhiệm vụ mới" onClose={onClose} width={460}>
-      <div className="kd-handoff-content">
-        <p className="kd-modal-subtitle">Dành cho trưởng phòng Kinh doanh — tạo nhiệm vụ và chỉ định nhân sự tham gia.</p>
-        <Field label="Tên nhiệm vụ *">
-          <input autoFocus value={taskForm.name} onChange={e => setTaskForm(f => ({ ...f, name: e.target.value }))} placeholder="VD: Gọi lại 5 khách hàng chưa phản hồi" />
-        </Field>
-        <Field label="Thuộc bước quy trình">
-          <select value={taskForm.step} onChange={e => setTaskForm(f => ({ ...f, step: Number(e.target.value) }))}>
-            {tasks.map((task, i) => <option key={task.title} value={i}>{i + 1}. {task.title}</option>)}
+    <div className={`kd-task-modal-overlay${open ? ' open' : ''}`} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="kd-task-modal-box">
+        <h3>Tạo nhiệm vụ mới</h3>
+        <div className="kd-task-modal-sub">Dành cho trưởng phòng Kinh doanh — tạo nhiệm vụ và chỉ định nhân sự tham gia.</div>
+        <div className="kd-task-modal-field">
+          <label>Tên nhiệm vụ *</label>
+          <input type="text" ref={nameRef} placeholder="VD: Gọi lại 5 khách hàng chưa phản hồi" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        <div className="kd-task-modal-field">
+          <label>Thuộc bước quy trình</label>
+          <select value={stepIdx} onChange={e => setStepIdx(e.target.value)}>
+            {steps.map((s, i) => <option key={i} value={i}>{i + 1}. {s.title}</option>)}
           </select>
-        </Field>
-        <Field label="Nhân sự tham gia">
-          <input value={taskForm.assignee} onChange={e => setTaskForm(f => ({ ...f, assignee: e.target.value }))} placeholder="VD: Hoàng Yến Nhi, Đặng Quốc Cường" />
-        </Field>
-        <Field label="Điểm thưởng">
-          <input inputMode="numeric" value={taskForm.points} onChange={e => setTaskForm(f => ({ ...f, points: e.target.value }))} />
-        </Field>
-        <div className="kd-modal-footer">
-          <button style={buttonStyle} onClick={onClose}>Huỷ</button>
-          <button style={primaryButton} onClick={handleCreate}>Tạo nhiệm vụ</button>
+        </div>
+        <div className="kd-task-modal-field">
+          <label>Nhân sự tham gia</label>
+          <input type="text" placeholder="VD: Hoàng Yến Nhi, Đặng Quốc Cường" value={assignee} onChange={e => setAssignee(e.target.value)} />
+        </div>
+        <div className="kd-task-modal-field">
+          <label>Điểm thưởng</label>
+          <input type="text" inputMode="numeric" placeholder="VD: 20" value={points} onChange={e => setPoints(e.target.value)} />
+        </div>
+        <div className="kd-task-modal-actions">
+          <button className="kd-task-modal-btn" onClick={onClose}>Huỷ</button>
+          <button className="kd-task-modal-btn primary" onClick={submit}>Tạo nhiệm vụ</button>
         </div>
       </div>
-    </Modal>
+    </div>
   )
 }

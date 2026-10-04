@@ -1,656 +1,539 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
-  INITIAL_SUBCONTRACTORS, SUB_STATUS, STATIC_PROJECTS,
-  INITIAL_ORG_CHILDREN, INITIAL_ORG_PARALLEL, ORG_HUB, ORG_ICON_DEPT, ORG_ICON_HUB,
-  ORG_EXTRA_COLORS, ORG_FLOW_DEPTS, INITIAL_PROJECT_MEMBERS, PROJ_DEPTS, AUTO_INCLUDE_DEPTS,
-  avatarColor, initials,
+  PROJECT_SHORTLIST, DETAIL_PROJECT_DATA, DETAIL_STATUS_COLORS,
+  ORG_ICON, ORG_HUB, INITIAL_ORG_PARALLEL, INITIAL_ORG_CHILDREN, ORG_EXTRA_COLORS,
+  INITIAL_SUBCONTRACTORS, SUB_STATUS_LABEL,
 } from '../../../data/quanLyThietKeData'
+import { useMembers, MemberCell, FlowNodeMembers, FlowNodePopover } from './ProjectMembers'
+import {
+  SETUP_STORAGE_KEY, SUBCONTRACTOR_STORAGE_KEY, ORG_CHILDREN_STORAGE_KEY, ORG_PARALLEL_STORAGE_KEY, SYNCED_PROJECTS_KEY,
+  readStoredObject, readStoredArray, readStoredOrgRow, writeStored,
+} from './storage'
 
-const SUB_TABS = ['Thiết lập chung', 'Sơ đồ tổ chức', 'Thầu phụ']
-const SETUP_STORAGE_KEY = 'siteflow-project-setup'
-const SUBCONTRACTOR_STORAGE_KEY = 'siteflow-project-subcontractors'
-const ORG_CHILDREN_STORAGE_KEY = 'siteflow-project-org-children'
-const ORG_PARALLEL_STORAGE_KEY = 'siteflow-project-org-parallel'
-const PROJECT_MEMBERS_STORAGE_KEY = 'siteflow-project-members'
-
-const STATUS_STYLE = {
-  primary: { color: 'var(--primary)', bg: 'var(--primary-tint)' },
-  success: { color: 'var(--success)', bg: 'var(--success-tint)' },
-  muted: { color: 'var(--text-muted)', bg: 'var(--surface-alt)' },
+/* Ghi state xuống localStorage mỗi khi thay đổi (bỏ qua lần render đầu) */
+function usePersist(key, value) {
+  const firstRun = useRef(true)
+  useEffect(() => {
+    if (firstRun.current) { firstRun.current = false; return }
+    writeStored(key, value)
+  }, [key, value])
 }
 
-function shortProjectLabel(name) {
-  if (!name) return 'Dự án'
-  const [base, stage] = name.split('—').map(s => s.trim())
-  const shortBase = (base || name).replace(/^(Chung cư|Nhà phố|Biệt thự|Văn phòng cho thuê|Văn phòng)\s+/, '')
-  const shortStage = stage ? stage.replace(/Giai đoạn\s*/i, 'GĐ') : ''
-  return `Dự án ${shortBase}${shortStage ? ' ' + shortStage : ''}`.trim()
+const SUBTABS = [
+  { key: 'setup', label: 'Thiết lập chung' },
+  { key: 'detail', label: 'Sơ đồ tổ chức' },
+  { key: 'thauphu', label: 'Thầu phụ' },
+]
+
+const Svg = ({ size, stroke = 'currentColor', html }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: html }} />
+)
+
+const ICONS = {
+  qs: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>',
+  gantt: '<rect x="3" y="5" width="12" height="3" rx="1"/><rect x="3" y="11" width="17" height="3" rx="1"/><rect x="3" y="17" width="8" height="3" rx="1"/>',
+  pin: '<path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.3"/>',
+  wallet: '<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10h18"/>',
+  trophy: '<path d="M8 21h8"/><path d="M12 17v4"/><path d="M17 4H7v4a5 5 0 0 0 10 0V4z"/>',
+  chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  trend: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  building: '<path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18"/><path d="M6 12h12M6 8h12M6 16h12"/>',
+  folder: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-.9 14a2 2 0 0 1-2 1.9H7.9a2 2 0 0 1-2-1.9L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
 }
 
-const DEFAULT_FORM = {
-  name: 'Chung cư Riverside — Giai đoạn 2',
+const INIT_CARDS = [
+  { color: 'qs', icon: ICONS.qs, title: 'QS', desc: 'Tạo hồ sơ bóc tách trống' },
+  { color: 'primary', icon: ICONS.gantt, title: 'Tiến độ', desc: 'Khung Gantt mẫu theo loại hình' },
+  { color: 'attendance', icon: ICONS.pin, title: 'Chấm công', desc: 'Địa điểm công trường từ địa chỉ' },
+  { color: 'finance', icon: ICONS.wallet, title: 'Tài chính', desc: 'Ngân sách trống theo dự kiến' },
+  { color: 'game', icon: ICONS.trophy, title: 'Nhiệm vụ', desc: 'Gán quy trình game hoá theo loại hình' },
+  { color: 'primary', icon: ICONS.chat, title: 'Chat', desc: 'Tạo nhóm chat dự án tự động' },
+]
+
+const DEPT_FLOW = [
+  { dept: 'kinh-doanh', color: 'sales', icon: ICONS.trend, name: 'Kinh doanh', desc: ['Đã chốt từ pipeline', 'Giá trị 8.5 tỷ'], to: '/kinh-doanh', link: 'Mở Kinh doanh ›' },
+  { dept: 'qs', color: 'qs', icon: ICONS.qs, name: 'QS', desc: ['4 dự án con', '64,9tr đã bóc tách'], to: '/qs', link: 'Mở QS ›' },
+  { dept: 'qldth', color: 'primary', icon: ICONS.gantt, name: 'Thi công', desc: ['58% hoàn thành', '17 công việc'], goto: 'tiendo', link: 'Mở Thi công ›' },
+  { dept: 'hr', color: 'attendance', icon: ICONS.pin, name: 'HR', desc: ['128/150 có mặt', '3 địa điểm'], to: '/cham-cong', link: 'Mở HR ›' },
+  { dept: 'tai-chinh', color: 'finance', icon: ICONS.wallet, name: 'Tài chính', desc: ['Chi 5.2 / 8.5 tỷ', '1 hoá đơn quá hạn'], to: '/tai-chinh', link: 'Mở Tài chính ›' },
+  { dept: 'chat', color: 'primary', icon: ICONS.chat, name: 'Chat', desc: ['Nhóm Riverside GĐ2', '24 thành viên'], to: { pathname: '/chat', hash: '#g1' }, link: 'Mở nhóm chat ›' },
+  { dept: 'nhiem-vu', color: 'game', icon: ICONS.trophy, name: 'Nhiệm vụ', desc: ['4/15 bước', '330/1.450 điểm'], goto: 'nhiemvu', link: 'Mở Nhiệm vụ ›' },
+]
+
+/* ---------------- Thiết lập chung ---------------- */
+const DEFAULT_SETUP_PROJECT = 'Chung cư Riverside — Giai đoạn 2'
+const DEFAULT_SETUP_INFO = {
   client: 'Công ty CP Đầu tư Riverside',
   contact: 'Ông Nguyễn Văn Bình',
   email: 'contact@riverside-invest.vn',
   phone: '0909 123 456',
   address: '123 Nguyễn Hữu Cảnh, P.22, Bình Thạnh, TP.HCM',
-  type: 'Chung cư',
-  pm: 'Trần Anh',
-  startDate: '',
-  handoverDate: '',
-  contractValue: '',
-  approvedBudget: '',
-  note: '',
+}
+const EMPTY_SETUP = { startDate: '', handoverDate: '', contractValue: '', approvedBudget: '', note: '' }
+
+/* Lấy phần "Thông tin quan trọng" đã lưu của một dự án (key 'siteflow-project-setup') */
+function storedSetupOf(setups, project) {
+  const s = setups[project]
+  const out = { ...EMPTY_SETUP }
+  if (s && typeof s === 'object') Object.keys(EMPTY_SETUP).forEach(k => { if (typeof s[k] === 'string') out[k] = s[k] })
+  return out
 }
 
-function readStoredObject(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key) || '{}')
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
-  } catch {
-    return {}
-  }
-}
+function SetupGeneral({ onGoto }) {
+  const [project, setProject] = useState(DEFAULT_SETUP_PROJECT)
+  const [form, setForm] = useState(() => storedSetupOf(readStoredObject(SETUP_STORAGE_KEY), DEFAULT_SETUP_PROJECT))
+  const setField = key => e => setForm(f => ({ ...f, [key]: e.target.value }))
 
-function readStoredArray(key, fallback) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key) || 'null')
-    return Array.isArray(value) ? value : fallback
-  } catch {
-    return fallback
-  }
-}
-
-function formatCurrency(value) {
-  const digits = String(value ?? '').replace(/\D/g, '')
-  return digits ? `${Number(digits).toLocaleString('vi-VN')} đ` : '—'
-}
-
-export default function SetupTab({ onGotoTab }) {
-  const navigate = useNavigate()
-  const [subTab, setSubTab] = useState(0)
-  const [kdProjects] = useState(() => readStoredArray('siteflow-synced-projects', []))
-  const projects = useMemo(() => [
-    ...STATIC_PROJECTS.map(project => ({ ...project, key: project.name })),
-    ...kdProjects.map(project => ({
-      ...project,
-      key: project.id || project.name,
-      type: project.type || '',
-      budget: project.value ? `${project.value} tỷ` : '',
-    })),
-  ], [kdProjects])
-  const [selectedProject, setSelectedProject] = useState(DEFAULT_FORM.name)
-
-  /* ── Setup form state ─────────────────────────────────── */
-  const [storedSetups, setStoredSetups] = useState(() => readStoredObject(SETUP_STORAGE_KEY))
-  const selectedProjectInfo = projects.find(project => project.key === selectedProject) || projects[0]
-  const [form, setForm] = useState(() => ({
-    ...DEFAULT_FORM,
-    ...(storedSetups[DEFAULT_FORM.name] || {}),
-  }))
-  const [saved, setSaved] = useState(false)
-
-  function setField(k, v) { setForm(f => ({ ...f, [k]: v })) }
-
-  function selectProject(projectKey) {
-    setSelectedProject(projectKey)
-    const project = projects.find(item => item.key === projectKey)
-    const defaults = {
-      ...DEFAULT_FORM,
-      name: project?.name || projectKey,
-      client: project?.client || '',
-      type: project?.type || DEFAULT_FORM.type,
-      contact: projectKey === DEFAULT_FORM.name ? DEFAULT_FORM.contact : '',
-      email: projectKey === DEFAULT_FORM.name ? DEFAULT_FORM.email : '',
-      phone: projectKey === DEFAULT_FORM.name ? DEFAULT_FORM.phone : '',
-      address: projectKey === DEFAULT_FORM.name ? DEFAULT_FORM.address : '',
-    }
-    setForm({ ...defaults, ...(storedSetups[projectKey] || {}) })
-    setSaved(false)
+  /* Đổi dự án → nạp lại thiết lập đã lưu của dự án đó */
+  function selectProject(e) {
+    const next = e.target.value
+    setProject(next)
+    setForm(storedSetupOf(readStoredObject(SETUP_STORAGE_KEY), next))
   }
 
-  function handleSave(e) {
-    e.preventDefault()
+  /* Lưu thiết lập theo dự án; nếu là dự án đồng bộ từ Kinh doanh thì cập nhật luôn 'siteflow-synced-projects' (giữ logic cũ) */
+  function handleSave() {
     const setups = readStoredObject(SETUP_STORAGE_KEY)
-    const nextSetups = { ...setups, [selectedProject]: form }
-    localStorage.setItem(SETUP_STORAGE_KEY, JSON.stringify(nextSetups))
-    setStoredSetups(nextSetups)
-    const rawProjects = readStoredArray('siteflow-synced-projects', [])
-    const selected = projects.find(project => project.key === selectedProject)
-    if (selected && !STATIC_PROJECTS.some(project => project.name === selectedProject)) {
-      const updatedProjects = rawProjects.map(project => project.id === selectedProject
-        ? { ...project, name: form.name, client: form.client, type: form.type, setup: form }
-        : project)
-      localStorage.setItem('siteflow-synced-projects', JSON.stringify(updatedProjects))
+    const prev = setups[project] && typeof setups[project] === 'object' ? setups[project] : {}
+    const saved = {
+      ...(project === DEFAULT_SETUP_PROJECT ? DEFAULT_SETUP_INFO : {}),
+      ...prev,
+      name: prev.name || project,
+      ...form,
     }
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    writeStored(SETUP_STORAGE_KEY, { ...setups, [project]: saved })
+    const synced = readStoredArray(SYNCED_PROJECTS_KEY, [])
+    if (synced.some(p => p && p.id === project)) {
+      writeStored(SYNCED_PROJECTS_KEY, synced.map(p => p && p.id === project
+        ? { ...p, name: saved.name, client: saved.client, type: saved.type, setup: saved }
+        : p))
+    }
+    onGoto('list')
   }
 
+  /* Huỷ → bỏ thay đổi chưa lưu, quay về danh sách */
   function handleCancel() {
-    setForm({
-      ...DEFAULT_FORM,
-      ...(storedSetups[selectedProject] || {}),
-    })
-    setSaved(false)
+    setForm(storedSetupOf(readStoredObject(SETUP_STORAGE_KEY), project))
+    onGoto('list')
   }
 
-  /* ── Org chart state ──────────────────────────────────── */
-  const [children, setChildren] = useState(() => readStoredArray(ORG_CHILDREN_STORAGE_KEY, INITIAL_ORG_CHILDREN))
-  const [parallel, setParallel] = useState(() => readStoredArray(ORG_PARALLEL_STORAGE_KEY, INITIAL_ORG_PARALLEL))
-  const [dragOrgIdx, setDragOrgIdx] = useState(null)
-  const [dropOrgIdx, setDropOrgIdx] = useState(null)
-  const [dragParallelIdx, setDragParallelIdx] = useState(null)
-  const [dropParallelIdx, setDropParallelIdx] = useState(null)
-  const [trashOver, setTrashOver] = useState(false)
-  const [showAddChild, setShowAddChild] = useState(false)
-  const [newChildLabel, setNewChildLabel] = useState('')
-  const [newChildColor, setNewChildColor] = useState('primary')
-  const [showAddParallel, setShowAddParallel] = useState(false)
-  const [newParallelLabel, setNewParallelLabel] = useState('')
-  const [newParallelColor, setNewParallelColor] = useState('attendance')
-  const [orgSaved, setOrgSaved] = useState(false)
+  const readonlyField = (label, value) => (
+    <div className="tk-field"><label>{label}</label><input type="text" defaultValue={value} readOnly /></div>
+  )
+  return (
+    <>
+      <div className="tk-card tk-setup-card">
+        <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Thiết lập chung cho dự án</h3>
+        <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 18px' }}>
+          Việc tạo hồ sơ khách hàng mới nay thuộc mục <Link to="/kinh-doanh" style={{ color: 'var(--sales)', fontWeight: 600 }}>Kinh doanh</Link>. Khi một cơ hội được chuyển vào cột "Dự án (Thiết kế)" hoặc "Dự án (Thi công)" ở đó, dự án sẽ tự xuất hiện bên dưới.
+        </p>
 
-  function handleOrgDragStart(i) { setDragOrgIdx(i) }
-  function handleOrgDragEnter(i) { if (dragOrgIdx !== null && dragOrgIdx !== i) setDropOrgIdx(i) }
-  function handleOrgDrop(i) {
-    if (dragOrgIdx === null || dragOrgIdx === i) { setDragOrgIdx(null); setDropOrgIdx(null); return }
-    const arr = [...children]
-    const [moved] = arr.splice(dragOrgIdx, 1)
-    arr.splice(i, 0, moved)
-    setChildren(arr)
-    localStorage.setItem(ORG_CHILDREN_STORAGE_KEY, JSON.stringify(arr))
-    setDragOrgIdx(null); setDropOrgIdx(null)
-  }
-  function handleParallelDragStart(i) { setDragParallelIdx(i) }
-  function handleParallelDragEnter(i) { if (dragParallelIdx !== null && dragParallelIdx !== i) setDropParallelIdx(i) }
-  function handleParallelDrop(i) {
-    if (dragParallelIdx === null || dragParallelIdx === i) { setDragParallelIdx(null); setDropParallelIdx(null); return }
-    const arr = [...parallel]
-    const [moved] = arr.splice(dragParallelIdx, 1)
-    arr.splice(i, 0, moved)
-    setParallel(arr)
-    localStorage.setItem(ORG_PARALLEL_STORAGE_KEY, JSON.stringify(arr))
-    setDragParallelIdx(null); setDropParallelIdx(null)
-  }
-  function handleOrgDropTrash() {
-    if (dragParallelIdx !== null) {
-      const node = parallel[dragParallelIdx]
-      if (node?.removable !== false) {
-        const next = parallel.filter((_, i) => i !== dragParallelIdx)
-        localStorage.setItem(ORG_PARALLEL_STORAGE_KEY, JSON.stringify(next))
-        setParallel(next)
-      }
-      setDragParallelIdx(null); setTrashOver(false); return
-    }
-    if (dragOrgIdx === null) return
-    const node = children[dragOrgIdx]
-    if (node?.removable === false) { setDragOrgIdx(null); setTrashOver(false); return }
-    const next = children.filter((_, i) => i !== dragOrgIdx)
-    localStorage.setItem(ORG_CHILDREN_STORAGE_KEY, JSON.stringify(next))
-    setChildren(next)
-    setDragOrgIdx(null); setTrashOver(false)
-  }
-  function addChild() {
-    if (!newChildLabel) return
-    const next = [...children, { dept: 'custom-' + Date.now(), label: newChildLabel, color: newChildColor, icon: ORG_ICON_DEPT, removable: true }]
-    localStorage.setItem(ORG_CHILDREN_STORAGE_KEY, JSON.stringify(next))
-    setChildren(next)
-    setNewChildLabel(''); setShowAddChild(false)
-  }
-  function addParallel() {
-    if (!newParallelLabel) return
-    const next = [...parallel, { dept: 'custom-' + Date.now(), label: newParallelLabel, color: newParallelColor, icon: ORG_ICON_DEPT, caption: 'Song song · bộ phận mới', removable: true }]
-    localStorage.setItem(ORG_PARALLEL_STORAGE_KEY, JSON.stringify(next))
-    setParallel(next)
-    setNewParallelLabel(''); setShowAddParallel(false)
-  }
-  function handleSaveOrgChart() {
-    localStorage.setItem(ORG_CHILDREN_STORAGE_KEY, JSON.stringify(children))
-    localStorage.setItem(ORG_PARALLEL_STORAGE_KEY, JSON.stringify(parallel))
-    setOrgSaved(true)
-    setTimeout(() => setOrgSaved(false), 2200)
-  }
+        <div className="tk-field" style={{ marginBottom: 16 }}>
+          <label>Chọn dự án cần thiết lập *</label>
+          <select value={project} onChange={selectProject}>
+            <option>Chung cư Riverside — Giai đoạn 2</option>
+            <option>Nhà phố Lô B12 — KDC Bình Chánh</option>
+            <option>Văn phòng cho thuê — Q3</option>
+          </select>
+        </div>
 
-  /* ── Project members (dùng cho "Nhân sự tham gia" & Sơ đồ phòng ban) ── */
-  const [projectMembers, setProjectMembers] = useState(() => {
-    const stored = readStoredObject(PROJECT_MEMBERS_STORAGE_KEY)
-    return Object.keys(stored).length ? stored : INITIAL_PROJECT_MEMBERS
-  })
-  const currentMembers = projectMembers[selectedProject] || []
-  function persistMembers(next) {
-    setProjectMembers(next)
-    localStorage.setItem(PROJECT_MEMBERS_STORAGE_KEY, JSON.stringify(next))
-  }
-  function addProjectMember() {
-    const name = window.prompt('Tên nhân sự tham gia dự án:')
-    if (!name?.trim()) return
-    persistMembers({ ...projectMembers, [selectedProject]: [...currentMembers, { name: name.trim(), role: '', dept: 'general' }] })
-  }
-  function membersForDept(dept) {
-    return AUTO_INCLUDE_DEPTS.includes(dept) ? currentMembers : currentMembers.filter(m => m.dept === dept)
-  }
-  function addDeptMember(dept) {
-    const label = PROJ_DEPTS.find(d => d.value === dept)?.label || dept
-    const name = window.prompt(`Thêm nhân sự vào ${label}:`)
-    if (!name?.trim()) return
-    persistMembers({ ...projectMembers, [selectedProject]: [...currentMembers, { name: name.trim(), role: '', dept }] })
-  }
-  function goToDept(node) {
-    if (node.nav.type === 'tab') onGotoTab?.(node.nav.to)
-    else navigate(node.nav.to)
-  }
+        <div className="tk-divider" style={{ margin: '4px 0 18px' }} />
+        <h4 className="tk-section-title" style={{ marginBottom: 14 }}>
+          Thông tin cơ bản <span style={{ textTransform: 'none', fontWeight: 400, color: 'var(--text-faint)' }}>— lấy từ Kinh doanh</span>
+        </h4>
+        <div className="tk-field-grid">
+          {readonlyField('Tên chủ đầu tư', 'Công ty CP Đầu tư Riverside')}
+          {readonlyField('Người liên hệ', 'Ông Nguyễn Văn Bình')}
+        </div>
+        <div className="tk-field-grid">
+          {readonlyField('Email', 'contact@riverside-invest.vn')}
+          {readonlyField('Số điện thoại', '0909 123 456')}
+        </div>
+        <div className="tk-field" style={{ marginBottom: 16 }}>
+          <label>Địa chỉ</label><input type="text" defaultValue="123 Nguyễn Hữu Cảnh, P.22, Bình Thạnh, TP.HCM" readOnly />
+        </div>
 
-  /* ── Subcontractors state ─────────────────────────────── */
-  const [subs, setSubs] = useState(() => readStoredArray(SUBCONTRACTOR_STORAGE_KEY, INITIAL_SUBCONTRACTORS))
-  const [showAddSub, setShowAddSub] = useState(false)
-  const [newSub, setNewSub] = useState({ name: '', scope: '', contact: '', phone: '', value: '', status: 'active' })
+        <div className="tk-divider" style={{ margin: '4px 0 18px' }} />
+        <h4 className="tk-section-title" style={{ marginBottom: 14 }}>Thông tin quan trọng</h4>
+        <div className="tk-field-grid">
+          <div className="tk-field"><label>Ngày khởi công</label><input type="text" placeholder="dd/mm/yyyy" value={form.startDate} onChange={setField('startDate')} /></div>
+          <div className="tk-field"><label>Ngày hoàn công (dự kiến)</label><input type="text" placeholder="dd/mm/yyyy" value={form.handoverDate} onChange={setField('handoverDate')} /></div>
+        </div>
+        <div className="tk-field-grid">
+          <div className="tk-field"><label>Giá trị hợp đồng</label><input type="text" placeholder="VD: 8.500.000.000" value={form.contractValue} onChange={setField('contractValue')} /></div>
+          <div className="tk-field"><label>Ngân sách được duyệt</label><input type="text" placeholder="VD: 2.500.000.000" value={form.approvedBudget} onChange={setField('approvedBudget')} /></div>
+        </div>
+        <div className="tk-field"><label>Ghi chú</label><textarea rows={3} placeholder="Yêu cầu đặc biệt từ khách hàng, lưu ý về mặt bằng..." value={form.note} onChange={setField('note')} /></div>
 
-  function addSub() {
-    if (!newSub.name) return
-    const next = [...subs, { ...newSub }]
-    localStorage.setItem(SUBCONTRACTOR_STORAGE_KEY, JSON.stringify(next))
-    setSubs(next)
-    setNewSub({ name: '', scope: '', contact: '', phone: '', value: '', status: 'active' })
-    setShowAddSub(false)
-  }
-  function removeSub(i) {
-    const next = subs.filter((_, idx) => idx !== i)
-    localStorage.setItem(SUBCONTRACTOR_STORAGE_KEY, JSON.stringify(next))
-    setSubs(next)
+        <div className="tk-divider" style={{ margin: '20px 0 18px' }} />
+        <h4 className="tk-section-title" style={{ marginBottom: 4 }}>Sau khi lưu, dữ liệu vận hành sẽ được khởi tạo tới</h4>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 16px' }}>Không cần nhập lại thông tin khách hàng hay địa điểm ở từng module.</p>
+        <div className="tk-init-grid">
+          {INIT_CARDS.map(c => (
+            <div key={c.title} className="tk-init-card">
+              <div className="tk-init-icon" style={{ background: `var(--${c.color}-tint)`, color: `var(--${c.color})` }}><Svg size={17} html={c.icon} /></div>
+              <div><div className="tk-init-title">{c.title}</div><div className="tk-init-desc">{c.desc}</div></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <button className="tk-btn-ghost" onClick={handleCancel}>Huỷ</button>
+        <button className="tk-btn-project" style={{ padding: '10px 20px', fontWeight: 700 }} onClick={handleSave}>Lưu thiết lập &amp; bắt đầu thi công</button>
+      </div>
+    </>
+  )
+}
+
+/* ---------------- Thầu phụ ---------------- */
+const EMPTY_SUB = { name: '', scope: '', contact: '', phone: '', value: '' }
+
+function Subcontractors() {
+  const [subs, setSubs] = useState(() =>
+    readStoredArray(SUBCONTRACTOR_STORAGE_KEY, INITIAL_SUBCONTRACTORS)
+      .filter(s => s && typeof s === 'object')
+      /* trạng thái lạ trong dữ liệu cũ → 'pending' để không vỡ giao diện */
+      .map(s => (SUB_STATUS_LABEL[s.status] ? s : { ...s, status: 'pending' })))
+  usePersist(SUBCONTRACTOR_STORAGE_KEY, subs)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState(EMPTY_SUB)
+  const setField = key => e => setForm(f => ({ ...f, [key]: e.target.value }))
+
+  function submit() {
+    const name = form.name.trim()
+    if (!name) { alert('Vui lòng nhập tên nhà thầu phụ.'); return }
+    setSubs(prev => [{
+      name,
+      scope: form.scope.trim() || 'Chưa xác định',
+      contact: form.contact.trim() || '—',
+      phone: form.phone.trim() || '—',
+      value: form.value.trim() || '—',
+      status: 'pending',
+    }, ...prev])
+    setForm(EMPTY_SUB)
+    setModalOpen(false)
   }
 
   return (
-    <div className="setup-tab">
-      <div className="setup-subnav">
-        {SUB_TABS.map((t, i) => (
-          <button key={t} className={subTab === i ? 'active' : ''} onClick={() => setSubTab(i)}>{t}</button>
-        ))}
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <h3 style={{ fontSize: 14.5, fontWeight: 700 }}>Thầu phụ</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0' }}>Quản lý các nhà thầu phụ tham gia thi công dự án.</p>
+        </div>
+        <button className="tk-btn-project" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', fontWeight: 600 }} onClick={() => setModalOpen(true)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Thêm thầu phụ
+        </button>
       </div>
 
-      <div className="setup-body">
-        {/* ── Thiết lập chung ──────────────────────────────── */}
-        {subTab === 0 && (
-          <form className="setup-form" onSubmit={handleSave}>
-            <div className="setup-card">
-              <div className="setup-intro">
-                <h2>Thiết lập chung cho dự án</h2>
-                <p>Thông tin được quản lý tập trung và dùng để khởi tạo các khu vực vận hành của dự án.</p>
-              </div>
-              <div className="form-group setup-project-select">
-                <label htmlFor="setup-project">Chọn dự án cần thiết lập *</label>
-                <select id="setup-project" value={selectedProject} onChange={e => selectProject(e.target.value)}>
-                  {projects.map(project => <option key={project.key} value={project.key}>{project.name}</option>)}
-                </select>
-              </div>
-              <div className="setup-section">
-                <h3>Thông tin cơ bản <span>— lấy từ Kinh doanh</span></h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="setup-client">Tên chủ đầu tư</label>
-                    <input id="setup-client" value={form.client} onChange={e => setField('client', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-contact">Người liên hệ</label>
-                    <input id="setup-contact" value={form.contact} onChange={e => setField('contact', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-email">Email</label>
-                    <input id="setup-email" type="email" value={form.email} onChange={e => setField('email', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-phone">Số điện thoại</label>
-                    <input id="setup-phone" type="tel" value={form.phone} onChange={e => setField('phone', e.target.value)} />
-                  </div>
-                  <div className="form-group form-span-all">
-                    <label htmlFor="setup-address">Địa chỉ</label>
-                    <input id="setup-address" value={form.address} onChange={e => setField('address', e.target.value)} />
-                  </div>
-                </div>
-              </div>
-              <div className="setup-section">
-                <h3>Thông tin quan trọng</h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="setup-start">Ngày khởi công</label>
-                    <input id="setup-start" type="date" value={form.startDate} onChange={e => setField('startDate', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-handover">Ngày hoàn công (dự kiến)</label>
-                    <input id="setup-handover" type="date" value={form.handoverDate} onChange={e => setField('handoverDate', e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-contract">Giá trị hợp đồng</label>
-                    <input id="setup-contract" inputMode="numeric" value={form.contractValue} onChange={e => setField('contractValue', e.target.value)} placeholder="VD: 8.500.000.000" />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="setup-budget">Ngân sách được duyệt</label>
-                    <input id="setup-budget" inputMode="numeric" value={form.approvedBudget} onChange={e => setField('approvedBudget', e.target.value)} placeholder="VD: 2.500.000.000" />
-                  </div>
-                  <div className="form-group form-span-all">
-                    <label htmlFor="setup-note">Ghi chú</label>
-                    <textarea id="setup-note" rows={3} value={form.note} onChange={e => setField('note', e.target.value)} placeholder="Yêu cầu đặc biệt từ khách hàng, lưu ý về mặt bằng..." />
-                  </div>
-                </div>
-              </div>
-              <div className="setup-section setup-operations">
-                <h3>Sau khi lưu, dữ liệu vận hành sẽ được khởi tạo tới</h3>
-                <p>Không cần nhập lại thông tin khách hàng hay địa điểm ở từng module.</p>
-                <div className="module-grid">
-                  {[
-                    ['QS', 'Tạo hồ sơ bóc tách trống', 'var(--qs, #7658c2)', '▣'],
-                    ['Tiến độ', 'Khung Gantt mẫu theo loại hình', 'var(--primary)', '▤'],
-                    ['Chấm công', 'Địa điểm công trường từ địa chỉ', 'var(--attendance)', '⌖'],
-                    ['Tài chính', 'Ngân sách trống theo dự kiến', 'var(--finance)', '▱'],
-                    ['Nhiệm vụ', 'Gắn quy trình game hóa theo loại hình', 'var(--game, #c2618f)', '♙'],
-                    ['Chat', 'Tạo nhóm chat dự án tự động', 'var(--primary)', '▢'],
-                  ].map(([title, description, color, icon]) => (
-                    <div className="module-card" key={title}>
-                      <span className="module-icon" style={{ color, background: `color-mix(in srgb, ${color} 16%, transparent)` }}>{icon}</span>
-                      <span className="module-copy"><strong>{title}</strong><small>{description}</small></span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="setup-form-footer">
-              {saved && <span className="setup-saved-message" role="status">Đã lưu thiết lập cho dự án.</span>}
-              <div className="setup-form-actions">
-                <button className="setup-cancel-btn" type="button" onClick={handleCancel}>Hủy</button>
-                <button className="form-submit" type="submit">Lưu thiết lập &amp; bắt đầu thi công</button>
-              </div>
-            </div>
-          </form>
-        )}
+      <div className="tk-card" style={{ padding: '6px 20px 16px', overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              {['Nhà thầu phụ', 'Hạng mục phụ trách', 'Người liên hệ', 'SĐT', 'Giá trị hợp đồng', 'Trạng thái'].map(h => <th key={h} className="tk-th">{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {subs.map((s, i) => {
+              const st = SUB_STATUS_LABEL[s.status]
+              return (
+                <tr key={i}>
+                  <td className="tk-td" style={{ fontWeight: 700 }}>{s.name}</td>
+                  <td className="tk-td" style={{ color: 'var(--text-dim)' }}>{s.scope}</td>
+                  <td className="tk-td">{s.contact}</td>
+                  <td className="tk-td mono">{s.phone}</td>
+                  <td className="tk-td mono">{s.value}</td>
+                  <td className="tk-td"><span className="tk-pill" style={{ background: st[2], color: st[1] }}>{st[0]}</span></td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
 
-        {/* ── Sơ đồ tổ chức ───────────────────────────────── */}
-        {subTab === 1 && (
-          <div className="org-view">
-            <div className="org-project-summary">
-              <div className="org-project-icon" aria-hidden="true">▱</div>
-              <div className="org-project-info">
-                <div className="org-project-title-row">
-                  <span className="org-project-title">{form.name || selectedProjectInfo?.name}</span>
-                  {selectedProjectInfo?.statusLabel && (
-                    <span
-                      className="org-status-badge"
-                      style={{
-                        background: (STATUS_STYLE[selectedProjectInfo.statusColor] || STATUS_STYLE.muted).bg,
-                        color: (STATUS_STYLE[selectedProjectInfo.statusColor] || STATUS_STYLE.muted).color,
-                      }}
-                    >{selectedProjectInfo.statusLabel}</span>
-                  )}
-                  <select className="org-project-switch" value={selectedProject} onChange={e => selectProject(e.target.value)}>
-                    {projects.map(project => <option key={project.key} value={project.key}>{project.name}</option>)}
-                  </select>
-                </div>
-                <div className="org-project-meta">Khách hàng: {form.client || selectedProjectInfo?.client || '—'} <span>·</span> Liên hệ: {form.contact || '—'} <span>·</span> SĐT: {form.phone || '—'} <span>·</span> Email: {form.email || '—'}</div>
-                <div className="org-project-team">
-                  <span>Nhân sự tham gia:</span>
-                  <div className="proj-members-row">
-                    {currentMembers.slice(0, 4).map(m => (
-                      <div key={m.name} className="proj-avatar" style={{ background: avatarColor(m.name) }} title={`${m.name}${m.role ? ` — ${m.role}` : ''}`}>{initials(m.name)}</div>
-                    ))}
-                    <button type="button" className="org-member-add" title="Thêm nhân sự" onClick={addProjectMember}>+</button>
-                  </div>
-                </div>
-              </div>
-              <div className="org-project-budget">
-                <strong>{selectedProjectInfo?.budget || form.contractValue || '—'}</strong>
-                <small>Ngân sách · {form.pm || 'PM chưa phân công'}</small>
-              </div>
-            </div>
-
-            {/* Sơ đồ phòng ban: toàn cảnh các khu vực vận hành của dự án */}
-            <div className="org-chart-panel">
-              <h2>Sơ đồ phòng ban</h2>
-              <div className="org-dept-wrap">
-                <div className="org-dept-hub">
-                  <div className="org-flow-icon" style={{ width: 60, height: 60, borderRadius: 16, background: 'var(--project, #3D4FC4)', color: '#fff' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: ORG_ICON_HUB }} />
-                  </div>
-                  <div className="org-dept-hub-label">{shortProjectLabel(form.name || selectedProjectInfo?.name)}</div>
-                </div>
-                <div className="org-dept-connector" />
-                <div className="org-dept-bar" />
-                <div className="org-dept-row">
-                  {ORG_FLOW_DEPTS.map(node => {
-                    const deptMembers = membersForDept(node.dept)
-                    const shown = deptMembers.slice(0, 4)
-                    const extra = deptMembers.length - shown.length
-                    return (
-                      <div className="org-flow-node" key={node.dept}>
-                        <div className="org-dept-stem" />
-                        <div className="org-flow-icon" style={{ background: `var(--${node.color}-tint, var(--surface-alt))`, color: `var(--${node.color}, var(--text-muted))` }}>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: node.icon }} />
-                        </div>
-                        <div className="org-flow-label">{node.label}</div>
-                        <div className="org-flow-stats">{node.stat1}<br />{node.stat2}</div>
-                        <div className="org-flow-members">
-                          {shown.map(m => (
-                            <span key={m.name} className="org-flow-avatar" style={{ background: avatarColor(m.name) }} title={`${m.name}${m.role ? ` — ${m.role}` : ''}`}>{initials(m.name)}</span>
-                          ))}
-                          {extra > 0 && <span className="org-flow-avatar-more" title={`${extra} người khác`}>+{extra}</span>}
-                          <button type="button" className="org-flow-avatar-add" title={`Thêm nhân sự vào ${node.label}`} onClick={() => addDeptMember(node.dept)}>+</button>
-                        </div>
-                        <button type="button" className="org-flow-link" style={{ color: `var(--${node.color}, var(--text-muted))` }} onClick={() => goToDept(node)}>{node.linkLabel} ›</button>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Sơ đồ tổ chức dự án: phân công nhân sự theo vai trò thiết kế */}
-            <div className="org-chart-panel">
-              <div className="org-chart-head">
-                <div>
-                  <h2 className="org-chart-title-left">Sơ đồ tổ chức dự án</h2>
-                  <p className="org-chart-desc">Bổ nhiệm nhân sự phụ trách cho từng vai trò trong quy trình thiết kế. Kéo-thả các thẻ để sắp xếp lại trong cùng một hàng, hoặc thả vào biểu tượng thùng rác để xoá bộ phận tuỳ biến.</p>
-                </div>
-                <div className="org-chart-actions">
-                  <div
-                    className={`org-trash-icon ${trashOver ? 'drag-over' : ''}`}
-                    title="Kéo thẻ vào đây để xoá bộ phận"
-                    onDragOver={e => { e.preventDefault(); setTrashOver(true) }}
-                    onDragLeave={() => setTrashOver(false)}
-                    onDrop={() => { handleOrgDropTrash(); setTrashOver(false) }}
-                  >
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-.9 14a2 2 0 0 1-2 1.9H7.9a2 2 0 0 1-2-1.9L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                  </div>
-                  <button type="button" className="org-save-btn" onClick={handleSaveOrgChart}>{orgSaved ? 'Đã lưu ✓' : 'Lưu sơ đồ tổ chức'}</button>
-                </div>
-              </div>
-
-              <div className="org-chart-wrap" onDragOver={e => e.preventDefault()}>
-                {/* Parallel nodes */}
-                <div className="org-parallel-row">
-                  {parallel.map((node, i) => (
-                    <div key={node.dept}
-                      onDragOver={e => { e.preventDefault(); handleParallelDragEnter(i) }}
-                      onDrop={() => handleParallelDrop(i)}
-                    >
-                      <OrgNode
-                        node={node}
-                        dragging={dragParallelIdx === i}
-                        dropTarget={dropParallelIdx === i}
-                        onDragStart={() => handleParallelDragStart(i)}
-                        onDragEnd={() => { setDragParallelIdx(null); setDropParallelIdx(null) }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                {!showAddParallel ? (
-                  <button type="button" className="org-add-btn" onClick={() => setShowAddParallel(true)}>+ Thêm bộ phận song song</button>
-                ) : (
-                  <div className="org-add-form">
-                    <input
-                      autoFocus value={newParallelLabel} onChange={e => setNewParallelLabel(e.target.value)}
-                      placeholder="Tên bộ phận" onKeyDown={e => { if (e.key === 'Enter') addParallel(); if (e.key === 'Escape') setShowAddParallel(false) }}
-                    />
-                    <select value={newParallelColor} onChange={e => setNewParallelColor(e.target.value)}>
-                      {ORG_EXTRA_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <button type="button" onClick={addParallel}>Thêm</button>
-                    <button type="button" className="org-add-form-cancel" onClick={() => setShowAddParallel(false)}>Huỷ</button>
-                  </div>
-                )}
-
-                {/* Hub */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, marginTop: 14 }}>
-                  <OrgNode node={ORG_HUB} isHub />
-                </div>
-
-                {/* Vertical connector from hub down */}
-                <div style={{ width: 2, height: 24, background: 'var(--border)', flexShrink: 0 }} />
-
-                {/* Children row */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', position: 'relative' }}>
-                  {/* horizontal bar across all children */}
-                  {children.length > 1 && (
-                    <div style={{
-                      position: 'absolute', top: 0,
-                      left: `calc(${1/(children.length)*50}% + ${children.length > 2 ? 0 : 60}px)`,
-                      right: `calc(${1/(children.length)*50}% + ${children.length > 2 ? 0 : 60}px)`,
-                      height: 2, background: 'var(--border)'
-                    }} />
-                  )}
-                  {children.map((node, i) => (
-                    <div key={node.dept} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}
-                      onDragOver={e => { e.preventDefault(); handleOrgDragEnter(i) }}
-                      onDrop={() => handleOrgDrop(i)}
-                    >
-                      <div style={{ width: 2, height: 24, background: 'var(--border)' }} />
-                      <OrgNode
-                        node={node}
-                        dragging={dragOrgIdx === i}
-                        dropTarget={dropOrgIdx === i}
-                        onDragStart={() => handleOrgDragStart(i)}
-                        onDragEnd={() => { setDragOrgIdx(null); setDropOrgIdx(null) }}
-                      />
-                    </div>
-                  ))}
-                  {children.length === 0 && <div className="empty-state">Kéo thả để sắp xếp · Không có nhánh con</div>}
-                </div>
-
-                {!showAddChild ? (
-                  <button type="button" className="org-add-btn" style={{ marginTop: 14 }} onClick={() => setShowAddChild(true)}>+ Thêm bộ phận trực thuộc</button>
-                ) : (
-                  <div className="org-add-form" style={{ marginTop: 14 }}>
-                    <input
-                      autoFocus value={newChildLabel} onChange={e => setNewChildLabel(e.target.value)}
-                      placeholder="Tên phòng ban" onKeyDown={e => { if (e.key === 'Enter') addChild(); if (e.key === 'Escape') setShowAddChild(false) }}
-                    />
-                    <select value={newChildColor} onChange={e => setNewChildColor(e.target.value)}>
-                      {ORG_EXTRA_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <button type="button" onClick={addChild}>Thêm</button>
-                    <button type="button" className="org-add-form-cancel" onClick={() => setShowAddChild(false)}>Huỷ</button>
-                  </div>
-                )}
-
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>Kéo thả các nhánh để sắp xếp lại · Kéo vào thùng rác phía trên để xoá (trừ nhánh cố định)</div>
-              </div>
+      {modalOpen && (
+        <div className="tk-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setModalOpen(false) }}>
+          <div className="tk-modal-box">
+            <h3>Thêm thầu phụ</h3>
+            <p className="tk-modal-sub">Bổ sung một nhà thầu phụ mới cho dự án.</p>
+            <div className="tk-modal-field"><label>Tên nhà thầu phụ *</label><input type="text" placeholder="VD: Công ty Cơ điện Phúc An" value={form.name} onChange={setField('name')} /></div>
+            <div className="tk-modal-field"><label>Hạng mục phụ trách</label><input type="text" placeholder="VD: Thi công M&E" value={form.scope} onChange={setField('scope')} /></div>
+            <div className="tk-modal-field"><label>Người liên hệ</label><input type="text" placeholder="VD: Anh Hùng" value={form.contact} onChange={setField('contact')} /></div>
+            <div className="tk-modal-field"><label>Số điện thoại</label><input type="text" placeholder="VD: 0909 xxx xxx" value={form.phone} onChange={setField('phone')} /></div>
+            <div className="tk-modal-field"><label>Giá trị hợp đồng</label><input type="text" placeholder="VD: 850.000.000" value={form.value} onChange={setField('value')} /></div>
+            <div className="tk-modal-actions">
+              <button className="tk-modal-btn" onClick={() => setModalOpen(false)}>Huỷ</button>
+              <button className="tk-modal-btn primary project" onClick={submit}>Thêm thầu phụ</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
+    </>
+  )
+}
 
-        {/* ── Thầu phụ ────────────────────────────────────── */}
-        {subTab === 2 && (
-          <div className="subcontractor-view">
-            <div className="subcontractor-heading">
-              <div>
-                <h2>Thầu phụ</h2>
-                <p>Quản lý các nhà thầu phụ tham gia thi công dự án.</p>
-              </div>
-              <button className="sub-add-btn" onClick={() => setShowAddSub(s => !s)}>
-                {showAddSub ? 'Đóng' : '+ Thêm thầu phụ'}
-              </button>
-            </div>
+/* ---------------- Sơ đồ tổ chức ---------------- */
+function OrgNode({ item, rowKey, idx, project, dragState, onDragStart, onDragEnd, onDrop }) {
+  const isChildren = rowKey === 'children'
+  const key = `${rowKey}-${idx}`
+  const [over, setOver] = useState(false)
+  return (
+    <div
+      className="tk-flow-node tk-org-node"
+      draggable="true"
+      style={{
+        flex: isChildren ? '1' : 'none',
+        ...(isChildren ? { minWidth: 150 } : { width: 170 }),
+        opacity: dragState.current && dragState.current.key === key ? 0.4 : undefined,
+        outline: over ? '2px dashed var(--project)' : undefined,
+      }}
+      onDragStart={() => onDragStart(rowKey, idx)}
+      onDragEnd={onDragEnd}
+      onDragOver={e => {
+        if (!dragState.current || dragState.current.row !== rowKey) return
+        e.preventDefault()
+        setOver(true)
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={e => { e.preventDefault(); setOver(false); onDrop(rowKey, idx) }}
+    >
+      {isChildren && <div className="tk-flow-vline" style={{ height: 20 }} />}
+      <div className="tk-flow-circle" style={{ background: `var(--${item.color}-tint)`, color: `var(--${item.color})`, ...(item.dashed ? { border: `2px dashed var(--${item.color})` } : {}) }}>
+        <Svg size={20} html={item.icon} />
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 700, textAlign: 'center' }}>{item.label}</div>
+      {item.caption && <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center' }}>{item.caption}</div>}
+      <FlowNodeMembers project={project} dept={item.dept} />
+      <FlowNodePopover project={project} dept={item.dept} />
+    </div>
+  )
+}
 
-            {showAddSub && (
-              <div style={{ background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-                  {[
-                    ['name', 'Tên công ty *'], ['scope', 'Phạm vi công việc'],
-                    ['contact', 'Người liên hệ'], ['phone', 'Số điện thoại'],
-                    ['value', 'Giá trị hợp đồng (VND)'],
-                  ].map(([k, label]) => (
-                    <div key={k} className="form-group" style={{ gridColumn: k === 'name' || k === 'scope' ? '1 / -1' : 'auto' }}>
-                      <label>{label}</label>
-                      <input value={newSub[k]} onChange={e => setNewSub(s => ({ ...s, [k]: e.target.value }))} />
-                    </div>
-                  ))}
-                  <div className="form-group">
-                    <label>Trạng thái</label>
-                    <select value={newSub.status} onChange={e => setNewSub(s => ({ ...s, status: e.target.value }))}>
-                      {Object.entries(SUB_STATUS).map(([k, [label]]) => <option key={k} value={k}>{label}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <button onClick={addSub} className="form-submit" style={{ marginRight: 8 }}>Thêm nhà thầu</button>
-                <button onClick={() => setShowAddSub(false)} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'none', fontSize: 13, cursor: 'pointer', color: 'var(--text-muted)' }}>Huỷ</button>
-              </div>
-            )}
+function OrgChart({ project, onGoto }) {
+  const { addDept } = useMembers()
+  const [parallel, setParallel] = useState(() => readStoredOrgRow(ORG_PARALLEL_STORAGE_KEY, INITIAL_ORG_PARALLEL, ORG_ICON.dept))
+  const [children, setChildren] = useState(() => readStoredOrgRow(ORG_CHILDREN_STORAGE_KEY, INITIAL_ORG_CHILDREN, ORG_ICON.dept))
+  usePersist(ORG_PARALLEL_STORAGE_KEY, parallel)
+  usePersist(ORG_CHILDREN_STORAGE_KEY, children)
+  const [trashOver, setTrashOver] = useState(false)
+  const [, forceRender] = useState(0)
+  const dragSrc = useRef(null)
+  const seq = useRef(0)
 
-            <div className="sub-table-card">
-              <div className="sub-table-scroll">
-                <table className="sub-table">
-                  <thead><tr>
-                    <th>NHÀ THẦU PHỤ</th>
-                    <th>HẠNG MỤC PHỤ TRÁCH</th>
-                    <th>NGƯỜI LIÊN HỆ</th>
-                    <th>SĐT</th>
-                    <th>GIÁ TRỊ HỢP ĐỒNG</th>
-                    <th>TRẠNG THÁI</th>
-                    <th aria-label="Thao tác" />
-                  </tr></thead>
-                  <tbody>
-                    {subs.map((sub, i) => {
-                      const [statusLabel, statusColor, statusBg] = SUB_STATUS[sub.status] || ['', 'var(--text-muted)', 'var(--surface-alt)']
-                      return (
-                        <tr key={`${sub.name}-${i}`}>
-                          <td className="sub-table-name">{sub.name}</td>
-                          <td>{sub.scope || '—'}</td>
-                          <td>{sub.contact || '—'}</td>
-                          <td>{sub.phone || '—'}</td>
-                          <td className="sub-table-value">{formatCurrency(sub.value)}</td>
-                          <td><span className="sub-status-badge" style={{ background: statusBg, color: statusColor }}>{statusLabel}</span></td>
-                          <td><button className="sub-btn" title={`Xóa ${sub.name}`} onClick={() => removeSub(i)}>Xóa</button></td>
-                        </tr>
-                      )
-                    })}
-                    {subs.length === 0 && <tr><td colSpan={7} className="sub-table-empty">Chưa có thầu phụ. Nhấn “Thêm thầu phụ” để bắt đầu.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+  const rowState = rowKey => rowKey === 'parallel' ? [parallel, setParallel] : [children, setChildren]
+
+  function addOrgDept(rowKey) {
+    const name = prompt('Tên bộ phận mới:', '')
+    if (name === null || !name.trim()) return
+    const color = ORG_EXTRA_COLORS[seq.current % ORG_EXTRA_COLORS.length]
+    seq.current++
+    const dept = `custom-${Date.now()}-${seq.current}`
+    addDept({ value: dept, label: name.trim() })
+    const [, setRow] = rowState(rowKey)
+    setRow(prev => [...prev, {
+      dept, label: name.trim(), color, icon: ORG_ICON.dept, removable: true,
+      dashed: rowKey === 'parallel',
+      caption: rowKey === 'parallel' ? 'Song song · không thuộc quyền' : undefined,
+    }])
+  }
+
+  function handleDragStart(row, idx) {
+    dragSrc.current = { row, idx, key: `${row}-${idx}` }
+    forceRender(n => n + 1)
+  }
+  function handleDragEnd() {
+    dragSrc.current = null
+    forceRender(n => n + 1)
+  }
+  function handleDrop(row, targetIdx) {
+    const src = dragSrc.current
+    if (!src || src.row !== row) return
+    dragSrc.current = null
+    if (src.idx === targetIdx) { forceRender(n => n + 1); return }
+    const [, setRow] = rowState(row)
+    setRow(prev => {
+      const arr = [...prev]
+      const [moved] = arr.splice(src.idx, 1)
+      arr.splice(targetIdx, 0, moved)
+      return arr
+    })
+  }
+  function handleTrashDrop(e) {
+    e.preventDefault()
+    setTrashOver(false)
+    const src = dragSrc.current
+    if (!src) return
+    const [arr, setRow] = rowState(src.row)
+    const item = arr[src.idx]
+    dragSrc.current = null
+    forceRender(n => n + 1)
+    if (!item) return
+    if (item.removable === false) {
+      alert(`Không thể xoá bộ phận mặc định "${item.label}".`)
+      return
+    }
+    if (confirm(`Xoá bộ phận "${item.label}"?`)) setRow(prev => prev.filter(x => x !== item))
+  }
+
+  const nodeProps = { project, dragState: dragSrc, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDrop: handleDrop }
+
+  return (
+    <div className="tk-card" style={{ padding: '26px 24px 30px' }}>
+      <h3 style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 4, textAlign: 'center' }}>Sơ đồ tổ chức dự án</h3>
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, maxWidth: 560 }}>Bổ nhiệm nhân sự phụ trách cho từng vai trò trong quy trình thiết kế. Kéo-thả các thẻ để sắp xếp lại trong cùng một hàng, hoặc thả vào biểu tượng thùng rác để xoá bộ phận tuỳ biến.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 'none' }}>
+          <div
+            className={`tk-org-trash${trashOver ? ' over' : ''}`}
+            title="Kéo thẻ vào đây để xoá bộ phận"
+            onDragOver={e => { if (!dragSrc.current) return; e.preventDefault(); setTrashOver(true) }}
+            onDragLeave={() => setTrashOver(false)}
+            onDrop={handleTrashDrop}
+          >
+            <Svg size={17} html={ICONS.trash} />
           </div>
-        )}
+          <button
+            className="tk-btn-project"
+            style={{ padding: '0 18px', height: 38, borderRadius: 10, fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', flex: 'none', display: 'flex', alignItems: 'center' }}
+            onClick={() => {
+              /* Lưu sơ đồ (giữ logic cũ) rồi quay về danh sách như bản HTML */
+              writeStored(ORG_CHILDREN_STORAGE_KEY, children)
+              writeStored(ORG_PARALLEL_STORAGE_KEY, parallel)
+              onGoto('list')
+            }}
+          >Lưu sơ đồ tổ chức</button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 4 }}>
+          {parallel.map((item, i) => <OrgNode key={item.dept} item={item} rowKey="parallel" idx={i} {...nodeProps} />)}
+        </div>
+        <button className="tk-dashed-btn" style={{ marginTop: 6 }} onClick={() => addOrgDept('parallel')}>+ Thêm bộ phận song song</button>
+
+        <div style={{ marginTop: 10 }}>
+          <div className="tk-flow-node" style={{ flexDirection: 'column', alignItems: 'center', cursor: 'default' }}>
+            <div className="tk-flow-circle" style={{ background: `var(--${ORG_HUB.color})`, color: '#fff', width: 56, height: 56, borderRadius: 16 }}>
+              <Svg size={24} stroke="#fff" html={ORG_HUB.icon} />
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, marginTop: 8 }}>{ORG_HUB.label}</div>
+            <FlowNodeMembers project={project} dept={ORG_HUB.dept} style={{ marginTop: 4 }} />
+            <FlowNodePopover project={project} dept={ORG_HUB.dept} />
+          </div>
+        </div>
+
+        <div className="tk-flow-vline" style={{ height: 26, marginTop: 10 }} />
+        <div style={{ width: '100%', maxWidth: 900, height: 2, background: 'var(--border)' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', width: '100%', maxWidth: 900, gap: 20 }}>
+          {children.map((item, i) => <OrgNode key={item.dept} item={item} rowKey="children" idx={i} {...nodeProps} />)}
+        </div>
+        <button className="tk-dashed-btn" style={{ marginTop: 14 }} onClick={() => addOrgDept('children')}>+ Thêm bộ phận trực thuộc</button>
       </div>
     </div>
   )
 }
 
-/* OrgNode component */
-function OrgNode({ node, isHub, dragging, dropTarget, onDragStart, onDragEnd }) {
+function ProjectDetail({ onGoto }) {
+  const [project, setProject] = useState('Chung cư Riverside — Giai đoạn 2')
+  const d = DETAIL_PROJECT_DATA[project]
+  const statusColors = DETAIL_STATUS_COLORS[d.statusColor] || DETAIL_STATUS_COLORS.primary
+
   return (
-    <div
-      className={`org-node ${dragging ? 'dragging' : ''} ${dropTarget ? 'drop-target' : ''} ${node.dashed ? 'dashed-node' : ''}`}
-      draggable={!isHub && !node.dashed}
-      onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; onDragStart?.() }}
-      onDragEnd={onDragEnd}
-    >
-      <div
-        className="org-node-icon"
-        style={{ background: `var(--${node.color}-tint, var(--surface-alt))` }}
-      >
-        <svg width="16" height="16" fill="none" stroke={`var(--${node.color}, var(--text-muted))`} strokeWidth="1.5" viewBox="0 0 24 24"
-          dangerouslySetInnerHTML={{ __html: node.icon }} />
+    <>
+      <div className="tk-card" style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', gap: 20 }}>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'var(--project-tint)', color: 'var(--project)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+            <Svg size={26} html={ICONS.building} />
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div className="tk-display" style={{ fontWeight: 800, fontSize: 16 }}>{project}</div>
+              <span className="tk-pill" style={{ background: statusColors[0], color: statusColors[1] }}>{d.status}</span>
+              {!d.hasData && <span className="tk-pill" style={{ background: 'var(--overdue-soft)', color: 'var(--overdue)', display: 'inline-block' }}>Dữ liệu minh hoạ</span>}
+              <select
+                title="Chuyển qua dự án khác"
+                value={project}
+                onChange={e => setProject(e.target.value)}
+                style={{ marginLeft: 'auto', flex: 'none', position: 'relative', zIndex: 2, border: '1px solid var(--border)', background: 'var(--surface-alt)', color: 'var(--text)', padding: '6px 10px', borderRadius: 7, fontSize: 11.5, fontFamily: 'inherit', cursor: 'pointer' }}
+              >
+                {PROJECT_SHORTLIST.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 18, marginTop: 4, fontSize: 12.5 }}>
+              <span><span style={{ color: 'var(--text-muted)' }}>Khách hàng: </span><strong>{d.client}</strong></span>
+              <span><span style={{ color: 'var(--text-muted)' }}>Liên hệ: </span><strong>{d.contact}</strong></span>
+              <span className="mono"><span style={{ color: 'var(--text-muted)' }}>SĐT: </span>{d.phone}</span>
+              <span className="mono"><span style={{ color: 'var(--text-muted)' }}>Email: </span>{d.email}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, fontSize: 12.5 }}>
+              <span style={{ color: 'var(--text-muted)' }}>Nhân sự tham gia:</span>
+              <MemberCell project={project} />
+            </div>
+          </div>
+        </div>
+        <div style={{ textAlign: 'right', flex: 'none' }}>
+          <div className="mono tk-display" style={{ fontWeight: 800, fontSize: 20 }}>{d.budget}</div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Ngân sách · PM: Trần Anh</div>
+        </div>
       </div>
-      <div className="org-node-label">{node.label}</div>
-      {node.caption && <div className="org-node-caption">{node.caption}</div>}
-    </div>
+
+      <div className="tk-card" style={{ padding: '26px 24px 22px' }}>
+        <h3 style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 20, textAlign: 'center' }}>Sơ đồ phòng ban</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="tk-flow-circle" style={{ background: 'var(--project)', color: '#fff', width: 60, height: 60, borderRadius: 16 }}>
+            <Svg size={28} stroke="#fff" html={ICONS.folder} />
+          </div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>Dự án Riverside GĐ2</div>
+          <div className="tk-flow-vline" style={{ height: 22, marginTop: 6 }} />
+          <div style={{ width: '100%', maxWidth: 1140, height: 2, background: 'var(--border)' }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: 1140, marginTop: 0 }}>
+            {DEPT_FLOW.map(n => (
+              <div key={n.dept} className="tk-flow-node">
+                <div className="tk-flow-vline" style={{ height: 20 }} />
+                <div className="tk-flow-circle" style={{ background: `var(--${n.color}-tint)`, color: `var(--${n.color})` }}><Svg size={22} html={n.icon} /></div>
+                <div className="tk-flow-name">{n.name}</div>
+                <div className="tk-flow-desc">{n.desc[0]}<br />{n.desc[1]}</div>
+                <FlowNodeMembers project={project} dept={n.dept} />
+                {n.to
+                  ? <Link to={n.to} className="tk-flow-link" style={{ color: `var(--${n.color})` }}>{n.link}</Link>
+                  : <span className="tk-flow-link" style={{ color: `var(--${n.color})` }} onClick={() => onGoto(n.goto)}>{n.link}</span>}
+                <FlowNodePopover project={project} dept={n.dept} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <OrgChart project={project} onGoto={onGoto} />
+    </>
+  )
+}
+
+export default function SetupTab({ sub, onSubChange, onGoto }) {
+  return (
+    <>
+      <div className="tk-create-subtabs">
+        {SUBTABS.map(t => (
+          <button key={t.key} className={`tk-create-subtab${sub === t.key ? ' active' : ''}`} onClick={() => onSubChange(t.key)}>{t.label}</button>
+        ))}
+      </div>
+
+      <div className={`tk-create-subpanel${sub === 'setup' ? ' active' : ''}`}>
+        <SetupGeneral onGoto={onGoto} />
+      </div>
+      <div className={`tk-create-subpanel${sub === 'thauphu' ? ' active' : ''}`}>
+        <Subcontractors />
+      </div>
+      <div className={`tk-create-subpanel${sub === 'detail' ? ' active' : ''}`}>
+        <ProjectDetail onGoto={onGoto} />
+      </div>
+    </>
   )
 }

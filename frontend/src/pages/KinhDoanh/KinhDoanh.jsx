@@ -1,276 +1,239 @@
-import { useMemo, useRef, useState } from 'react'
-import PageShell from '../../components/layout/PageShell'
-import LeadCard from './components/LeadCard'
+import { useRef, useState } from 'react'
+import './KinhDoanh.css'
+import { useTheme } from '../../hooks/useTheme'
+import {
+  LEADS, SALES_TABS, SYNC_STAGES, HANDOFF_CONFIG, KD_STEPS, KD_WALLET_INITIAL,
+  DESIGN_STAGES, DESIGN_LABEL, DESIGN_COLOR, CONSTRUCTION_STAGES, CONSTRUCTION_LABEL, CONSTRUCTION_COLOR,
+} from '../../data/kinhDoanhData'
+import { matchesTimeFilter, pushSyncedProject, removeSyncedProject } from './utils'
+import OverviewTab from './components/OverviewTab'
+import PipelineTab from './components/PipelineTab'
 import SubBoard from './components/SubBoard'
-import Modal from './components/Modal'
+import TasksTab from './components/TasksTab'
 import LeadModal from './components/LeadModal'
+import LeadDetailModal from './components/LeadDetailModal'
 import HandoffModal from './components/HandoffModal'
 import TaskModal from './components/TaskModal'
-import TasksTab from './components/TasksTab'
-import OverviewTab from './components/OverviewTab'
-import {
-  stages, stageLabels, departments, deptShort, deptColors, deptTints,
-  designStages, constructionStages, initialLeads, makeTasks, handoffSettings, blankLead,
-} from '../../data/kinhDoanhData'
-import { formatValue, stageAccent, matchesDate, primaryButton, selectStyle, timeOptions } from './utils'
-import './KinhDoanh.css'
+import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
+
+const hintStyle = { fontSize: 11.5, color: 'var(--text-muted)' }
 
 export default function KinhDoanh() {
-  const [leads, setLeads] = useState(initialLeads)
+  const { theme, toggleTheme } = useTheme()
   const [tab, setTab] = useState('overview')
-  const [taskTab, setTaskTab] = useState('overview')
-  const [boardView, setBoardView] = useState('kanban')
+
+  /* ---------- Dữ liệu pipeline ---------- */
+  const [leads, setLeads] = useState(() => LEADS.map(l => ({ ...l })))
+  const leadCounter = useRef(LEADS.length + 1)
   const [dept, setDept] = useState('all')
-  const [timeFilter, setTimeFilter] = useState('all')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [leadModal, setLeadModal] = useState(null)
-  const [leadForm, setLeadForm] = useState(blankLead)
-  const [leadStep, setLeadStep] = useState(0)
-  const [assigneeForm, setAssigneeForm] = useState({ name: '', role: '' })
-  const [detailLead, setDetailLead] = useState(null)
-  const [handoff, setHandoff] = useState(null)
-  const [handoffForm, setHandoffForm] = useState({ date: '', assignee: '' })
-  const [tasks, setTasks] = useState(makeTasks)
-  const [taskModal, setTaskModal] = useState(false)
-  const [taskForm, setTaskForm] = useState({ name: '', step: 2, assignee: '', points: '20' })
-  const [wallet, setWallet] = useState(1320)
-  const [redeemed, setRedeemed] = useState([])
-  const dragIdRef = useRef(null)
-  const [dragTarget, setDragTarget] = useState(null)
+  const [timeFilter, setTimeFilter] = useState({ time: 'all', from: '', to: '' })
 
-  const filtered = useMemo(() => leads.filter(lead =>
-    (dept === 'all' || lead.dept === dept) && matchesDate(lead, timeFilter, fromDate, toDate),
-  ), [leads, dept, timeFilter, fromDate, toDate])
+  /* ---------- Modal ---------- */
+  const [leadModal, setLeadModal] = useState({ open: false, id: null, seq: 0 })
+  const [detail, setDetail] = useState({ open: false, id: null })
+  const [handoff, setHandoff] = useState({ open: false, leadId: null, stageKey: null, seq: 0 })
+  const [taskModal, setTaskModal] = useState({ open: false, seq: 0 })
 
-  const stats = useMemo(() => {
-    const won = filtered.filter(lead => ['chot-hd', 'thiet-ke', 'thi-cong'].includes(lead.stage))
-    const lost = filtered.filter(lead => lead.stage === 'truot-thau')
-    const totalValue = filtered.reduce((sum, lead) => sum + Number(lead.value || 0), 0)
-    const wonValue = won.reduce((sum, lead) => sum + Number(lead.value || 0), 0)
-    return {
-      total: filtered.length, won, lost, totalValue, wonValue,
-      closeRate: filtered.length ? Math.round(won.length / filtered.length * 100) : 0,
-      lostRate: filtered.length ? Math.round(lost.length / filtered.length * 100) : 0,
-      partnerRate: won.length ? Math.round(won.filter(lead => lead.partner).length / won.length * 100) : 0,
-    }
-  }, [filtered])
+  /* ---------- Nhiệm vụ & điểm thưởng ---------- */
+  const [steps, setSteps] = useState(() => KD_STEPS.map(s => ({ ...s, subtasks: s.subtasks.map(x => ({ ...x })) })))
+  const [wallet, setWallet] = useState(KD_WALLET_INITIAL)
 
-  function updateForm(key, value) { setLeadForm(f => ({ ...f, [key]: value })) }
-  function updateLead(id, patch) { setLeads(current => current.map(lead => lead.id === id ? { ...lead, ...patch } : lead)) }
+  /* ---------- Dezbot ---------- */
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
+  const [aiResizing, setAiResizing] = useState(false)
 
-  function syncProject(lead) {
-    try {
-      const items = JSON.parse(localStorage.getItem('siteflow-synced-projects') || '[]').filter(i => i.id !== lead.id)
-      items.push({ id: lead.id, name: lead.type.includes('—') ? lead.type : `${lead.name} — ${lead.type}`, client: lead.name, stage: lead.stage, value: lead.value, updated: new Date().toLocaleDateString('vi-VN') })
-      localStorage.setItem('siteflow-synced-projects', JSON.stringify(items))
-    } catch (e) { console.error('Không thể đồng bộ dự án kinh doanh.', e) }
-  }
-  function removeSyncedProject(id) {
-    try {
-      const items = JSON.parse(localStorage.getItem('siteflow-synced-projects') || '[]').filter(i => i.id !== id)
-      localStorage.setItem('siteflow-synced-projects', JSON.stringify(items))
-    } catch (e) { console.error('Không thể cập nhật dự án kinh doanh.', e) }
+  const scrollRef = useRef(null)
+
+  const filteredLeads = leads.filter(l => (dept === 'all' || l.dept === dept) && matchesTimeFilter(l, timeFilter))
+  const patchLead = (id, fn) => setLeads(prev => prev.map(l => (l.id === id ? fn(l) : l)))
+  const syncLead = lead => {
+    if (SYNC_STAGES.indexOf(lead.stage) !== -1) pushSyncedProject(lead)
+    else removeSyncedProject(lead.id)
   }
 
-  function openLead(lead) {
-    setLeadForm(lead ? { ...blankLead, ...lead, projectType: lead.projectType || lead.type, value: String(lead.value ?? '') } : { ...blankLead })
-    setLeadStep(0)
-    setAssigneeForm({ name: '', role: '' })
-    setLeadModal(lead?.id || 'new')
+  /* ---------- Chuyển giai đoạn (moveLead) ---------- */
+  function moveLead(id, newStage) {
+    const lead = leads.find(l => l.id === id)
+    if (!lead || lead.stage === newStage) return
+    const fromStage = lead.stage
+    patchLead(id, l => ({ ...l, stage: newStage }))
+    syncLead({ ...lead, stage: newStage })
+    const cfg = HANDOFF_CONFIG[newStage]
+    const shouldNotify = cfg && (newStage === 'bao-gia' ? fromStage === 'tu-van' : true)
+    if (shouldNotify) setHandoff(h => ({ open: true, leadId: id, stageKey: newStage, seq: h.seq + 1 }))
   }
-  function saveLead() {
-    if (!leadForm.name.trim()) { setLeadStep(0); return }
-    const numericValue = Number(String(leadForm.value).replace(',', '.')) || 0
-    const saved = { ...leadForm, name: leadForm.name.trim(), value: numericValue, type: leadForm.scale.trim() ? `${leadForm.projectType} (${leadForm.scale.trim()})` : leadForm.projectType }
-    if (leadModal === 'new') {
-      saved.id = `lnew-${Date.now()}`
-      saved.createdAt = new Date().toISOString().slice(0, 10)
-      setLeads(current => [...current, saved])
-    } else {
-      setLeads(current => current.map(lead => lead.id === leadModal ? { ...lead, ...saved } : lead))
-    }
-    if (['thiet-ke', 'thi-cong', 'tu-van', 'dam-phan'].includes(saved.stage)) syncProject({ ...saved, id: leadModal === 'new' ? saved.id : leadModal })
-    else removeSyncedProject(leadModal === 'new' ? saved.id : leadModal)
-    setLeadModal(null)
-  }
-  function changeStage(id, nextStage) {
-    const lead = leads.find(item => item.id === id)
-    if (!lead || lead.stage === nextStage) return
-    updateLead(id, { stage: nextStage })
-    const updated = { ...lead, stage: nextStage }
-    if (['thiet-ke', 'thi-cong', 'tu-van', 'dam-phan'].includes(nextStage)) syncProject(updated)
-    else removeSyncedProject(id)
-    if (handoffSettings[nextStage]) {
-      setHandoff({ leadId: id, stage: nextStage })
-      setHandoffForm({ date: '', assignee: '' })
-    }
-  }
-  function removeLead(id) {
-    const lead = leads.find(item => item.id === id)
-    if (!lead || !window.confirm(`Xoá lead "${lead.name}"? Hành động này không thể hoàn tác.`)) return
-    setLeads(current => current.filter(item => item.id !== id))
+
+  function deleteLead(id) {
+    const lead = leads.find(l => l.id === id)
+    if (!lead) return
+    if (!window.confirm('Xoá lead "' + lead.name + '"? Hành động này không thể hoàn tác.')) return
+    setLeads(prev => prev.filter(l => l.id !== id))
     removeSyncedProject(id)
   }
-  function saveHandoff(selfQuoted = false) {
-    const config = handoffSettings[handoff?.stage]
-    const lead = leads.find(item => item.id === handoff?.leadId)
-    if (!config || !lead) return
-    const nextAssignees = handoffForm.assignee.trim()
-      ? [...(lead.assignees || []), { name: handoffForm.assignee.trim(), role: config.role }]
-      : lead.assignees
-    updateLead(lead.id, {
-      handoff: { status: selfQuoted ? 'self-quoted' : config.status, dept: config.dept, requestedAt: selfQuoted ? null : handoffForm.date || null, assignee: selfQuoted ? null : handoffForm.assignee.trim() || null },
-      ...(nextAssignees ? { assignees: nextAssignees } : {}),
+
+  /* ---------- Modal thêm / sửa lead ---------- */
+  const openLeadModal = id => setLeadModal(m => ({ open: true, id: id || null, seq: m.seq + 1 }))
+  const closeLeadModal = () => setLeadModal(m => ({ ...m, open: false }))
+  function saveLead(data) {
+    const editing = leadModal.id ? leads.find(l => l.id === leadModal.id) : null
+    if (editing) {
+      const merged = { ...editing, ...data }
+      patchLead(editing.id, () => merged)
+      syncLead(merged)
+    } else if (!leadModal.id) {
+      const created = { ...data, id: 'lnew' + (leadCounter.current++), createdAt: new Date().toISOString().slice(0, 10) }
+      setLeads(prev => [...prev, created])
+      if (SYNC_STAGES.indexOf(created.stage) !== -1) pushSyncedProject(created)
+    }
+    closeLeadModal()
+  }
+
+  /* ---------- Người phụ trách trên thẻ kanban ---------- */
+  const addAssignee = (id, person) => patchLead(id, l => ({ ...l, assignees: [...(l.assignees || []), person] }))
+  const removeAssignee = (id, idx) => patchLead(id, l => ({ ...l, assignees: (l.assignees || []).filter((_, i) => i !== idx) }))
+
+  /* ---------- Phiếu bàn giao / yêu cầu báo giá ---------- */
+  const closeHandoff = () => setHandoff(h => ({ ...h, open: false, leadId: null, stageKey: h.stageKey }))
+  function sendHandoff(dt, assigneeName) {
+    const cfg = HANDOFF_CONFIG[handoff.stageKey]
+    if (!handoff.leadId || !cfg) return
+    patchLead(handoff.leadId, l => ({
+      ...l,
+      handoff: { status: cfg.pendingStatus, dept: cfg.dept, requestedAt: dt || null, assignee: assigneeName || null },
+      ...(assigneeName ? { assignees: [...(l.assignees || []), { name: assigneeName, role: cfg.role }] } : null),
+    }))
+    closeHandoff()
+  }
+  function selfQuote() {
+    const cfg = HANDOFF_CONFIG[handoff.stageKey]
+    if (!handoff.leadId || !cfg || !cfg.selfStatus) return
+    patchLead(handoff.leadId, l => ({ ...l, handoff: { status: cfg.selfStatus, dept: cfg.dept, requestedAt: null, assignee: null } }))
+    closeHandoff()
+  }
+
+  /* ---------- Bảng con Thiết kế / Thi công ---------- */
+  const setLeadSub = (id, sub) => patchLead(id, l => ({ ...l, sub }))
+  function addSubCard(name, parentStage, sub) {
+    setLeads(prev => [...prev, { id: 'lnew' + (leadCounter.current++), name, type: 'Chưa xác định', value: 0, stage: parentStage, sub, dept: 'dan-dung', createdAt: new Date().toISOString().slice(0, 10) }])
+  }
+
+  /* ---------- Nhiệm vụ ---------- */
+  function checkSubtask(stepIdx, subIdx) {
+    setSteps(prev => {
+      if (prev[stepIdx].subtasks[subIdx].done) return prev
+      const next = prev.map(s => ({ ...s, subtasks: s.subtasks.map(x => ({ ...x })) }))
+      const step = next[stepIdx]
+      step.subtasks[subIdx].done = true
+      if (step.subtasks.every(s => s.done)) {
+        step.status = 'done'
+        if (next[stepIdx + 1] && next[stepIdx + 1].status === 'locked') next[stepIdx + 1].status = 'current'
+      }
+      return next
     })
-    setHandoff(null)
   }
-  function updateSubstage(id, sub) { updateLead(id, { sub }) }
-  function addSubstageCard(stage, sub) {
-    const name = window.prompt('Tên khách hàng / dự án:')
-    if (!name?.trim()) return
-    setLeads(current => [...current, { ...blankLead, id: `lnew-${Date.now()}`, name: name.trim(), type: 'Chưa xác định', value: 0, stage, sub, createdAt: new Date().toISOString().slice(0, 10) }])
+  function createTask({ stepIdx, text, who, pts }) {
+    setSteps(prev => prev.map((s, i) => (i !== stepIdx ? s : {
+      ...s,
+      subtasks: [...s.subtasks, { text, who, pts, done: false }],
+      status: s.status === 'done' ? 'current' : s.status,
+    })))
+    setTaskModal(m => ({ ...m, open: false }))
+  }
+  function redeem(cost) {
+    if (cost > wallet) return
+    setWallet(wallet - cost)
   }
 
-  const stagesEarned = tasks.reduce((sum, task) => sum + task.subtasks.reduce((s, item) => s + (item.done ? item.pts : 0), 0), 0)
-  const totalPoints = tasks.reduce((sum, task) => sum + task.subtasks.reduce((s, item) => s + item.pts, 0), 0)
-  const doneSteps = tasks.filter(task => task.status === 'done').length
-
-  const detail = leads.find(lead => lead.id === detailLead)
-  const handingLead = leads.find(lead => lead.id === handoff?.leadId)
-  const handoffConfig = handoffSettings[handoff?.stage]
-
-  // Filtri nhỏ dùng chung giữa các tab
-  function DateFilter({ prefix }) {
-    return (
-      <div className="kd-date-filter">
-        <select value={timeFilter} onChange={e => setTimeFilter(e.target.value)} style={selectStyle}>
-          {timeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
-        {timeFilter === 'custom' && <div className="kd-date-range">
-          <input aria-label={`${prefix} từ ngày`} type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
-          <span>→</span>
-          <input aria-label={`${prefix} đến ngày`} type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
-        </div>}
-      </div>
-    )
-  }
-  function DepartmentFilter() {
-    return (
-      <div className="kd-dept-filter">
-        {[['all', 'Tất cả'], ...Object.entries(departments)].map(([key, label]) => (
-          <button key={key} onClick={() => setDept(key)} className={dept === key ? 'active' : ''}>{label}</button>
-        ))}
-      </div>
-    )
-  }
-  const filterBar = (
-    <div className="kd-toolbar-controls"><DepartmentFilter /><DateFilter prefix="Tổng quan" /></div>
-  )
-
-  const addLeadBtn = (
-    <button style={{ ...primaryButton, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', borderRadius: 10, fontSize: 13, flex: 'none' }} onClick={() => openLead(null)}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Thêm khách hàng tiềm năng
-    </button>
-  )
+  const panel = (name, gap) => ({ display: tab === name ? 'flex' : 'none', flexDirection: 'column', gap })
+  const editingLead = leadModal.id ? leads.find(l => l.id === leadModal.id) || null : null
+  const detailLead = detail.id ? leads.find(l => l.id === detail.id) || null : null
+  const handoffLead = handoff.leadId ? leads.find(l => l.id === handoff.leadId) || null : null
 
   return (
-    <PageShell title="Kinh doanh" subtitle="Pipeline khách hàng & cơ hội bán hàng" topbarChildren={addLeadBtn}>
-      <div className="kd-page">
-        <nav className="tab-bar kd-tabs">
-          {[['overview', 'Tổng quan'], ['pipeline', 'Pipeline khách hàng'], ['design-board', 'Dự án (Thiết kế)'], ['construction-board', 'Dự án (Thi công)'], ['tasks', 'Nhiệm vụ & điểm thưởng']].map(([key, label]) => (
-            <button key={key} className={`sales-tab ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>{label}</button>
-          ))}
-        </nav>
-
-        {tab === 'overview' && (
-          <OverviewTab
-            filtered={filtered} stats={stats} filterBar={filterBar}
-            stagesEarned={stagesEarned} totalPoints={totalPoints} doneSteps={doneSteps} tasks={tasks}
-          />
-        )}
-
-        {tab === 'pipeline' && <section className="sales-panel">
-          <div className="kd-toolbar">
-            <span>Kéo thả thẻ giữa các cột hoặc chọn giai đoạn trên thẻ để chuyển. Dự án thiết kế/thi công sẽ đồng bộ sang tab Dự án.</span>
-            <div className="kd-toolbar-controls">
-              <DepartmentFilter /><DateFilter prefix="Pipeline" />
-              <div className="kd-view-switch">
-                {['kanban', 'list'].map(view => <button key={view} className={boardView === view ? 'active' : ''} onClick={() => setBoardView(view)}>{view === 'kanban' ? 'Kanban' : 'Danh sách'}</button>)}
-              </div>
-            </div>
-          </div>
-          {boardView === 'kanban' ? (
-            <div className="kd-board">
-              {stages.map(([key, label]) => {
-                const cards = dragIdRef.current
-                  ? filtered.filter(l => l.id === dragIdRef.current ? key === (dragTarget ?? l.stage) : l.stage === key)
-                  : filtered.filter(l => l.stage === key)
-                const accent = stageAccent(key)
-                return (
-                  <section
-                    className={`stage-col ${key === 'truot-thau' ? 'lost' : ''}`}
-                    key={key}
-                    onDragOver={e => e.preventDefault()}
-                    onDragEnter={e => { e.currentTarget.classList.add('drop-hover'); setDragTarget(key) }}
-                    onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('drop-hover') }}
-                    onDrop={e => { e.preventDefault(); e.currentTarget.classList.remove('drop-hover'); dragIdRef.current = null; setDragTarget(null); const id = e.dataTransfer.getData('text/plain'); if (id) changeStage(id, key) }}>
-                    <header className="stage-head"><strong style={{ color: accent?.color }}>{label}</strong><span style={{ color: accent?.color }}>{cards.length} dự án · {formatValue(cards.reduce((sum, lead) => sum + Number(lead.value || 0), 0))}</span></header>
-                    <div className="stage-drop">{cards.map(lead => <LeadCard lead={lead} key={lead.id} removeLead={removeLead} changeStage={changeStage} setDetailLead={setDetailLead} onStartDrag={id => { dragIdRef.current = id }} onEndDrag={() => { dragIdRef.current = null; setDragTarget(null) }} />)}</div>
-                  </section>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="kd-list">
-              <div className="kd-list-head"><span>Lead khách hàng</span><span>Loại dự án</span><span>Phòng ban</span><span>Giá trị</span><span>Giai đoạn</span><span>Chuyển tới</span></div>
-              {filtered.map(lead => (
-                <div className="kd-list-row" key={lead.id}>
-                  <strong onClick={() => setDetailLead(lead.id)}>{lead.name}</strong><span>{lead.type}</span>
-                  <span className="kd-tag" style={{ background: deptTints[lead.dept], color: deptColors[lead.dept] }}>{deptShort[lead.dept]}</span>
-                  <b>{formatValue(lead.value)}</b><span>{stageLabels[lead.stage]}</span>
-                  <select value={lead.stage} onChange={e => changeStage(lead.id, e.target.value)}>{stages.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>}
-
-        {tab === 'design-board' && <section className="sales-panel"><p className="kd-hint">Bảng Kanban kiểu Lark Base — kéo thả thẻ giữa các cột, hoặc bấm "+ Thêm thẻ" ở cuối mỗi cột để tạo nhanh.</p><SubBoard parentStage="thiet-ke" items={leads.filter(lead => lead.stage === 'thiet-ke')} columns={designStages} updateSubstage={updateSubstage} addSubstageCard={addSubstageCard} removeLead={removeLead} changeStage={changeStage} setDetailLead={setDetailLead} /></section>}
-        {tab === 'construction-board' && <section className="sales-panel"><p className="kd-hint">Bảng Kanban kiểu Lark Task — kéo thả thẻ giữa các cột, hoặc bấm "+ Thêm thẻ" ở cuối mỗi cột để tạo nhanh.</p><SubBoard parentStage="thi-cong" items={leads.filter(lead => lead.stage === 'thi-cong')} columns={constructionStages} updateSubstage={updateSubstage} addSubstageCard={addSubstageCard} removeLead={removeLead} changeStage={changeStage} setDetailLead={setDetailLead} /></section>}
-
-        {tab === 'tasks' && (
-          <TasksTab taskTab={taskTab} setTaskTab={setTaskTab} tasks={tasks} setTasks={setTasks} stagesEarned={stagesEarned} totalPoints={totalPoints} doneSteps={doneSteps} wallet={wallet} setWallet={setWallet} redeemed={redeemed} setRedeemed={setRedeemed} setTaskModal={setTaskModal} setTaskForm={setTaskForm} />
-        )}
+    <div
+      className={`kd-page${aiOpen ? ' kd-ai-open' : ''}${aiResizing ? ' kd-ai-resizing' : ''}`}
+      style={{ '--ai-panel-width': `${aiWidth}px` }}
+    >
+      {/* ---------- Header ---------- */}
+      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
+        <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--sales-tint)', color: 'var(--sales)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+        </div>
+        <span style={{ fontSize: 14.5, fontWeight: 700 }}>Kinh doanh</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pipeline khách hàng — chốt hợp đồng sẽ tự tạo hồ sơ tại tab Dự án</span>
+        <span style={{ flex: 1 }} />
+        <button onClick={() => openLeadModal(null)} style={{ display: 'flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', background: 'var(--sales)', color: '#fff', padding: '8px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Thêm khách hàng tiềm năng
+        </button>
+        <button title="Chuyển giao diện sáng/tối" onClick={toggleTheme} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid var(--border)', background: 'var(--surface-alt)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          {theme === 'dark'
+            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
+        </button>
       </div>
 
-      {leadModal && (
-        <LeadModal leadModal={leadModal} leadForm={leadForm} leadStep={leadStep} assigneeForm={assigneeForm} updateForm={updateForm} setLeadStep={setLeadStep} setAssigneeForm={setAssigneeForm} saveLead={saveLead} onClose={() => setLeadModal(null)} />
-      )}
+      {/* ---------- Thanh tab ---------- */}
+      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
+        {SALES_TABS.map(([key, label]) => (
+          <button key={key} className={`kd-sales-tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>{label}</button>
+        ))}
+      </div>
 
-      {detail && (
-        <Modal title={detail.name} onClose={() => setDetailLead(null)}>
-          <div className="kd-detail-stage" style={{ background: stageAccent(detail.stage)?.bg || 'var(--sales-tint)', color: stageAccent(detail.stage)?.color || 'var(--sales)' }}>{stageLabels[detail.stage]}</div>
-          <div className="kd-detail-body">
-            <div className="kd-detail-grid">
-              {[['Số điện thoại', detail.phone], ['Email', detail.email], ['Nguồn khách hàng', detail.source], ['Địa chỉ', detail.address], ['Phòng ban phụ trách', departments[detail.dept]], ['Loại dự án', detail.projectType || detail.type], ['Quy mô', detail.scale], ['Giá trị ước tính', formatValue(detail.value)], ['Người phụ trách', detail.assignees?.map(p => `${p.name}${p.role ? ` · ${p.role}` : ''}`).join(', ')], ['Hạng mục quan tâm', detail.categories?.join(', ')], ['File đính kèm', detail.boqFile], ['Concept / Ý tưởng thiết kế', detail.concept], ['Ghi chú nội bộ', detail.notes]].filter(([, v]) => v).map(([label, value]) => (
-                <div key={label}><small>{label}</small><strong>{value}</strong></div>
-              ))}
-            </div>
-            {detail.handoff && <p className="kd-detail-handoff">Bàn giao / Báo giá: {detail.handoff.status === 'self-quoted' ? 'Phòng KD tự đề xuất báo giá' : `Đang chờ Phòng ${detail.handoff.dept} xác nhận`}</p>}
-          </div>
-          <footer className="kd-modal-footer"><span></span><button style={primaryButton} onClick={() => { setDetailLead(null); openLead(detail) }}>Chỉnh sửa / bổ sung thông tin</button></footer>
-        </Modal>
-      )}
+      {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái đang chọn, giống bản HTML */}
+      <div ref={scrollRef} style={{ flex: 1, padding: '22px 28px', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
 
-      {handoff && handoffConfig && handingLead && (
-        <HandoffModal handoff={handoff} handoffConfig={handoffConfig} handingLead={handingLead} handoffForm={handoffForm} setHandoffForm={setHandoffForm} saveHandoff={saveHandoff} onClose={() => setHandoff(null)} />
-      )}
+        {/* ================= TAB: TỔNG QUAN ================= */}
+        <div style={panel('overview', 16)}>
+          <OverviewTab allLeads={leads} leads={filteredLeads} dept={dept} onDeptChange={setDept} timeFilter={timeFilter} onTimeFilterChange={setTimeFilter} />
+        </div>
 
-      {taskModal && (
-        <TaskModal taskForm={taskForm} setTaskForm={setTaskForm} tasks={tasks} setTasks={setTasks} onClose={() => setTaskModal(false)} />
-      )}
-    </PageShell>
+        {/* ================= TAB: PIPELINE ================= */}
+        <div style={panel('pipeline', 14)}>
+          <PipelineTab
+            leads={filteredLeads} dept={dept} onDeptChange={setDept} timeFilter={timeFilter} onTimeFilterChange={setTimeFilter}
+            scrollRef={scrollRef} onMove={moveLead} onDelete={deleteLead}
+            onOpenDetail={id => setDetail({ open: true, id })}
+            onAddAssignee={addAssignee} onRemoveAssignee={removeAssignee}
+          />
+        </div>
+
+        {/* ================= TAB: DỰ ÁN (THIẾT KẾ) ================= */}
+        <div style={panel('design-board', 14)}>
+          <div style={hintStyle}>Bảng Kanban kiểu Lark Base — kéo thả thẻ giữa các cột, hoặc bấm "+ Thêm thẻ" ở cuối mỗi cột để tạo nhanh.</div>
+          <SubBoard leads={leads} parentStage="thiet-ke" subStages={DESIGN_STAGES} subLabel={DESIGN_LABEL} subColor={DESIGN_COLOR} onSetSub={setLeadSub} onAddCard={addSubCard} />
+        </div>
+
+        {/* ================= TAB: DỰ ÁN (THI CÔNG) ================= */}
+        <div style={panel('construction-board', 14)}>
+          <div style={hintStyle}>Bảng Kanban kiểu Lark Task — kéo thả thẻ giữa các cột, hoặc bấm "+ Thêm thẻ" ở cuối mỗi cột để tạo nhanh.</div>
+          <SubBoard leads={leads} parentStage="thi-cong" subStages={CONSTRUCTION_STAGES} subLabel={CONSTRUCTION_LABEL} subColor={CONSTRUCTION_COLOR} onSetSub={setLeadSub} onAddCard={addSubCard} />
+        </div>
+
+        {/* ================= TAB: NHIỆM VỤ & ĐIỂM THƯỞNG ================= */}
+        <div style={panel('tasks', 16)}>
+          <TasksTab steps={steps} onCheckSubtask={checkSubtask} wallet={wallet} onRedeem={redeem} onOpenCreateTask={() => setTaskModal(m => ({ open: true, seq: m.seq + 1 }))} />
+        </div>
+      </div>
+
+      {/* ---------- Modal (render bên trong .kd-page để dùng chung biến màu) ---------- */}
+      <LeadModal key={`lead-${leadModal.seq}`} open={leadModal.open} lead={editingLead} onClose={closeLeadModal} onSave={saveLead} />
+      <LeadDetailModal
+        open={detail.open} lead={detailLead}
+        onClose={() => setDetail(d => ({ ...d, open: false }))}
+        onEdit={() => { const id = detail.id; setDetail(d => ({ ...d, open: false })); openLeadModal(id) }}
+      />
+      <HandoffModal key={`handoff-${handoff.seq}`} open={handoff.open} lead={handoffLead} stageKey={handoff.stageKey} onClose={closeHandoff} onSend={sendHandoff} onSelf={selfQuote} />
+      <TaskModal key={`task-${taskModal.seq}`} open={taskModal.open} steps={steps} onClose={() => setTaskModal(m => ({ ...m, open: false }))} onSubmit={createTask} />
+
+      <Dezbot
+        open={aiOpen}
+        onToggle={() => setAiOpen(o => !o)}
+        onClose={() => setAiOpen(false)}
+        onResize={setAiWidth}
+        onResizingChange={setAiResizing}
+      />
+    </div>
   )
 }
