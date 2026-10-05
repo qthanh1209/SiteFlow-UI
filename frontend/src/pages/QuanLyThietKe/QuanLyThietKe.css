@@ -361,6 +361,47 @@ html[data-theme="light"] .tk-page .tk-fin-delay-chip.early{background:rgba(255,2
 .tk-progress-track .tk-fill{height:100%; border-radius:20px;}
 .tk-drawer-note{background:var(--panel-alt); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:12px; color:var(--text-dim); line-height:1.5;}
 
+/* Trang chi tiết mua hàng (kanban) — mở từ công việc thuộc giai đoạn "Mua hàng & cung ứng" */
+.tk-pb{position:fixed; inset:28px; max-width:1280px; margin:0 auto; background:var(--bg); border:1px solid var(--border); border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.3); z-index:50; display:flex; flex-direction:column; overflow:hidden; opacity:0; transform:translateY(12px) scale(.985); pointer-events:none; transition:opacity .2s ease, transform .2s ease;}
+.tk-pb.open{opacity:1; transform:none; pointer-events:auto;}
+.tk-pb-head{display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--panel); border-bottom:1px solid var(--border);}
+.tk-pb-head-icon{width:32px; height:32px; border-radius:9px; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; flex:none;}
+.tk-pb-title{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.tk-pb-kicker{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em;}
+.tk-pb-title h2{margin:0; font-size:16px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.tk-pb-meta{display:flex; flex-wrap:wrap; gap:10px 28px; padding:12px 20px; background:var(--panel); border-bottom:1px solid var(--border);}
+.tk-pb-meta-item{display:flex; flex-direction:column; gap:4px; font-size:12.5px;}
+.tk-pb-meta-item .tk-fl{font-size:10.5px; color:var(--text-faint);}
+.tk-pb-strong{font-weight:700;}
+.tk-pb-person{display:inline-flex; align-items:center;}
+.tk-pb-board{flex:1; min-height:0; display:grid; grid-template-columns:repeat(4, minmax(220px, 1fr)); gap:14px; padding:16px 20px 20px; overflow:auto;}
+.tk-pb-col{display:flex; flex-direction:column; min-height:0; background:var(--panel-alt); border:1px solid var(--border-soft); border-radius:12px; transition:border-color .15s ease, background .15s ease;}
+.tk-pb-col.over{border-color:var(--accent); background:var(--accent-soft);}
+.tk-pb-col-head{display:flex; align-items:center; gap:7px; padding:11px 12px 9px;}
+.tk-pb-col-dot{width:8px; height:8px; border-radius:50%; flex:none;}
+.tk-pb-col-name{font-size:12.5px; font-weight:600;}
+.tk-pb-col-count{font-size:10.5px; font-weight:600; color:var(--text-dim); background:var(--panel); border:1px solid var(--border); border-radius:20px; padding:0 7px; line-height:17px;}
+.tk-pb-col-sum{margin-left:auto; font-size:11px; color:var(--text-faint);}
+.tk-pb-cards{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 10px 12px;}
+.tk-pb-empty{border:1.5px dashed var(--border); border-radius:9px; padding:18px 10px; text-align:center; font-size:11.5px; color:var(--text-faint);}
+.tk-pb-card{background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--border); border-radius:9px; padding:10px 11px; display:flex; flex-direction:column; gap:5px; cursor:grab; box-shadow:0 1px 2px var(--shadow-soft); transition:box-shadow .15s ease, transform .15s ease;}
+.tk-pb-card:hover{box-shadow:0 6px 16px var(--shadow-soft); transform:translateY(-1px);}
+.tk-pb-card:active{cursor:grabbing;}
+.tk-pb-card.dragging{opacity:.45;}
+.tk-pb-card-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.tk-pb-code{font-size:10.5px; font-weight:600; color:var(--text-dim);}
+.tk-pb-value{font-size:11.5px; font-weight:600;}
+.tk-pb-item{font-size:12.5px; font-weight:600; line-height:1.35;}
+.tk-pb-sub{font-size:11px; color:var(--text-dim);}
+.tk-pb-card-foot{display:flex; align-items:center; justify-content:space-between; margin-top:3px;}
+.tk-pb-due{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; color:var(--text-faint); padding:2px 7px; border-radius:20px; background:var(--panel-alt);}
+.tk-pb-due.soon{color:var(--progress); background:var(--progress-soft);}
+.tk-pb-due.late{color:var(--overdue); background:var(--overdue-soft);}
+@media (max-width:900px){
+  .tk-pb{inset:0; border-radius:0;}
+  .tk-pb-board{grid-template-columns:repeat(4, 240px);}
+}
+
 .tk-comment-list{display:flex; flex-direction:column; gap:14px; margin-top:4px;}
 .tk-comment-item{display:flex; gap:9px;}
 .tk-comment-avatar{width:26px; height:26px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; font-size:9.5px; font-weight:700;}

@@ -3,8 +3,10 @@ import {
   TODAY, INITIAL_PHASES, INITIAL_COMMENTS, ME_NAME, CASHFLOW_DATA, PROJECT_SHORTLIST,
   RANGE_START, RANGE_END, TOTAL_DAYS, STATUS_LABEL,
   parseD, dayDiff, fmt, fmtFull, toISO, statusOf, fmtTyQ, avatarColor, initials,
+  PURCHASE_PHASE_ID, INITIAL_PURCHASE_ITEMS,
 } from '../../../data/quanLyThietKeData'
 import TaskDrawer from './TaskDrawer'
+import PurchaseBoard from './PurchaseBoard'
 
 const STATS_EXPANDED_H = 200
 const TASKLIST_MIN_W = 420
@@ -79,6 +81,8 @@ export default function GanttTab({ active }) {
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [drawer, setDrawer] = useState({ taskId: null, open: false })
+  const [board, setBoard] = useState({ taskId: null, open: false })
+  const [purchaseItems, setPurchaseItems] = useState(INITIAL_PURCHASE_ITEMS)
   const [openPhasePop, setOpenPhasePop] = useState(null)
   const [cashflowOpen, setCashflowOpen] = useState(false)
   const [projectMenuOpen, setProjectMenuOpen] = useState(false)
@@ -149,6 +153,11 @@ export default function GanttTab({ active }) {
   const gridLines = useMemo(() => <GridLines dayW={dayW} />, [dayW])
 
   const drawerTask = drawer.taskId ? phases.flatMap(p => p.tasks).find(t => t.id === drawer.taskId) : null
+  const boardTask = board.taskId ? phases.flatMap(p => p.tasks).find(t => t.id === board.taskId) : null
+  const purchaseTaskIds = useMemo(
+    () => new Set((phases.find(p => p.id === PURCHASE_PHASE_ID)?.tasks || []).map(t => t.id)),
+    [phases],
+  )
 
   /* ---------- Cập nhật dữ liệu ---------- */
   function updateTask(taskId, patch) {
@@ -166,11 +175,20 @@ export default function GanttTab({ active }) {
   }
   function openTask(t) {
     setSelectedTaskId(t.id)
-    setDrawer({ taskId: t.id, open: true })
+    // Công việc mua hàng → mở trang chi tiết đơn mua hàng dạng kanban thay cho drawer
+    if (purchaseTaskIds.has(t.id)) setBoard({ taskId: t.id, open: true })
+    else setDrawer({ taskId: t.id, open: true })
   }
   function closeDrawer() {
     setDrawer(d => ({ ...d, open: false }))
     setSelectedTaskId(null)
+  }
+  function closeBoard() {
+    setBoard(b => ({ ...b, open: false }))
+    setSelectedTaskId(null)
+  }
+  function movePurchaseItem(taskId, itemId, stage) {
+    setPurchaseItems(prev => ({ ...prev, [taskId]: (prev[taskId] || []).map(it => it.id === itemId ? { ...it, stage } : it) }))
   }
   function addComment(taskId, text) {
     setComments(prev => ({ ...prev, [taskId]: [...(prev[taskId] || []), { who: ME_NAME, time: 'Vừa xong', text }] }))
@@ -596,6 +614,13 @@ export default function GanttTab({ active }) {
         onClose={closeDrawer}
         onAddComment={addComment}
         onConfirm={confirmFinance}
+      />
+      <PurchaseBoard
+        task={boardTask}
+        items={boardTask ? purchaseItems[boardTask.id] : null}
+        open={board.open}
+        onClose={closeBoard}
+        onMove={movePurchaseItem}
       />
     </>
   )
