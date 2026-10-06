@@ -2,10 +2,11 @@ import { useRef, useState } from 'react'
 import './KinhDoanh.css'
 import { useTheme } from '../../hooks/useTheme'
 import {
-  LEADS, SALES_TABS, SYNC_STAGES, HANDOFF_CONFIG, KD_STEPS, KD_WALLET_INITIAL,
+  LEADS, SALES_TABS, SYNC_STAGES, HANDOFF_CONFIG, KD_STEPS, KD_WALLET_INITIAL, KD_CURRENT_USER, KD_MANAGER, DEPT_LABEL,
   DESIGN_STAGES, DESIGN_LABEL, DESIGN_COLOR, CONSTRUCTION_STAGES, CONSTRUCTION_LABEL, CONSTRUCTION_COLOR,
 } from '../../data/kinhDoanhData'
-import { matchesTimeFilter, pushSyncedProject, removeSyncedProject } from './utils'
+import { fmtTy, matchesTimeFilter, pushSyncedProject, removeSyncedProject } from './utils'
+import { addKdRequest } from '../../services/kdRequestService'
 import OverviewTab from './components/OverviewTab'
 import PipelineTab from './components/PipelineTab'
 import SubBoard from './components/SubBoard'
@@ -56,12 +57,11 @@ export default function KinhDoanh() {
   function moveLead(id, newStage) {
     const lead = leads.find(l => l.id === id)
     if (!lead || lead.stage === newStage) return
-    const fromStage = lead.stage
     patchLead(id, l => ({ ...l, stage: newStage }))
     syncLead({ ...lead, stage: newStage })
     const cfg = HANDOFF_CONFIG[newStage]
-    const shouldNotify = cfg && (newStage === 'bao-gia' ? fromStage === 'tu-van' : true)
-    if (shouldNotify) setHandoff(h => ({ open: true, leadId: id, stageKey: newStage, seq: h.seq + 1 }))
+    /* Cột nào có cấu hình phiếu thì kéo thẻ vào (từ bất kỳ cột nào) đều hiện phiếu */
+    if (cfg) setHandoff(h => ({ open: true, leadId: id, stageKey: newStage, seq: h.seq + 1 }))
   }
 
   function deleteLead(id) {
@@ -95,13 +95,26 @@ export default function KinhDoanh() {
 
   /* ---------- Phiếu bàn giao / yêu cầu báo giá ---------- */
   const closeHandoff = () => setHandoff(h => ({ ...h, open: false, leadId: null, stageKey: h.stageKey }))
-  function sendHandoff(dt, assigneeName) {
+  function sendHandoff(dt, assigneeName, pickedDept) {
     const cfg = HANDOFF_CONFIG[handoff.stageKey]
     if (!handoff.leadId || !cfg) return
+    /* Phiếu cho chọn phòng nhận (deptOptions) thì dùng phòng đã chọn */
+    const dept = pickedDept || cfg.dept
+    const role = cfg.role.replace('{dept}', dept)
+    /* Gửi phiếu sang Chat (SiteFlow Bot) để phòng nhận xác nhận → điều phối → duyệt */
+    const lead = leads.find(l => l.id === handoff.leadId)
+    if (lead) {
+      addKdRequest({
+        leadId: lead.id, leadName: lead.name, leadInfo: `${lead.type} · ${fmtTy(lead.value)}`,
+        stageKey: handoff.stageKey, title: cfg.title, dept, role,
+        sender: KD_CURRENT_USER, senderDept: DEPT_LABEL[lead.dept] || '',
+        requestedAt: dt || null, suggestedAssignee: assigneeName || null,
+      })
+    }
     patchLead(handoff.leadId, l => ({
       ...l,
-      handoff: { status: cfg.pendingStatus, dept: cfg.dept, requestedAt: dt || null, assignee: assigneeName || null },
-      ...(assigneeName ? { assignees: [...(l.assignees || []), { name: assigneeName, role: cfg.role }] } : null),
+      handoff: { status: cfg.pendingStatus, dept, requestedAt: dt || null, assignee: assigneeName || null },
+      ...(assigneeName ? { assignees: [...(l.assignees || []), { name: assigneeName, role }] } : null),
     }))
     closeHandoff()
   }
@@ -115,7 +128,7 @@ export default function KinhDoanh() {
   /* ---------- Bảng con Thiết kế / Thi công ---------- */
   const setLeadSub = (id, sub) => patchLead(id, l => ({ ...l, sub }))
   function addSubCard(name, parentStage, sub) {
-    setLeads(prev => [...prev, { id: 'lnew' + (leadCounter.current++), name, type: 'Chưa xác định', value: 0, stage: parentStage, sub, dept: 'dan-dung', createdAt: new Date().toISOString().slice(0, 10) }])
+    setLeads(prev => [...prev, { id: 'lnew' + (leadCounter.current++), name, type: 'Chưa xác định', value: 0, stage: parentStage, sub, dept: 'dan-dung', creator: KD_CURRENT_USER, manager: KD_MANAGER, createdAt: new Date().toISOString().slice(0, 10) }])
   }
 
   /* ---------- Nhiệm vụ ---------- */

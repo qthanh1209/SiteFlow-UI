@@ -12,16 +12,38 @@ export const ACCENTS = [
 
 /* font: giá trị lưu vào siteflow-customize.fontFamily ('' = Montserrat mặc định) */
 export const FONTS = [
-  { font: '', preview: "'Montserrat', sans-serif", label: 'Montserrat' },
-  { font: "'Roboto', sans-serif", preview: "'Roboto', sans-serif", label: 'Roboto' },
-  { font: "'Inter', sans-serif", preview: "'Inter', sans-serif", label: 'Inter' },
-  { font: 'Arial, sans-serif', preview: 'Arial, sans-serif', label: 'Arial' },
+  { font: '', preview: "'Montserrat', sans-serif", label: 'Montserrat', note: 'Mặc định' },
+  { font: "'Be Vietnam Pro', sans-serif", preview: "'Be Vietnam Pro', sans-serif", label: 'Be Vietnam Pro', note: 'Tối ưu tiếng Việt' },
+  { font: "'Inter', sans-serif", preview: "'Inter', sans-serif", label: 'Inter', note: 'Gọn, hiện đại' },
+  { font: "'Roboto', sans-serif", preview: "'Roboto', sans-serif", label: 'Roboto', note: 'Quen thuộc' },
+  { font: "'Nunito', sans-serif", preview: "'Nunito', sans-serif", label: 'Nunito', note: 'Bo tròn, thân thiện' },
+  { font: "'Open Sans', sans-serif", preview: "'Open Sans', sans-serif", label: 'Open Sans', note: 'Dễ đọc' },
+  { font: "'Lexend', sans-serif", preview: "'Lexend', sans-serif", label: 'Lexend', note: 'Rộng, thoáng' },
+  { font: 'Arial, sans-serif', preview: 'Arial, sans-serif', label: 'Arial', note: 'Font hệ thống' },
 ]
 
 export const FONT_SIZES = [
-  { key: 'small', previewSize: 14, label: 'Nhỏ' },
-  { key: 'medium', previewSize: 18, label: 'Vừa' },
-  { key: 'large', previewSize: 22, label: 'Lớn' },
+  { key: 'small', previewSize: 13, label: 'Nhỏ', note: '92%' },
+  { key: 'medium', previewSize: 17, label: 'Vừa', note: '100%' },
+  { key: 'large', previewSize: 21, label: 'Lớn', note: '112%' },
+  { key: 'xlarge', previewSize: 25, label: 'Rất lớn', note: '124%' },
+]
+
+/* Màu gợi ý thêm — áp dụng qua cơ chế "màu tự chọn" (accent = 'custom') */
+export const EXTRA_ACCENTS = [
+  { color: '#C2377A', title: 'Hồng' },
+  { color: '#3D4FC4', title: 'Chàm' },
+  { color: '#0B7FBF', title: 'Xanh trời' },
+  { color: '#5C7A1F', title: 'Ô liu' },
+  { color: '#8A5A2B', title: 'Nâu' },
+  { color: '#475569', title: 'Xám đá' },
+]
+
+/* Độ trong suốt của bề mặt khi dùng bộ giao diện kính */
+export const GLASS_LEVELS = [
+  { key: 'soft', label: 'Đục', note: 'Dễ đọc nhất' },
+  { key: 'medium', label: 'Vừa', note: 'Cân bằng' },
+  { key: 'strong', label: 'Trong', note: 'Thấy rõ nền' },
 ]
 
 /* ---------- Thông báo ---------- */

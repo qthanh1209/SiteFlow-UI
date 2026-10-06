@@ -70,7 +70,13 @@ export default function Sidebar() {
     return () => document.removeEventListener('click', handleClick)
   }, [flyoutOpen])
 
-  const width = isUltra ? 60 : isCollapsed ? 76 : 232
+  /* Thu gọn tối đa: sidebar không chiếm chỗ, chỉ còn cụm logo + nút mở rộng nổi ở mép trang */
+  /* Báo mức thu gọn cho CSS (global.css chừa chỗ cho cụm nổi ở các trang có lề hẹp) */
+  useEffect(() => {
+    document.documentElement.setAttribute('data-sidebar-level', level)
+  }, [level])
+
+  const width = isUltra ? 0 : isCollapsed ? 76 : 232
 
   return (
     <>
@@ -108,15 +114,16 @@ export default function Sidebar() {
 
       <div
         id="appSidebar"
+        className="app-sidebar"
         style={{
           width, flex: 'none', background: '#12161F', color: '#AEB4C2',
           display: 'flex', flexDirection: 'column',
-          boxSizing: 'border-box', padding: '20px 10px',
+          boxSizing: 'border-box', padding: isUltra ? 0 : '20px 10px',
           transition: 'width .18s ease', overflow: 'hidden',
         }}
       >
         {/* Brand & Toggle Buttons */}
-        <div style={{
+        {!isUltra && <div style={{
           display: 'flex',
           flexDirection: (isCollapsed || isUltra) ? 'column' : 'row',
           alignItems: 'center',
@@ -203,7 +210,7 @@ export default function Sidebar() {
               </svg>
             </button>
           )}
-        </div>
+        </div>}
 
         {/* Main nav */}
         {!isUltra && (
@@ -247,12 +254,46 @@ export default function Sidebar() {
         )}
       </div>
 
+      {/* Cụm nổi khi thu gọn tối đa: nằm gọn trong lề trái 28px của trang nên không che nội dung */}
+      {isUltra && (
+        <div className="sidebar-float">
+          <div
+            onClick={e => { e.stopPropagation(); setFlyoutOpen(f => !f) }}
+            title="Mở menu"
+            style={{
+              width: 24, height: 24, borderRadius: '50%', background: 'var(--primary, #2F5DA8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 21s-7-7.5-7-12a7 7 0 0 1 14 0c0 4.5-7 12-7 12z"/>
+              <circle cx="12" cy="9" r="2.3"/>
+            </svg>
+          </div>
+          <button
+            onClick={() => { setFlyoutOpen(false); expand() }}
+            title="Mở rộng sidebar"
+            style={{
+              width: 22, height: 22, borderRadius: 6, padding: 0,
+              border: '1px solid #262B37', background: '#12161F',
+              color: '#fff', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', cursor: 'pointer',
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Flyout (ultra-collapsed) */}
       {isUltra && flyoutOpen && (
         <div
           ref={flyoutRef}
+          className="sidebar-flyout"
           style={{
-            position: 'fixed', top: 0, left: 60, height: '100vh',
+            position: 'fixed', top: 0, height: '100vh',
             width: 232, background: '#12161F', color: '#AEB4C2',
             display: 'flex', flexDirection: 'column',
             padding: '20px 10px', zIndex: 200,

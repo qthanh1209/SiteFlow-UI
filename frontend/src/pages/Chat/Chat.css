@@ -259,3 +259,38 @@ html[data-theme="dark"] .ch-conv-tabs button{color:var(--text-muted);}
 .ch-ai-send-btn{margin-left:auto; background:#12161F; color:#fff; border:none; padding:8px 18px; border-radius:16px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;}
 /* global.css có a:hover{color} — giữ màu kế thừa như bản HTML (không có rule a:hover) */
 .ch-group-row:hover{color:inherit;}
+
+/* ---------- Thẻ phiếu yêu cầu từ Kinh doanh (SiteFlow Bot) ---------- */
+.ch-req-wrap{display:flex; gap:11px; align-items:flex-start; margin:14px 0; max-width:640px; width:100%;}
+.ch-req-icon{width:34px; height:34px; border-radius:50%; flex:none; background:var(--req-accent); color:#fff; display:flex; align-items:center; justify-content:center;}
+.ch-req-card{flex:1; min-width:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; border-left:3px solid var(--req-accent); overflow:hidden;}
+.ch-req-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px; background:color-mix(in srgb, var(--req-accent) 14%, var(--surface)); color:var(--req-accent); font-weight:700; font-size:14px;}
+.ch-req-status{flex:none; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; background:var(--surface); color:var(--text-muted); white-space:nowrap;}
+.ch-req-status.ok{background:var(--success-tint); color:var(--success);}
+.ch-req-status.no{background:var(--danger-tint); color:var(--danger);}
+.ch-req-body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; font-size:13px; line-height:1.55;}
+.ch-req-field{display:flex; flex-direction:column; gap:1px;}
+.ch-req-reason{background:var(--danger-tint); color:var(--danger); border-radius:8px; padding:8px 11px; font-size:12.5px;}
+.ch-req-history{border-left:2px solid var(--border); padding-left:10px; display:flex; flex-direction:column; gap:3px; font-size:11.5px; color:var(--text-muted);}
+.ch-req-history span{font-weight:600; margin-right:6px;}
+.ch-req-form{display:flex; flex-direction:column; gap:8px;}
+.ch-req-form label{font-size:11.5px; font-weight:600; color:var(--text-muted);}
+.ch-req-form textarea, .ch-req-form select{padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text); font-size:12.5px; font-family:inherit; resize:vertical;}
+.ch-req-actions{display:flex; flex-wrap:wrap; gap:8px;}
+.ch-req-btn{border:1px solid var(--border); background:var(--surface); color:var(--text); padding:7px 16px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;}
+.ch-req-btn:hover{background:var(--surface-alt);}
+.ch-req-btn.ok{border-color:var(--req-accent); background:var(--req-accent); color:#fff;}
+.ch-req-btn.no{border-color:var(--danger); background:var(--danger); color:#fff;}
+.ch-req-btn:disabled{opacity:.5; cursor:not-allowed;}
+/* Mỗi loại phiếu một màu để dễ phân biệt (lớp t-<giai đoạn> trên .ch-req-wrap) */
+.ch-req-wrap{--req-accent:var(--primary);}
+.ch-req-wrap.t-tu-van{--req-accent:var(--primary);}
+.ch-req-wrap.t-bao-gia{--req-accent:var(--finance);}
+.ch-req-wrap.t-dam-phan{--req-accent:#7658C2;}
+.ch-req-wrap.t-chot-hd{--req-accent:var(--success);}
+.ch-req-wrap.t-bao-gia-thi-cong{--req-accent:#C2618F;}
+.ch-req-wrap.t-thiet-ke{--req-accent:var(--attendance);}
+.ch-req-wrap.t-thi-cong{--req-accent:#C2621A;}
+html[data-theme="dark"] .ch-req-wrap.t-dam-phan{--req-accent:#A58BEA;}
+html[data-theme="dark"] .ch-req-wrap.t-bao-gia-thi-cong{--req-accent:#E08AB4;}
+html[data-theme="dark"] .ch-req-wrap.t-thi-cong{--req-accent:#E8935A;}

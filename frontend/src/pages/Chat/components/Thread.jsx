@@ -3,6 +3,7 @@ import { ME, COLORS } from '../../../data/chatData'
 import { ConvAvatar, FileIcon, PIN_PATH, SearchIcon, UsersIcon, initials } from './shared'
 import AddMemberPopover from './AddMemberPopover'
 import Composer from './Composer'
+import RequestCard from './RequestCard'
 
 /* Ô sửa tin nhắn: mở ra là focus và đặt con trỏ ở cuối (giống bản HTML) */
 function MessageEditor({ text, onCancel, onSave }) {
@@ -39,7 +40,7 @@ const actIcon = { width: 12, height: 12, viewBox: '0 0 24 24', stroke: 'currentC
 /* Cột hội thoại: đầu thread, thanh tin ghim, danh sách tin nhắn, khung soạn tin
    — renderThread() + renderPinnedBar() trong chat.html */
 export default function Thread({
-  conv, editingIdx, scrollTick, memberPopOpen,
+  conv, requests, onUpdateRequest, editingIdx, scrollTick, memberPopOpen,
   onToggleMemberPop, onCloseMemberPop, onAddMember,
   onStartEdit, onCancelEdit, onSaveEdit, onTogglePinMsg, onUnpinMsg, onDeleteMsg, onSend,
 }) {
@@ -56,6 +57,10 @@ export default function Thread({
   const items = conv.messages.map((m, idx) => {
     if (m.bot) {
       lastWho = null
+      if (m.request) {
+        const req = requests.find(r => r.id === m.reqId)
+        return req ? <RequestCard key={m.reqId} req={req} onUpdate={onUpdateRequest} /> : null
+      }
       return <BotCard key={idx} m={m} />
     }
     const own = m.who === ME

@@ -9,7 +9,7 @@ export default function Topbar({ title, subtitle, icon, children }) {
   const [searchValue, setSearchValue] = useState('')
 
   return (
-    <div style={{
+    <div className="app-topbar" style={{
       height: 64, borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center',
       padding: '0 24px', gap: 14,

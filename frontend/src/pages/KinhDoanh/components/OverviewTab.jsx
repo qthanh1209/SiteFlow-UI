@@ -132,10 +132,11 @@ export default function OverviewTab({ allLeads, leads, dept, onDeptChange, timeF
     }
     return (
       <div className="kd-ov-widget-card">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
-          <div className="kd-grid-drag-handle kd-ov-widget-title-handle" title="Kéo để di chuyển">
+        {/* Khung hẹp: tiêu đề cắt bằng dấu …, cụm nút tự xuống dòng thay vì tràn ra ngoài */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 14, flex: 'none' }}>
+          <div className="kd-grid-drag-handle kd-ov-widget-title-handle" title="Kéo để di chuyển" style={{ minWidth: 0, maxWidth: '100%' }}>
             <DragDots />
-            <h3 style={{ fontSize: 14.5, fontWeight: 700 }}>{def.title}</h3>
+            <h3 style={{ fontSize: 14.5, fontWeight: 700, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{def.title}</h3>
           </div>
           {widgetHeader(id)}
         </div>

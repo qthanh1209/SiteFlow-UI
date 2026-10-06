@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { STAGES, STAGE_LABEL, OV_TREND_CFG } from '../../../data/kinhDoanhData'
 import { FONT_STACK, stageAccent, mulberry32 } from '../utils'
 
@@ -17,64 +18,98 @@ export function ovTrendData(allLeads, period) {
   return { labels: cfg.labels, values }
 }
 
-const W = 600, H = 190, PAD_L = 24, PAD_R = 24, PAD_TOP = 32, PAD_BOTTOM = 30
-const PLOT_H = H - PAD_TOP - PAD_BOTTOM
+/* Đo kích thước thật của khung chứa để biểu đồ vẽ vừa khít widget (to ra / nhỏ lại theo khi kéo giãn) */
+function useBoxSize() {
+  const ref = useRef(null)
+  const [size, setSize] = useState(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return undefined
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width)
+      const h = Math.round(entry.contentRect.height)
+      setSize(prev => (prev && prev.w === w && prev.h === h ? prev : { w, h }))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, size]
+}
 
-function GridLines() {
+const PAD_L = 24, PAD_R = 24, PAD_TOP = 32, PAD_BOTTOM = 30
+const TREND_BOX = { flex: 1, minHeight: 0, position: 'relative' }
+const TREND_SVG = { position: 'absolute', inset: 0, overflow: 'visible' }
+
+/* Khung vẽ = đúng kích thước widget (px), nên chữ giữ nguyên cỡ còn đường/cột giãn theo khung */
+function trendFrame(size) {
+  const W = Math.max(160, size ? size.w : 600)
+  const H = Math.max(90, size ? size.h : 190)
+  return { W, H, plotH: H - PAD_TOP - PAD_BOTTOM, font: H >= 260 ? 12.5 : 11 }
+}
+
+function GridLines({ W, plotH }) {
   return [0, 0.5, 1].map(f => {
-    const y = (PAD_TOP + f * PLOT_H).toFixed(1)
+    const y = (PAD_TOP + f * plotH).toFixed(1)
     return <line key={f} x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="var(--border)" strokeWidth="1" strokeDasharray="3,4" />
   })
 }
 
 export function TrendLine({ labels, values }) {
+  const [boxRef, size] = useBoxSize()
+  const { W, H, plotH, font } = trendFrame(size)
   const max = Math.max(...values) * 1.18
   const stepX = (W - PAD_L - PAD_R) / ((labels.length - 1) || 1)
-  const points = values.map((v, i) => [PAD_L + i * stepX, PAD_TOP + (1 - v / max) * PLOT_H])
+  const points = values.map((v, i) => [PAD_L + i * stepX, PAD_TOP + (1 - v / max) * plotH])
   const linePath = points.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')
-  const areaPath = linePath + ` L${points[points.length - 1][0].toFixed(1)},${PAD_TOP + PLOT_H} L${points[0][0].toFixed(1)},${PAD_TOP + PLOT_H} Z`
+  const areaPath = linePath + ` L${points[points.length - 1][0].toFixed(1)},${PAD_TOP + plotH} L${points[0][0].toFixed(1)},${PAD_TOP + plotH} Z`
   const lastIdx = points.length - 1
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="kdOvTrendGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.38" />
-          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <GridLines />
-      <path d={areaPath} fill="url(#kdOvTrendGrad)" />
-      <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" />
-      {points.map((p, i) => <circle key={`c${i}`} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r={i === lastIdx ? 5 : 3.5} fill={i === lastIdx ? 'var(--primary)' : 'var(--surface)'} stroke="var(--primary)" strokeWidth="2" />)}
-      {points.map((p, i) => <text key={`l${i}`} x={p[0].toFixed(1)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text-muted)" fontFamily={FONT_STACK}>{labels[i]}</text>)}
-      {points.map((p, i) => <text key={`v${i}`} x={p[0].toFixed(1)} y={(p[1] - 13).toFixed(1)} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--primary)" fontFamily={FONT_STACK}>{values[i]}</text>)}
-    </svg>
+    <div ref={boxRef} style={TREND_BOX}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={TREND_SVG}>
+        <defs>
+          <linearGradient id="kdOvTrendGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <GridLines W={W} plotH={plotH} />
+        <path d={areaPath} fill="url(#kdOvTrendGrad)" />
+        <path d={linePath} fill="none" stroke="var(--primary)" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((p, i) => <circle key={`c${i}`} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r={i === lastIdx ? 5 : 3.5} fill={i === lastIdx ? 'var(--primary)' : 'var(--surface)'} stroke="var(--primary)" strokeWidth="2" />)}
+        {points.map((p, i) => <text key={`l${i}`} x={p[0].toFixed(1)} y={H - 8} textAnchor="middle" fontSize={font} fill="var(--text-muted)" fontFamily={FONT_STACK}>{labels[i]}</text>)}
+        {points.map((p, i) => <text key={`v${i}`} x={p[0].toFixed(1)} y={(p[1] - 13).toFixed(1)} textAnchor="middle" fontSize={font} fontWeight="700" fill="var(--primary)" fontFamily={FONT_STACK}>{values[i]}</text>)}
+      </svg>
+    </div>
   )
 }
 
 export function TrendBar({ labels, values }) {
+  const [boxRef, size] = useBoxSize()
+  const { W, H, plotH, font } = trendFrame(size)
   const max = Math.max(...values) * 1.18
   const stepX = (W - PAD_L - PAD_R) / labels.length
   const barW = stepX * 0.55
   const bars = values.map((v, i) => {
     const cx = PAD_L + stepX * i + stepX / 2
-    const barH = (v / max) * PLOT_H
-    const y = PAD_TOP + PLOT_H - barH
+    const barH = (v / max) * plotH
+    const y = PAD_TOP + plotH - barH
     return { cx, y, barH, v, label: labels[i] }
   })
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H, overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="kdOvTrendBarGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.55" />
-        </linearGradient>
-      </defs>
-      <GridLines />
-      {bars.map((b, i) => <rect key={`b${i}`} x={(b.cx - barW / 2).toFixed(1)} y={b.y.toFixed(1)} width={barW.toFixed(1)} height={b.barH.toFixed(1)} rx="4" fill="url(#kdOvTrendBarGrad)" />)}
-      {bars.map((b, i) => <text key={`l${i}`} x={b.cx.toFixed(1)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text-muted)" fontFamily={FONT_STACK}>{b.label}</text>)}
-      {bars.map((b, i) => <text key={`v${i}`} x={b.cx.toFixed(1)} y={(b.y - 8).toFixed(1)} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--primary)" fontFamily={FONT_STACK}>{b.v}</text>)}
-    </svg>
+    <div ref={boxRef} style={TREND_BOX}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={TREND_SVG}>
+        <defs>
+          <linearGradient id="kdOvTrendBarGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.55" />
+          </linearGradient>
+        </defs>
+        <GridLines W={W} plotH={plotH} />
+        {bars.map((b, i) => <rect key={`b${i}`} x={(b.cx - barW / 2).toFixed(1)} y={b.y.toFixed(1)} width={barW.toFixed(1)} height={b.barH.toFixed(1)} rx="4" fill="url(#kdOvTrendBarGrad)" />)}
+        {bars.map((b, i) => <text key={`l${i}`} x={b.cx.toFixed(1)} y={H - 8} textAnchor="middle" fontSize={font} fill="var(--text-muted)" fontFamily={FONT_STACK}>{b.label}</text>)}
+        {bars.map((b, i) => <text key={`v${i}`} x={b.cx.toFixed(1)} y={(b.y - 8).toFixed(1)} textAnchor="middle" fontSize={font} fontWeight="700" fill="var(--primary)" fontFamily={FONT_STACK}>{b.v}</text>)}
+      </svg>
+    </div>
   )
 }
 
@@ -132,6 +167,7 @@ export function FunnelColumns({ leads }) {
 }
 
 export function FunnelDonut({ leads }) {
+  const [boxRef, size] = useBoxSize()
   const counts = stageCounts(leads)
   const total = counts.reduce((a, b) => a + b, 0) || 1
   const colors = STAGES.map(s => {
@@ -153,17 +189,26 @@ export function FunnelDonut({ leads }) {
     offsetAcc += dash
     return seg
   })
+  /* Vòng tròn lớn theo khung (giới hạn bởi chiều cao và ~40% chiều rộng); chú thích xếp theo cột cho vừa chiều cao */
+  const boxW = size ? size.w : 480
+  const boxH = size ? size.h : 140
+  const donut = Math.max(56, Math.min(boxH, boxW * 0.4))
+  const big = boxH >= 200
+  const rowH = big ? 26 : 19
+  const rows = Math.max(1, Math.min(STAGES.length, Math.floor(boxH / rowH)))
+  const cols = Math.ceil(STAGES.length / rows)
+  const usedRows = Math.ceil(STAGES.length / cols)
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 18, height: '100%', minHeight: 70 }}>
-      <svg width="140" height="140" viewBox="0 0 140 140" style={{ flex: 'none' }}>
+    <div ref={boxRef} style={{ display: 'flex', alignItems: 'center', gap: big ? 28 : 18, flex: 1, minHeight: 0, minWidth: 0 }}>
+      <svg width={donut} height={donut} viewBox="0 0 140 140" style={{ flex: 'none' }}>
         {segments}
         <text x={cx} y={cy - 2} textAnchor="middle" fontSize="20" fontWeight="800" fill="var(--text)" fontFamily={FONT_STACK}>{total}</text>
         <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9.5" fill="var(--text-muted)" fontFamily={FONT_STACK}>cơ hội</text>
       </svg>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', maxHeight: '100%' }}>
+      <div style={{ flex: 1, minWidth: 0, maxHeight: '100%', overflow: 'auto', display: 'grid', gridAutoFlow: 'column', gridTemplateRows: `repeat(${usedRows}, auto)`, gridAutoColumns: 'minmax(140px, 260px)', gap: big ? '9px 28px' : '5px 16px', alignContent: 'safe center' }}>
         {STAGES.map((s, i) => (
-          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2, background: colors[i], flex: 'none' }} />
+          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: big ? 8 : 6, fontSize: big ? 12.5 : 10.5, minWidth: 0 }}>
+            <span style={{ width: big ? 11 : 9, height: big ? 11 : 9, borderRadius: 2, background: colors[i], flex: 'none' }} />
             <span style={{ color: 'var(--text-muted)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={STAGE_LABEL[s]}>{STAGE_LABEL[s]}</span>
             <span className="mono" style={{ fontWeight: 700, color: colors[i] }}>{counts[i]}</span>
           </div>

@@ -7,19 +7,29 @@ import Thread from './components/Thread'
 import InfoPanel from './components/InfoPanel'
 import DirectoryModal from './components/DirectoryModal'
 import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
+import { loadKdRequests, saveKdRequests } from '../../services/kdRequestService'
 
 /* Sao chép dữ liệu mẫu để state của trang không sửa trực tiếp vào hằng số */
 function cloneConversations() {
+  /* Phiếu yêu cầu gửi từ trang Kinh doanh: thêm vào cuối hội thoại SiteFlow Bot */
+  const requests = loadKdRequests()
+  const requestMsgs = requests.map(r => ({
+    bot: true, request: true, reqId: r.id, title: r.title, text: r.leadName,
+    time: new Date(r.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+  }))
+  const waiting = requests.filter(r => r.status !== 'approved' && r.status !== 'rejected').length
   return CONVERSATIONS.map(c => ({
     ...c,
     members: (c.members || []).map(m => ({ ...m })),
-    messages: c.messages.map(m => ({ ...m })),
+    messages: c.messages.map(m => ({ ...m })).concat(c.type === 'bot' ? requestMsgs : []),
+    unread: c.type === 'bot' ? c.unread + waiting : c.unread,
   }))
 }
 
 export default function Chat() {
   const location = useLocation()
   const [conversations, setConversations] = useState(cloneConversations)
+  const [requests, setRequests] = useState(loadKdRequests)
   /* Bản HTML: mở chat.html#<id> thì chọn sẵn hội thoại đó */
   const [activeId, setActiveId] = useState(() => {
     const hashId = (location.hash || '').replace('#', '')
@@ -77,6 +87,13 @@ export default function Chat() {
     updateActiveMessages(msgs => [...msgs, msg])
   }
 
+  /* Cập nhật một phiếu yêu cầu (xác nhận / điều phối / duyệt) và lưu lại */
+  function updateRequest(id, patch) {
+    const next = requests.map(r => (r.id === id ? { ...r, ...patch } : r))
+    setRequests(next)
+    saveKdRequests(next)
+  }
+
   function saveEdit(idx, val) {
     /* Nội dung rỗng thì giữ nguyên tin cũ, chỉ đóng ô sửa */
     if (val) updateActiveMessages(msgs => msgs.map((m, i) => (i === idx ? { ...m, text: val, edited: true } : m)))
@@ -128,6 +145,8 @@ export default function Chat() {
 
         <Thread
           conv={activeConv}
+          requests={requests}
+          onUpdateRequest={updateRequest}
           editingIdx={editingIdx}
           scrollTick={scrollTick}
           memberPopOpen={memberPop === 'head'}

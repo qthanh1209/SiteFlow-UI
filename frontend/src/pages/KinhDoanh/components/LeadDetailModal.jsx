@@ -1,4 +1,4 @@
-import { STAGE_LABEL, DEPT_LABEL } from '../../../data/kinhDoanhData'
+import { STAGE_LABEL, DEPT_LABEL, HANDOFF_CONFIG } from '../../../data/kinhDoanhData'
 import { FONT_STACK, fmtTy, stageAccent, lmInitials } from '../utils'
 
 /* ===================== Modal: Chi tiết lead (đầy đủ thông tin đã nhập từ modal +Thêm) ===================== */
@@ -16,6 +16,24 @@ function LdRow({ label, value }) {
   )
 }
 
+function PersonChip({ name, role }) {
+  return (
+    <span className="kd-lm-assignee-chip" style={{ marginRight: 0 }}>
+      <span className="kd-aa-avatar">{lmInitials(name)}</span>{name}{role ? <span className="kd-aa-role">· {role}</span> : null}
+    </span>
+  )
+}
+
+/* Khối phụ trách: luôn hiện đủ 4 mục, mục chưa có dữ liệu hiện chữ mờ */
+function OwnerRow({ label, children, emptyText }) {
+  return (
+    <div>
+      <div style={capLabel(6)}>{label}</div>
+      {children || <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{emptyText}</div>}
+    </div>
+  )
+}
+
 function Body({ l }) {
   const h = l.handoff
   const hasAssignees = l.assignees && l.assignees.length
@@ -23,18 +41,35 @@ function Body({ l }) {
   const empty = !l.phone && !l.email && !l.source && !l.address && !l.scale && !hasCategories && !hasAssignees && !l.boqFile && !l.concept && !l.notes
   return (
     <>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
+        <OwnerRow label="Phòng phụ trách" emptyText="Chưa phân phòng">
+          {DEPT_LABEL[l.dept] ? <div style={{ fontSize: 13, fontWeight: 600 }}>{DEPT_LABEL[l.dept]}</div> : null}
+        </OwnerRow>
+        <OwnerRow label="Người khởi tạo" emptyText="Chưa cập nhật">
+          {l.creator ? <PersonChip name={l.creator} /> : null}
+        </OwnerRow>
+        <OwnerRow label="Quản lý" emptyText="Chưa cập nhật">
+          {l.manager ? <PersonChip name={l.manager} /> : null}
+        </OwnerRow>
+        <OwnerRow label="Nhân viên phụ trách" emptyText="Chưa phân công">
+          {hasAssignees ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {l.assignees.map((a, i) => <PersonChip key={i} name={a.name} role={a.role} />)}
+            </div>
+          ) : null}
+        </OwnerRow>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <LdRow label="Số điện thoại" value={l.phone} />
         <LdRow label="Email" value={l.email} />
         <LdRow label="Nguồn khách hàng" value={l.source} />
         <LdRow label="Địa chỉ" value={l.address} />
-        <LdRow label="Phòng ban phụ trách" value={DEPT_LABEL[l.dept]} />
         <LdRow label="Loại dự án" value={l.projectType || l.type} />
         <LdRow label="Quy mô" value={l.scale} />
         <LdRow label="Giá trị ước tính" value={fmtTy(l.value)} />
         {l.partner ? <LdRow label="Đối tác thi công/thiết kế" value={<span style={{ color: 'var(--primary)' }}>Có chuyển giao đối tác ngoài</span>} /> : null}
         {h && (h.status === 'pending-qs' || h.status === 'pending-handoff') ? (
-          <LdRow label="Bàn giao / Báo giá" value={
+          <LdRow label={HANDOFF_CONFIG[l.stage] ? HANDOFF_CONFIG[l.stage].title : 'Bàn giao / Báo giá'} value={
             <span style={{ color: 'var(--gold)' }}>
               Đang chờ Phòng {h.dept} xác nhận{h.requestedAt ? ' — hẹn ' + new Date(h.requestedAt).toLocaleString('vi-VN') : ''}{h.assignee ? ' — ' + h.assignee : ''}
             </span>
@@ -42,18 +77,6 @@ function Body({ l }) {
         ) : null}
         {h && h.status === 'self-quoted' ? <LdRow label="Bàn giao / Báo giá" value={<span style={{ color: 'var(--sales)' }}>Phòng KD tự đề xuất báo giá</span>} /> : null}
       </div>
-      {hasAssignees ? (
-        <div>
-          <div style={capLabel(6)}>Người phụ trách</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {l.assignees.map((a, i) => (
-              <span className="kd-lm-assignee-chip" style={{ marginRight: 0 }} key={i}>
-                <span className="kd-aa-avatar">{lmInitials(a.name)}</span>{a.name}{a.role ? <span className="kd-aa-role">· {a.role}</span> : null}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : null}
       {hasCategories ? (
         <div>
           <div style={capLabel(6)}>Hạng mục quan tâm</div>

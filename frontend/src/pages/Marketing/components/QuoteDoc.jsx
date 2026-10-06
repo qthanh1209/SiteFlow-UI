@@ -316,7 +316,7 @@ function TplCompact({ camp, qd, A }) {
 const RENDERERS = { modern: TplModern, classic: TplClassic, minimal: TplMinimal, detailed: TplDetailed, elegant: TplElegant, compact: TplCompact }
 
 /* Tờ báo giá (renderQuoteDoc của bản HTML) */
-export default function QuoteDoc({ catalog, camp, vatOn, template, accent, textColor, font }) {
+export default function QuoteDoc({ catalog, camp, vatOn, template, accent, textColor, font, fontScale }) {
   const qd = buildQuoteData(catalog, camp, vatOn)
   const tpl = QUOTE_TEMPLATES.find(t => t.id === template) || QUOTE_TEMPLATES[0]
   const Tpl = RENDERERS[tpl.id]
@@ -326,7 +326,10 @@ export default function QuoteDoc({ catalog, camp, vatOn, template, accent, textC
   if (font) override.fontFamily = font
   return (
     <div className="mk-quote-paper" style={override}>
-      <Tpl camp={camp} qd={qd} A={A} />
+      {/* Cỡ chữ: phóng nội dung bên trong tờ giấy (khổ giấy giữ nguyên) nên áp dụng cho cả bản in */}
+      <div style={fontScale && fontScale !== 1 ? { zoom: fontScale } : undefined}>
+        <Tpl camp={camp} qd={qd} A={A} />
+      </div>
     </div>
   )
 }

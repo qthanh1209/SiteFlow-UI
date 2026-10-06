@@ -112,13 +112,45 @@ html[data-theme="dark"][data-accent="red"]     { --primary: #E0685A; --primary-t
 html[data-theme="light"][data-accent="teal"]   { --primary: #0E8A82; --primary-tint: #E1F5F2; }
 html[data-theme="dark"][data-accent="teal"]    { --primary: #3FC2B6; --primary-tint: #123330; }
 
-/* ===== Density & Font Size ===== */
-html[data-density="compact"]  { zoom: 0.88; }
-html[data-density="compact"]  .app-shell { width: calc(100vw / 0.88) !important; height: calc(100vh / 0.88) !important; }
-html[data-fontsize="small"]   { zoom: 0.92; }
-html[data-fontsize="small"]   .app-shell { width: calc(100vw / 0.92) !important; height: calc(100vh / 0.92) !important; }
-html[data-fontsize="large"]   { zoom: 1.12; }
-html[data-fontsize="large"]   .app-shell { width: calc(100vw / 1.12) !important; height: calc(100vh / 1.12) !important; }
+/* Màu chủ đạo tự chọn (Cài đặt ▸ Giao diện): --custom-accent do ThemeContext gán lên <html>.
+   Mỗi trang khai báo lại --primary trên lớp gốc *-page nên phải ghi đè ở cả hai nơi. */
+html[data-accent="custom"],
+html[data-accent="custom"] body [class*="-page"] {
+  --primary: var(--custom-accent, #2F5DA8);
+  --primary-tint: color-mix(in srgb, var(--custom-accent, #2F5DA8) 13%, #fff);
+}
+html[data-theme="dark"][data-accent="custom"],
+html[data-theme="dark"][data-accent="custom"] body [class*="-page"] {
+  --primary: color-mix(in srgb, var(--custom-accent, #2F5DA8) 66%, #fff);
+  --primary-tint: color-mix(in srgb, var(--custom-accent, #2F5DA8) 26%, #12151C);
+}
+
+/* ===== Density & Font Size =====
+   Hai tuỳ chọn nhân với nhau (trước đây cái sau ghi đè cái trước). */
+html { --z-density: 1; --z-font: 1; zoom: calc(var(--z-density) * var(--z-font)); }
+html[data-density="compact"]  { --z-density: 0.88; }
+html[data-fontsize="small"]   { --z-font: 0.92; }
+html[data-fontsize="large"]   { --z-font: 1.12; }
+html[data-fontsize="xlarge"]  { --z-font: 1.24; }
+html[data-density="compact"] .app-shell,
+html[data-fontsize="small"] .app-shell,
+html[data-fontsize="large"] .app-shell,
+html[data-fontsize="xlarge"] .app-shell {
+  width: calc(100vw / (var(--z-density) * var(--z-font))) !important;
+  height: calc(100vh / (var(--z-density) * var(--z-font))) !important;
+}
+
+/* ===== Font đồng nhất =====
+   Nút, ô nhập, ô chọn mặc định KHÔNG kế thừa font của trang — ép kế thừa để cả app dùng một font. */
+button, input, select, textarea, optgroup { font-family: inherit; }
+/* Số liệu: mặc định dùng chung font của app (chữ số đều cột); bật "font đơn cách" trong Cài đặt nếu muốn như cũ */
+html[data-mono="off"] body :is(.mono, [class*="-mono"]) { font-family: inherit !important; font-variant-numeric: tabular-nums; }
+
+/* ===== Tắt hiệu ứng chuyển động (Cài đặt ▸ Giao diện) ===== */
+html[data-motion="off"] *, html[data-motion="off"] *::before, html[data-motion="off"] *::after {
+  animation-duration: .001s !important; animation-iteration-count: 1 !important;
+  transition-duration: .001s !important; scroll-behavior: auto !important;
+}
 
 /* ===== Sidebar Position ===== */
 html[data-sidebar-pos="right"] .app-shell { flex-direction: row-reverse; }
@@ -223,6 +255,17 @@ a:hover { color: #1F4585; }
   box-shadow: 8px 0 24px rgba(0,0,0,.35);
   display: none; overflow-y: auto;
 }
+/* Thu gọn tối đa (React): cụm logo + nút mở rộng nổi trong lề trang, menu bung ra ngay cạnh */
+.sidebar-float {
+  position: fixed; top: 8px; left: 2px; z-index: 90;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.sidebar-flyout { left: 30px; }
+/* Trang có lề trái hẹp hơn 28px: đẩy tiêu đề sang phải một chút để không bị cụm nổi che */
+html[data-sidebar-level="logo"]:not([data-sidebar-pos="right"]) .app-topbar { padding-left: 32px !important; }
+html[data-sidebar-level="logo"]:not([data-sidebar-pos="right"]) .ch-conv-head .ch-row1 { padding-left: 16px; }
+html[data-sidebar-pos="right"] .sidebar-float { left: auto; right: 2px; }
+html[data-sidebar-pos="right"] .sidebar-flyout { left: auto; right: 30px; box-shadow: -8px 0 24px rgba(0,0,0,.35) !important; }
 html[data-sidebar-pos="right"] .sidebar-flyout-clone {
   left: auto !important; right: 60px !important;
   box-shadow: -8px 0 24px rgba(0,0,0,.35) !important;

@@ -4,11 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SiteFlow</title>
+    <!-- Font chọn được ở Cài đặt ▸ Giao diện (Montserrat đã có sẵn trong fonts.css). Trình duyệt chỉ tải font đang dùng. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" />
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('siteflow-theme');
-          if (!t) { t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+          var mode = localStorage.getItem('siteflow-theme-mode');
+          var t = mode === 'system' ? null : (mode || localStorage.getItem('siteflow-theme'));
+          if (t !== 'light' && t !== 'dark') { t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
           document.documentElement.setAttribute('data-theme', t);
         } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
         try {
@@ -17,7 +22,11 @@
           document.documentElement.setAttribute('data-density', c.density || 'comfortable');
           document.documentElement.setAttribute('data-sidebar-pos', c.sidebarPos || 'left');
           document.documentElement.setAttribute('data-fontsize', c.fontSize || 'medium');
+          document.documentElement.setAttribute('data-motion', c.motion === 'off' ? 'off' : 'on');
+          document.documentElement.setAttribute('data-mono', c.monoNumbers ? 'on' : 'off');
+          document.documentElement.setAttribute('data-glass', c.glassLevel || 'medium');
           if (c.fontFamily) document.documentElement.style.setProperty('--app-font', c.fontFamily);
+          if (c.accent === 'custom' && c.accentCustom) document.documentElement.style.setProperty('--custom-accent', c.accentCustom);
         } catch (e) {}
         try {
           var uiTheme = localStorage.getItem('siteflow-ui-theme');

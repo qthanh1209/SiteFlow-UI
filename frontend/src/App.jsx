@@ -13,6 +13,7 @@ import ChamCong from './pages/ChamCong/ChamCong'
 import ChamCongMobile from './pages/ChamCongMobile/ChamCongMobile'
 import TaiChinh from './pages/TaiChinh/TaiChinh'
 import QS from './pages/QS/QS'
+import QSPro from './pages/QSPro/QSPro'
 import BIM from './pages/BIM/BIM'
 import MuaHang from './pages/MuaHang/MuaHang'
 import Wiki from './pages/Wiki/Wiki'
@@ -27,6 +28,8 @@ export default function App() {
   return (
     <ThemeProvider>
       <Routes>
+        {/* QS Pro (trang ngoài) phủ kín màn hình, nằm ngoài AppShell nên không có sidebar */}
+        <Route path="qs-pro" element={<QSPro />} />
         <Route element={<AppShell />}>
           <Route index element={<Dashboard />} />
           <Route path="chat" element={<Chat />} />

@@ -39,7 +39,7 @@ export default function RankTab({ active, period, onPeriod }) {
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: `var(--${p.color}-tint)`, color: `var(--${p.color})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 15 }}>{p.initials}</div>
               <div style={{ fontWeight: 700, fontSize: 13.5 }}>{p.name}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{p.dept}</div>
-              <div style={{ fontFamily: "'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", fontWeight: 800, fontSize: 17, color: 'var(--finance)' }}>{fmtPoints(p[period])} đ</div>
+              <div style={{ fontFamily: 'inherit', fontWeight: 800, fontSize: 17, color: 'var(--finance)' }}>{fmtPoints(p[period])} đ</div>
             </div>
           )
         })}

@@ -10,6 +10,9 @@ export default function HandoffModal({ open, lead, stageKey, onClose, onSend, on
   const [assignee, setAssignee] = useState('')
   /* Khi chưa mở lần nào: hiển thị nội dung tĩnh mặc định của bản HTML (phiếu yêu cầu báo giá) */
   const cfg = HANDOFF_CONFIG[stageKey] || HANDOFF_CONFIG['bao-gia']
+  /* Phòng nhận phiếu: mặc định theo cấu hình, phiếu có deptOptions thì người gửi được chọn */
+  const [dept, setDept] = useState(cfg.dept)
+  const fill = text => text.replace('{dept}', dept)
 
   return (
     <div
@@ -20,7 +23,7 @@ export default function HandoffModal({ open, lead, stageKey, onClose, onSend, on
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontFamily: FONT_STACK, fontWeight: 800, fontSize: 16 }}>{cfg.title}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{cfg.subtitle}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>{fill(cfg.subtitle)}</div>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, flex: 'none' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
@@ -31,23 +34,31 @@ export default function HandoffModal({ open, lead, stageKey, onClose, onSend, on
             <div style={{ fontWeight: 700, fontSize: 14 }}>{lead ? lead.name : ''}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{lead ? `${lead.type} · ${fmtTy(lead.value)} · ${DEPT_LABEL[lead.dept]}` : ''}</div>
           </div>
+          {cfg.deptOptions ? (
+            <div className="kd-field">
+              <label>Phòng nhận yêu cầu</label>
+              <select value={dept} onChange={e => setDept(e.target.value)}>
+                {cfg.deptOptions.map(d => <option key={d} value={d}>Phòng {d}</option>)}
+              </select>
+            </div>
+          ) : null}
           <div className="kd-field">
             <label>{cfg.dateLabel}</label>
             <input type="datetime-local" value={dateTime} onChange={e => setDateTime(e.target.value)} />
           </div>
           <div className="kd-field">
-            <label>{cfg.assigneeLabel}</label>
-            <input type="text" placeholder={cfg.assigneePlaceholder} value={assignee} onChange={e => setAssignee(e.target.value)} />
+            <label>{fill(cfg.assigneeLabel)}</label>
+            <input type="text" placeholder={fill(cfg.assigneePlaceholder)} value={assignee} onChange={e => setAssignee(e.target.value)} />
           </div>
           <div style={{ fontSize: 11.5, color: 'var(--text-muted)', background: 'var(--primary-tint)', borderRadius: 8, padding: '9px 12px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <span style={{ flex: 'none' }}>ℹ</span>
-            <span>{cfg.note}</span>
+            <span>{fill(cfg.note)}</span>
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 24px', borderTop: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="kd-pjm-btn" onClick={onClose}>Huỷ</button>
-            <button className="kd-pjm-btn primary" style={{ flex: 2 }} onClick={() => onSend(dateTime, assignee.trim())}>{cfg.sendLabel}</button>
+            <button className="kd-pjm-btn primary" style={{ flex: 2 }} onClick={() => onSend(dateTime, assignee.trim(), dept)}>{fill(cfg.sendLabel)}</button>
           </div>
           <button onClick={onSelf} style={{ display: cfg.selfLabel ? 'block' : 'none', border: 'none', background: 'var(--success)', color: '#fff', fontSize: 12, fontWeight: 700, padding: 9, borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>{cfg.selfLabel || 'Phòng KD tự đề xuất báo giá'}</button>
         </div>

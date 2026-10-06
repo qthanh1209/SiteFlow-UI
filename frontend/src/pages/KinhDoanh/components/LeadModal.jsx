@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import {
   LEAD_STEPS, LEAD_STEP_TITLE, LEAD_STEP_TAB_LABEL, LEAD_SOURCES, LEAD_PROJECT_TYPES, LEAD_DEPT_OPTIONS,
-  LEAD_STAGE_OPTIONS, LEAD_CATEGORY_GROUPS, LEAD_CATEGORIES, BOQ_DEFAULT_LABEL,
+  LEAD_STAGE_OPTIONS, LEAD_CATEGORY_GROUPS, LEAD_CATEGORIES, BOQ_DEFAULT_LABEL, KD_CURRENT_USER, KD_MANAGER,
 } from '../../../data/kinhDoanhData'
 import { FONT_STACK, lmInitials } from '../utils'
 
@@ -26,6 +26,8 @@ function initForm(lead) {
     partner: lead ? !!lead.partner : false,
     source: lead && lead.source ? lead.source : 'Giới thiệu',
     dept: lead ? (lead.dept || 'dan-dung') : 'dan-dung',
+    creator: lead ? (lead.creator || '') : KD_CURRENT_USER,
+    manager: lead ? (lead.manager || '') : KD_MANAGER,
     type: lead && lead.projectType ? lead.projectType : 'Nhà phố',
     stage: lead ? lead.stage : 'tiep-can',
     categories: lead && lead.categories ? LEAD_CATEGORIES.filter(c => lead.categories.indexOf(c) !== -1) : [],
@@ -113,12 +115,17 @@ export default function LeadModal({ open, lead, onClose, onSave }) {
     if (!name) { setStep(0); setNameFocusTick(t => t + 1); return }
     const type = form.type || 'Chưa xác định'
     const scale = form.scale.trim()
+    /* Tên đã gõ trong popover nhưng chưa bấm "Thêm" vẫn được lưu */
+    const pendingName = assigneeName.trim()
+    const finalAssignees = pendingName ? [...assignees, { name: pendingName, role: assigneeRole.trim() }] : assignees.slice()
     onSave({
       name,
       type: scale ? `${type} (${scale})` : type,
       value: parseFloat(form.value.replace(',', '.')) || 0,
       stage: form.stage,
       dept: form.dept || 'dan-dung',
+      creator: form.creator.trim(),
+      manager: form.manager.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
       source: form.source,
@@ -130,7 +137,7 @@ export default function LeadModal({ open, lead, onClose, onSave }) {
       concept: form.concept.trim(),
       notes: form.notes.trim(),
       partner: form.partner,
-      assignees: assignees.slice(),
+      assignees: finalAssignees,
     })
   }
 
@@ -184,8 +191,12 @@ export default function LeadModal({ open, lead, onClose, onSave }) {
                   <select value={form.dept} onChange={e => set('dept', e.target.value)}>{LEAD_DEPT_OPTIONS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}</select>
                 </div>
               </div>
+              <div style={grid2}>
+                <div className="kd-field"><label>Người khởi tạo</label><input type="text" placeholder="Họ tên người tạo lead" value={form.creator} onChange={e => set('creator', e.target.value)} /></div>
+                <div className="kd-field"><label>Quản lý</label><input type="text" placeholder="Họ tên quản lý phụ trách" value={form.manager} onChange={e => set('manager', e.target.value)} /></div>
+              </div>
               <div className="kd-field" style={{ position: 'relative' }}>
-                <label>Người phụ trách</label>
+                <label>Nhân viên phụ trách</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {assignees.map((a, i) => (
@@ -202,7 +213,8 @@ export default function LeadModal({ open, lead, onClose, onSave }) {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                   </button>
                 </div>
-                <div className="kd-lm-assignee-popover" style={{ display: assigneeOpen ? 'flex' : 'none' }} onClick={e => e.stopPropagation()}>
+                {/* Mở lên trên: ô này nằm cuối bước 1 nên mở xuống sẽ bị vùng cuộn của modal che mất nút "Thêm" */}
+                <div className="kd-lm-assignee-popover" style={{ display: assigneeOpen ? 'flex' : 'none', top: 'auto', bottom: '100%', marginTop: 0, marginBottom: 6 }} onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === 'Enter') addAssignee() }}>
                   <input type="text" ref={assigneeNameRef} placeholder="Họ tên" value={assigneeName} onChange={e => setAssigneeName(e.target.value)} />
                   <input type="text" placeholder="Vai trò (VD: Sale phụ trách, Kỹ thuật...)" value={assigneeRole} onChange={e => setAssigneeRole(e.target.value)} />
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
@@ -265,7 +277,8 @@ export default function LeadModal({ open, lead, onClose, onSave }) {
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setStep(Math.max(step - 1, 0))} style={{ display: step === 0 ? 'none' : 'inline-block', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', padding: '9px 16px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Quay lại</button>
               <button onClick={next} style={{ display: isLast ? 'none' : 'inline-block', border: 'none', background: 'var(--sales)', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Tiếp theo</button>
-              <button onClick={save} style={{ display: isLast ? 'inline-block' : 'none', border: 'none', background: 'var(--sales)', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lead ? 'Lưu thay đổi' : 'Lưu khách hàng'}</button>
+              {/* Khi chỉnh sửa: cho lưu ngay ở mọi bước, không bắt đi hết 3 bước */}
+              <button onClick={save} style={{ display: isLast || lead ? 'inline-block' : 'none', border: 'none', background: 'var(--sales)', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lead ? 'Lưu thay đổi' : 'Lưu khách hàng'}</button>
             </div>
           </div>
         </div>

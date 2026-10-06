@@ -220,26 +220,6 @@ html[data-ui-theme="super-glass"] .app-sidebar .navitem{
   -webkit-backdrop-filter: var(--sg-blur-chip);
   box-shadow: inset 0 0 0 1px var(--sg-ring), inset 0 1px 0 var(--sg-specular);
 }
-/* Light mode: sidebar glass is a near-transparent LIGHT tint now, so the
-   original light-gray nav text (#AEB4C2, tuned for the old solid-dark sidebar)
-   becomes nearly invisible — force dark, legible text instead. */
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar a,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .nav-label,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .word,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .who .name,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .who .role,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .sidebar-collapse-btn{
-  color: #171b24 !important;
-}
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar nav a.active,
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .navitem{
-  color: #171b24 !important;
-  font-weight: 700;
-}
-html[data-theme="light"][data-ui-theme="super-glass"] .app-sidebar .sidebar-collapse-btn{
-  border-color: rgba(23,27,36,.25);
-}
 html[data-ui-theme="super-glass"] div[style*="height: 64px"][style*="border-bottom"]{
   background: var(--sg-surface-strong) !important;
   backdrop-filter: var(--sg-blur);
@@ -306,3 +286,63 @@ html[data-ui-theme="super-glass"] .settings-tab.active{
 }
 
 html[data-ui-theme="super-glass"] ::-webkit-scrollbar-thumb{ backdrop-filter:none; }
+
+/* =====================================================================
+   Bổ sung cho bản React
+   Bản HTML gốc dùng class chung (.app-sidebar, .ai-panel…) và nền trang trong suốt.
+   Ở bản React mỗi trang có lớp gốc *-page tự tô nền đặc và tự khai báo --surface,
+   nên trước đây chọn bộ giao diện kính gần như không thấy khác biệt.
+   ===================================================================== */
+
+/* Độ trong suốt của bề mặt (Cài đặt ▸ Giao diện ▸ Độ trong suốt) */
+html{ --gl-a: .62; }
+html[data-glass="soft"]{ --gl-a: .84; }
+html[data-glass="strong"]{ --gl-a: .40; }
+/* Super Glass mỏng hơn Liquid Glass ở cùng một mức */
+html[data-ui-theme="glass"]{ --gl-k: 1; }
+html[data-ui-theme="super-glass"]{ --gl-k: .62; }
+
+/* 1) Lộ nền: khung app và lớp gốc của trang không tô nền đặc nữa */
+html:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) .app-shell{ background: transparent !important; }
+
+/* 2) Bề mặt của trang thành kính: ghi đè biến màu ngay trên lớp gốc *-page
+      (độ ưu tiên cao hơn khai báo riêng của từng trang) */
+html[data-theme="light"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) body [class*="-page"]{
+  --bg: transparent;
+  --surface: rgba(255,255,255, calc(var(--gl-a) * var(--gl-k)));
+  --surface-alt: rgba(226,230,240, calc(var(--gl-a) * var(--gl-k)));
+  --border: rgba(90,100,125,.20);
+}
+html[data-theme="dark"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) body [class*="-page"]{
+  --bg: transparent;
+  --surface: rgba(28,32,44, calc(var(--gl-a) * var(--gl-k)));
+  --surface-alt: rgba(52,58,74, calc(var(--gl-a) * var(--gl-k)));
+  --border: rgba(255,255,255,.11);
+}
+/* Thẻ nổi (rule phía trên) cũng theo mức trong suốt đã chọn */
+html[data-theme="light"][data-ui-theme="glass"]{ --glass-surface: rgba(255,255,255, var(--gl-a)); --glass-surface-strong: rgba(255,255,255, calc(var(--gl-a) + .16)); }
+html[data-theme="dark"][data-ui-theme="glass"]{ --glass-surface: rgba(34,38,50, var(--gl-a)); --glass-surface-strong: rgba(34,38,50, calc(var(--gl-a) + .16)); }
+html[data-theme="light"][data-ui-theme="super-glass"]{ --sg-surface: rgba(255,255,255, calc(var(--gl-a) * .5)); --sg-surface-strong: rgba(255,255,255, calc(var(--gl-a) * .8)); --sg-sidebar: rgba(16,20,30,.66); }
+html[data-theme="dark"][data-ui-theme="super-glass"]{ --sg-surface: rgba(15,23,42, calc(var(--gl-a) * .6)); --sg-surface-strong: rgba(15,23,42, calc(var(--gl-a) * .95)); }
+
+/* 3) Lớp nổi viết bằng class (popover, modal, menu, ngăn kéo, khung Dezbot): thêm làm mờ nền để chữ không lẫn với nội dung phía sau */
+html[data-ui-theme="glass"] body :is([class*="-popover"], [class*="-modal"], [class*="-menu"], [class*="-drawer"], [class*="-ai-panel"]){
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+}
+html[data-ui-theme="super-glass"] body :is([class*="-popover"], [class*="-modal"], [class*="-menu"], [class*="-drawer"], [class*="-ai-panel"]){
+  -webkit-backdrop-filter: blur(40px) saturate(170%); backdrop-filter: blur(40px) saturate(170%);
+}
+
+/* 4) Danh sách thả xuống của <select> do trình duyệt vẽ: cần nền đặc, nếu không chữ sẽ chìm */
+html[data-theme="light"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) select option,
+html[data-theme="light"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) select optgroup{ background-color: #FFFFFF; color: #161A22; }
+html[data-theme="dark"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) select option,
+html[data-theme="dark"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"]) select optgroup{ background-color: #1A1E27; color: #E7E9EE; }
+
+/* 5) Nền Liquid Glass ở chế độ tối: tăng độ đậm quầng màu để thấy được sau lớp kính */
+html[data-theme="dark"][data-ui-theme="glass"] body{
+  background-image:
+    radial-gradient(1200px 700px at 8% -10%, rgba(80,130,255,.26), transparent 60%),
+    radial-gradient(1000px 800px at 100% 10%, rgba(160,90,255,.22), transparent 55%),
+    radial-gradient(900px 700px at 60% 110%, rgba(40,180,170,.14), transparent 60%);
+}

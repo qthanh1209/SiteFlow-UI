@@ -20,6 +20,11 @@ export const DEPT_SHORT = { 'du-an': 'Dự án', 'dan-dung': 'Dân dụng' }
 export const DEPT_COLOR = { 'du-an': 'var(--primary)', 'dan-dung': 'var(--attendance)' }
 export const DEPT_TINT = { 'du-an': 'var(--primary-tint)', 'dan-dung': 'var(--attendance-tint)' }
 
+/* Người khởi tạo / quản lý lead (dữ liệu mẫu — lead mới lấy người dùng hiện tại làm người khởi tạo) */
+export const KD_CURRENT_USER = 'Trần Anh'
+export const KD_MANAGER = 'Trần Anh'
+const DEPT_DEFAULT_CREATOR = { 'du-an': 'Đặng Quốc Cường', 'dan-dung': 'Hoàng Yến Nhi' }
+
 export const LEADS = [
   { id: 'l1', name: 'Anh Minh Khang', type: 'Nhà phố', value: 1.8, stage: 'tiep-can', dept: 'dan-dung', createdAt: '2026-09-27' },
   { id: 'l2', name: 'Chị Lan Anh', type: 'Biệt thự', value: 5.2, stage: 'tiep-can', dept: 'dan-dung', createdAt: '2026-09-25' },
@@ -41,7 +46,7 @@ export const LEADS = [
   { id: 'l15', name: 'Anh Quang Huy', type: 'Nhà phố Lô B12 — KDC Bình Chánh', value: 2.1, stage: 'thi-cong', sub: 'structure', dept: 'dan-dung', createdAt: '2026-03-15' },
   { id: 'l16', name: 'Cty TNHH ABC Logistics', type: 'Văn phòng cho thuê — Q3', value: 4.2, stage: 'thi-cong', sub: 'handover', dept: 'du-an', partner: true, createdAt: '2026-02-01' },
   { id: 'l20', name: 'Anh Trọng Tấn', type: 'Nhà phố', value: 2.7, stage: 'truot-thau', dept: 'dan-dung', createdAt: '2026-09-15' },
-]
+].map(l => ({ creator: DEPT_DEFAULT_CREATOR[l.dept], manager: KD_MANAGER, ...l }))
 
 /* ---------- Bảng con: Thiết kế & Thi công (kiểu Lark Base/Task) ---------- */
 export const DESIGN_STAGES = ['intake', 'concept', 'drafting', 'review', 'approved']
@@ -71,6 +76,7 @@ export const OV_TREND_CFG = {
   year: { labels: ['2023', '2024', '2025', '2026'], seed: 33 },
 }
 export const OV_PERIODS = [['week', 'Tuần'], ['month', 'Tháng'], ['year', 'Năm']]
+/* minW/minH: kích thước nhỏ nhất (số ô lưới) khi co widget, để nội dung không bị tràn khung */
 export const OV_ITEM_DEFS = {
   'kpi-pipeline': { kind: 'kpi', x: 0, y: 0, w: 4, h: 2 },
   'kpi-leads': { kind: 'kpi', x: 4, y: 0, w: 4, h: 2 },
@@ -78,9 +84,9 @@ export const OV_ITEM_DEFS = {
   'kpi-closed-value': { kind: 'kpi', x: 0, y: 2, w: 4, h: 2 },
   'kpi-lost-rate': { kind: 'kpi', x: 4, y: 2, w: 4, h: 2 },
   'kpi-partner-rate': { kind: 'kpi', x: 8, y: 2, w: 4, h: 2 },
-  'trend': { kind: 'widget', x: 0, y: 4, w: 6, h: 5, title: 'Doanh số theo thời gian' },
-  'funnel': { kind: 'widget', x: 6, y: 4, w: 6, h: 3, title: 'Phễu bán hàng (Sales Funnel)' },
-  'upcoming': { kind: 'widget', x: 0, y: 9, w: 12, h: 4, title: 'Cơ hội sắp chốt' },
+  'trend': { kind: 'widget', x: 0, y: 4, w: 6, h: 5, minW: 3, minH: 3, title: 'Doanh số theo thời gian' },
+  'funnel': { kind: 'widget', x: 6, y: 4, w: 6, h: 3, minW: 3, minH: 3, title: 'Phễu bán hàng (Sales Funnel)' },
+  'upcoming': { kind: 'widget', x: 0, y: 9, w: 12, h: 4, minW: 3, minH: 2, title: 'Cơ hội sắp chốt' },
 }
 export const OV_ITEM_ORDER = Object.keys(OV_ITEM_DEFS)
 export const OV_LAYOUT_KEY = 'siteflow-overview-layout-v1'
@@ -89,32 +95,61 @@ export const OV_FUNNEL_CHART_OPTIONS = [['bars', 'Thanh ngang'], ['columns', 'C�
 
 /* ---------- Modal: Thông báo bàn giao sang phòng ban ---------- */
 export const HANDOFF_CONFIG = {
+  /* deptOptions: người gửi được chọn phòng nhận phiếu; {dept} trong các chuỗi được thay bằng phòng đã chọn */
+  'tu-van': {
+    dept: 'Thiết kế', deptOptions: ['Thiết kế', 'Thi công'],
+    title: 'Phiếu yêu cầu tư vấn', subtitle: 'Chuyển khách hàng sang Phòng {dept} để tư vấn',
+    dateLabel: 'Ngày giờ hẹn tư vấn (dự kiến)', assigneeLabel: 'Người phụ trách tư vấn (nếu đã biết)',
+    assigneePlaceholder: 'VD: Chị Lan — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi yêu cầu đến Phòng {dept}', role: '{dept} - Tư vấn',
+    selfLabel: null, selfStatus: null, pendingStatus: 'pending-handoff',
+  },
   'bao-gia': {
-    dept: 'QS', title: 'Phiếu yêu cầu báo giá', subtitle: 'Chuyển dự án sang Phòng QS để lập báo giá chi tiết',
-    dateLabel: 'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel: 'Người phụ trách bên QS (nếu đã biết)',
-    assigneePlaceholder: 'VD: Anh Trung — QS Điều phối', note: 'Phòng QS sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
-    sendLabel: 'Gửi yêu cầu đến Phòng QS', role: 'QS - Điều phối báo giá',
+    dept: 'QS', deptOptions: ['QS', 'Thiết kế'],
+    title: 'Phiếu yêu cầu báo giá (Thiết kế - Khái toán)', subtitle: 'Chuyển dự án sang Phòng {dept} để lập báo giá thiết kế - khái toán',
+    dateLabel: 'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Anh Trung — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi yêu cầu đến Phòng {dept}', role: '{dept} - Điều phối báo giá',
     selfLabel: 'Phòng KD tự đề xuất báo giá', selfStatus: 'self-quoted', pendingStatus: 'pending-qs',
   },
+  'dam-phan': {
+    dept: 'QS', deptOptions: ['QS', 'Thiết kế', 'Thi công'],
+    title: 'Phiếu yêu cầu hỗ trợ đàm phán', subtitle: 'Gửi Phòng {dept} để hỗ trợ đàm phán với khách hàng',
+    dateLabel: 'Ngày giờ hẹn đàm phán (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Anh Trung — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi yêu cầu đến Phòng {dept}', role: '{dept} - Hỗ trợ đàm phán',
+    selfLabel: null, selfStatus: null, pendingStatus: 'pending-handoff',
+  },
+  'chot-hd': {
+    dept: 'Thiết kế', deptOptions: ['Thiết kế', 'QS', 'Thi công'],
+    title: 'Phiếu thông báo chốt hợp đồng', subtitle: 'Gửi Phòng {dept} để chuẩn bị tiếp nhận sau khi chốt hợp đồng',
+    dateLabel: 'Ngày giờ hẹn ký hợp đồng (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Chị Lan — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi thông báo đến Phòng {dept}', role: '{dept} - Tiếp nhận hợp đồng',
+    selfLabel: null, selfStatus: null, pendingStatus: 'pending-handoff',
+  },
   'bao-gia-thi-cong': {
-    dept: 'QS', title: 'Phiếu yêu cầu báo giá thi công', subtitle: 'Chuyển dự án sang Phòng QS để lập báo giá thi công chi tiết',
-    dateLabel: 'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel: 'Người phụ trách bên QS (nếu đã biết)',
-    assigneePlaceholder: 'VD: Anh Trung — QS Điều phối', note: 'Phòng QS sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
-    sendLabel: 'Gửi yêu cầu đến Phòng QS', role: 'QS - Điều phối báo giá thi công',
+    dept: 'QS', deptOptions: ['QS', 'Thi công', 'Thiết kế'],
+    title: 'Phiếu yêu cầu báo giá (Thi công)', subtitle: 'Chuyển dự án sang Phòng {dept} để lập báo giá thi công chi tiết',
+    dateLabel: 'Ngày giờ hẹn báo giá (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Anh Trung — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi yêu cầu đến Phòng {dept}', role: '{dept} - Điều phối báo giá thi công',
     selfLabel: 'Phòng KD tự đề xuất báo giá', selfStatus: 'self-quoted', pendingStatus: 'pending-qs',
   },
   'thiet-ke': {
-    dept: 'Thiết kế', title: 'Phiếu bàn giao dự án', subtitle: 'Chuyển dự án sang Phòng Thiết kế để triển khai',
-    dateLabel: 'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel: 'Người phụ trách bên Thiết kế (nếu đã biết)',
-    assigneePlaceholder: 'VD: Chị Lan — Trưởng nhóm Thiết kế', note: 'Phòng Thiết kế sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
-    sendLabel: 'Gửi thông báo đến Phòng Thiết kế', role: 'Thiết kế - Tiếp nhận dự án',
+    dept: 'Thiết kế', deptOptions: ['Thiết kế', 'QS', 'Thi công'],
+    title: 'Phiếu bàn giao dự án (Thiết kế)', subtitle: 'Chuyển dự án sang Phòng {dept} để triển khai thiết kế',
+    dateLabel: 'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Chị Lan — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi thông báo đến Phòng {dept}', role: '{dept} - Tiếp nhận dự án',
     selfLabel: null, selfStatus: null, pendingStatus: 'pending-handoff',
   },
   'thi-cong': {
-    dept: 'Thi công', title: 'Phiếu bàn giao dự án', subtitle: 'Chuyển dự án sang Phòng Thi công để triển khai',
-    dateLabel: 'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel: 'Người phụ trách bên Thi công (nếu đã biết)',
-    assigneePlaceholder: 'VD: Anh Sơn — Đội trưởng Thi công', note: 'Phòng Thi công sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
-    sendLabel: 'Gửi thông báo đến Phòng Thi công', role: 'Thi công - Tiếp nhận dự án',
+    dept: 'Thi công', deptOptions: ['Thi công', 'Thiết kế', 'QS'],
+    title: 'Phiếu bàn giao dự án (Thi công)', subtitle: 'Chuyển dự án sang Phòng {dept} để triển khai thi công',
+    dateLabel: 'Ngày giờ hẹn bàn giao (dự kiến)', assigneeLabel: 'Người phụ trách bên {dept} (nếu đã biết)',
+    assigneePlaceholder: 'VD: Anh Sơn — Phòng {dept}', note: 'Phòng {dept} sẽ xác nhận lại ngày giờ và người phụ trách chính xác ngay khi nhận được thông báo.',
+    sendLabel: 'Gửi thông báo đến Phòng {dept}', role: '{dept} - Tiếp nhận dự án',
     selfLabel: null, selfStatus: null, pendingStatus: 'pending-handoff',
   },
 }

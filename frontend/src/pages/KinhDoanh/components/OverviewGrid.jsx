@@ -40,7 +40,8 @@ function loadLayout(order, defs, storageKey) {
   const layout = {}
   order.forEach(id => {
     const pos = saved[id] || defs[id]
-    layout[id] = { x: pos.x, y: pos.y, w: pos.w, h: pos.h }
+    /* Bố cục đã lưu nhỏ hơn kích thước tối thiểu (minW/minH) thì nới lại cho đủ chỗ hiển thị */
+    layout[id] = { x: pos.x, y: pos.y, w: Math.max(pos.w, defs[id].minW || 1), h: Math.max(pos.h, defs[id].minH || 1) }
   })
   return layout
 }
@@ -89,8 +90,8 @@ export default function OverviewGrid({ order, defs, storageKey, renderItem }) {
         }
         if (dir.indexOf('s') > -1) height = Math.max(CELL_H, from.height + dy)
         px = { left, top: from.top, width, height }
-        const w = clamp(Math.round(width / colW), 1, COLS)
-        const h = Math.max(1, Math.round(height / CELL_H))
+        const w = clamp(Math.round(width / colW), defs[id].minW || 1, COLS)
+        const h = Math.max(defs[id].minH || 1, Math.round(height / CELL_H))
         const x = dir.indexOf('w') > -1 ? clamp(n.x + n.w - w, 0, COLS - 1) : n.x
         target = { x, y: n.y, w: Math.min(w, COLS - x), h }
       }
