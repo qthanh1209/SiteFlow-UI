@@ -108,6 +108,14 @@ html[data-theme="dark"][data-accent="teal"] .lc-page{--primary:#3FC2B6; --primar
 .lc-cal-event.dim{opacity:0; pointer-events:none;}
 .lc-cal-event:hover{filter:brightness(0.97); box-shadow:0 2px 6px rgba(0,0,0,.10);}
 .lc-cal-event.dragging{opacity:.92; z-index:6; cursor:grabbing; box-shadow:0 10px 26px rgba(0,0,0,.28); outline:2px solid var(--ev-c); outline-offset:1px;}
+.lc-cal-resize{position:absolute; left:0; right:0; height:6px; cursor:ns-resize; z-index:2;}
+.lc-cal-resize.top{top:0;}
+.lc-cal-resize.bottom{bottom:0;}
+.lc-cal-resize.top::after{top:2px;}
+.lc-cal-resize.bottom::after{bottom:2px;}
+.lc-cal-event.compact .lc-cal-resize{height:5px;}
+.lc-cal-resize::after{content:""; position:absolute; left:50%; width:18px; height:2px; margin-left:-9px; border-radius:2px; background:var(--ev-c); opacity:0; transition:opacity .12s ease;}
+.lc-cal-event:hover .lc-cal-resize::after, .lc-cal-event.dragging .lc-cal-resize::after{opacity:.7;}
 .lc-cal-daycol.drop-target{background:var(--primary-tint); outline:1.5px dashed var(--primary); outline-offset:-1px;}
 .lc-cal-drag-tooltip{position:fixed; z-index:95; background:#12161F; color:#fff; font-size:11px; font-weight:700; padding:5px 10px; border-radius:7px; pointer-events:none; box-shadow:0 8px 18px rgba(0,0,0,.28); white-space:nowrap; font-family:var(--app-font, 'Montserrat'), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;}
 

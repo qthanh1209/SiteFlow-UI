@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import './BanLamViec.css'
 import { useTheme } from '../../hooks/useTheme'
-import { INITIAL_TASKS, INITIAL_REQUESTS } from '../../data/banLamViecData'
+import { INITIAL_TASKS, INITIAL_REQUESTS, ME, TODAY_LABEL, requestStatus } from '../../data/banLamViecData'
 import OverviewTab from './components/OverviewTab'
 import DonTuTab from './components/DonTuTab'
 import AddTaskModal from './components/AddTaskModal'
 import DonTuModal from './components/DonTuModal'
 import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
+import Icon from '../../components/ui/Icon'
 
 export default function BanLamViec() {
   const { theme, toggleTheme } = useTheme()
@@ -19,6 +20,10 @@ export default function BanLamViec() {
   // Loại đơn đang chọn được giữ lại sau khi đóng modal (giống currentDonTuType)
   const [donTuType, setDonTuType] = useState(null)
   const [donTuOpen, setDonTuOpen] = useState(false)
+  const [openRequestId, setOpenRequestId] = useState(null)
+
+  const [editing, setEditing] = useState(false)
+  const [resetSignal, setResetSignal] = useState(0)
 
   const [aiOpen, setAiOpen] = useState(false)
   const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
@@ -32,12 +37,22 @@ export default function BanLamViec() {
     setTasks(prev => [{ id: ++seq.current, done: false, ...data }, ...prev])
   }
   function addRequest(data) {
-    setRequests(prev => [{ id: ++seq.current, ...data }, ...prev])
+    const id = ++seq.current
+    setRequests(prev => [{ id, ...data }, ...prev])
+    // Gửi xong → mở luôn trang chi tiết đơn để thấy luồng duyệt
+    setTab('dontu')
+    setOpenRequestId(id)
+  }
+  function cancelRequest(id) {
+    setRequests(prev => prev.map(r => (r.id === id ? { ...r, cancelled: true } : r)))
   }
   function pickDonTuType(type) {
     setDonTuType(type)
     setDonTuOpen(true)
   }
+
+  const openTasks = tasks.filter(t => !t.done).length
+  const pendingRequests = requests.filter(r => requestStatus(r) === 'pending').length
 
   const panel = key => `blv-panel${tab === key ? ' active' : ''}`
 
@@ -61,19 +76,47 @@ export default function BanLamViec() {
       </div>
 
       <div className="blv-body">
-
-        {/* Tab con: Tổng quan / Đơn từ */}
-        <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-          <button className={`blv-tab${tab === 'tongquan' ? ' active' : ''}`} onClick={() => setTab('tongquan')}>Tổng quan</button>
-          <button className={`blv-tab${tab === 'dontu' ? ' active' : ''}`} onClick={() => setTab('dontu')}>Đơn từ</button>
+        {/* Lời chào + chuyển tab + hành động */}
+        <div className="blv-hero">
+          <div className="blv-hero-text">
+            <h2>Chào buổi sáng, {ME.name}</h2>
+            <p>{TODAY_LABEL} · Bạn còn <b>{openTasks} việc</b> cần làm{pendingRequests ? <> và <b>{pendingRequests} đơn</b> đang chờ duyệt</> : null}</p>
+          </div>
+          <div className="blv-hero-actions">
+            <div className="blv-tabs" role="tablist">
+              <button role="tab" aria-selected={tab === 'tongquan'} className={tab === 'tongquan' ? 'active' : ''} onClick={() => setTab('tongquan')}>Tổng quan</button>
+              <button role="tab" aria-selected={tab === 'dontu'} className={tab === 'dontu' ? 'active' : ''} onClick={() => { setTab('dontu'); setEditing(false); setOpenRequestId(null) }}>
+                Đơn từ{pendingRequests > 0 && <span className="blv-tab-badge">{pendingRequests}</span>}
+              </button>
+            </div>
+            {tab === 'tongquan' && (editing ? (
+              <>
+                <button className="blv-btn ghost" onClick={() => setResetSignal(n => n + 1)}>Đặt lại</button>
+                <button className="blv-btn" onClick={() => setEditing(false)}><Icon name="check" size={14} stroke={2.6} />Xong</button>
+              </>
+            ) : (
+              <button className="blv-btn ghost" onClick={() => setEditing(true)} title="Kéo thả, đổi kích thước các widget"><Icon name="grid" size={14} />Tùy chỉnh bố cục</button>
+            ))}
+          </div>
         </div>
 
-        {/* Các tab luôn được mount (ẩn bằng class .active) để giữ vị trí cuộn, giống bản HTML */}
-        <div className={panel('tongquan')} style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-          <OverviewTab tasks={tasks} onToggleTask={toggleTask} onAddTask={() => setTaskModalOpen(true)} />
+        {editing && tab === 'tongquan' && (
+          <div className="blv-edit-hint">
+            <Icon name="grid" size={14} />
+            Kéo widget để đổi chỗ · kéo các tay nắm ở mép/góc để đổi kích thước · nhấp đúp tay nắm để về kích thước mặc định
+          </div>
+        )}
+
+        {/* Các tab luôn được mount (ẩn bằng class .active) để giữ vị trí cuộn */}
+        <div className={panel('tongquan')}>
+          <OverviewTab
+            tasks={tasks} onToggleTask={toggleTask} onAddTask={() => setTaskModalOpen(true)}
+            onRequestLeave={() => { setTab('dontu'); pickDonTuType('xinphep') }}
+            editing={editing} resetSignal={resetSignal}
+          />
         </div>
-        <div className={panel('dontu')} style={{ overflowY: 'auto', overflowX: 'hidden', gap: 16 }}>
-          <DonTuTab requests={requests} onPickType={pickDonTuType} />
+        <div className={panel('dontu')}>
+          <DonTuTab requests={requests} onPickType={pickDonTuType} onCancelRequest={cancelRequest} openId={openRequestId} onOpen={setOpenRequestId} />
         </div>
       </div>
 
