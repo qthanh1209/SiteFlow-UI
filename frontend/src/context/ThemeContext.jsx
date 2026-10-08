@@ -58,11 +58,11 @@ export function ThemeProvider({ children }) {
     root.setAttribute('data-accent', c.accent || 'blue')
     root.setAttribute('data-density', c.density || 'comfortable')
     root.setAttribute('data-sidebar-pos', c.sidebarPos || 'left')
-    /* Cỡ chữ tự chỉnh (fontSize = 'custom'): fontScale là phần trăm, gán thẳng vào --fs (hệ số nhân cỡ chữ) */
+    /* Cỡ chữ tự chỉnh (fontSize = 'custom'): fontScale là phần trăm, gán thẳng vào --fs-user (mức cỡ chữ người dùng chọn) */
     const scale = c.fontSize === 'custom' ? Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Number(c.fontScale) || 100)) : null
     root.setAttribute('data-fontsize', scale ? 'custom' : (c.fontSize || 'medium'))
-    if (scale) root.style.setProperty('--fs', String(scale / 100))
-    else root.style.removeProperty('--fs')
+    if (scale) root.style.setProperty('--fs-user', String(scale / 100))
+    else root.style.removeProperty('--fs-user')
     /* Nền hệ thống + độ đậm của nền (global: liquid-glass.css đọc data-wallpaper và --wp-strength) */
     root.setAttribute('data-wallpaper', c.wallpaper || 'none')
     if (c.wallpaperStrength) root.style.setProperty('--wp-strength', String(c.wallpaperStrength / 100))

@@ -82,6 +82,9 @@ html[data-theme="dark"][data-accent="teal"] .qs-page{--primary:#3FC2B6; --primar
 .qs-scroll.qs-scroll-dash{padding:8px 10px 10px;}
 /* Thu nhỏ toàn bộ nội dung trang QS: trình duyệt ở 100% hiển thị như khi thu nhỏ còn 75% (đổi --qs-zoom để chỉnh) */
 .qs-topbar, .qs-scroll{zoom:var(--qs-zoom, .75);}
+/* Vùng này bị thu nhỏ còn 75% nên chữ cũng nhỏ theo: nhân bù cỡ chữ (--qs-text) để chữ trong QS gần bằng các trang khác
+   và vẫn đổi theo Cài đặt ▸ Giao diện ▸ Cỡ chữ (--fs-user) */
+.qs-topbar, .qs-scroll{--fs:calc(var(--fs-user, 1) * var(--qs-text, 1.25));}
 
 /* ---------- Thành phần dùng chung ---------- */
 .qs-card{background:var(--surface); border:1px solid var(--border); border-radius:14px;}
@@ -120,7 +123,7 @@ html[data-theme="dark"][data-accent="teal"] .qs-page{--primary:#3FC2B6; --primar
 .qs-dash-banner-pill{padding:0 7px; border-radius:5px; background:rgba(255,255,255,.15); color:rgba(255,255,255,.9); font-size:10.5px; font-weight:500;}
 
 .qs-dash-kpi-grid{flex:none; display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:10px;}
-.qs-dash-kpi{height:68px; border-radius:12px; padding:0 13px; display:flex; align-items:center; gap:14px;}
+.qs-dash-kpi{min-height:68px; border-radius:12px; padding:4px 13px; display:flex; align-items:center; gap:14px;}
 .qs-dash-kpi-icon{width:40px; height:40px; flex:none; border-radius:10px; display:flex; align-items:center; justify-content:center;}
 .qs-dash-kpi-icon.blue{background:var(--dash-accent-tint); color:var(--dash-accent);}
 .qs-dash-kpi-icon.gray{background:var(--surface-alt); color:var(--text-muted);}
@@ -176,7 +179,7 @@ html[data-theme="dark"][data-accent="teal"] .qs-page{--primary:#3FC2B6; --primar
 .qs-dash-bar{height:5px; border-radius:3px; background:var(--surface-alt);}
 .qs-dash-bar > div{height:100%; border-radius:3px; background:linear-gradient(90deg, var(--dash-bar), var(--dash-bar-2)); transition:width .2s ease;}
 .qs-dash-quick{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:14px 16px 12px;}
-.qs-dash-quick-item{height:77px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:14px; font-weight:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer;}
+.qs-dash-quick-item{min-height:77px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:14px; font-weight:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer;}
 .qs-dash-quick-item:hover{border-color:var(--dash-accent-border); background:var(--dash-accent-tint);}
 
 @media (max-width:1500px){
@@ -524,7 +527,7 @@ input.qs-bd-formula-value:focus{background:var(--dash-accent-tint);}
 .qs-ct-overview{flex:none; border-radius:10px; padding:6px 11px 9px;}
 .qs-ct-overview-head{height:30px; display:flex; align-items:center; justify-content:space-between;}
 .qs-ct-tiles{display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)) minmax(0, 1.6fr); gap:10px; margin-top:4px;}
-.qs-ct-tile{height:72px; padding:8px 12px; border-radius:9px; border:1px solid var(--border); display:flex; flex-direction:column; gap:3px; min-width:0;}
+.qs-ct-tile{min-height:72px; padding:8px 12px; border-radius:9px; border:1px solid var(--border); display:flex; flex-direction:column; gap:3px; min-width:0;}
 .qs-ct-tile > span{font-size:11.5px; color:var(--text-muted);}
 .qs-ct-tile b{font-size:16px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .qs-ct-tile b.profit{color:#EA580C;}
@@ -878,7 +881,7 @@ html[data-theme="dark"] .qs-po-send{background:var(--dash-accent);}
 .qs-po-empty{padding:28px; border-radius:10px; text-align:center; color:var(--text-muted); font-size:13px;}
 
 .qs-po-box{border-radius:10px;}
-.qs-po-box-head{height:34px; padding:0 10px 0 13px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); font-size:13.5px;}
+.qs-po-box-head{min-height:34px; padding:3px 10px 3px 13px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); font-size:13.5px;}
 .qs-po-fold{width:20px; height:20px; padding:0; border-radius:5px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer;}
 .qs-po-sum-list{padding:10px 14px 8px;}
 .qs-po-sum-row{display:flex; align-items:center; gap:10px; padding:5px 4px; font-size:12px;}

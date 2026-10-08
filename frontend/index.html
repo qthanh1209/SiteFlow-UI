@@ -24,7 +24,7 @@
           /* Cỡ chữ tự chỉnh + nền hệ thống: lặp lại logic của ThemeContext để không bị giật khi tải trang */
           var scale = c.fontSize === 'custom' ? Math.min(130, Math.max(10, Number(c.fontScale) || 100)) : 0;
           document.documentElement.setAttribute('data-fontsize', scale ? 'custom' : (c.fontSize || 'medium'));
-          if (scale) document.documentElement.style.setProperty('--fs', String(scale / 100));
+          if (scale) document.documentElement.style.setProperty('--fs-user', String(scale / 100));
           document.documentElement.setAttribute('data-wallpaper', c.wallpaper || 'none');
           if (c.wallpaperStrength) document.documentElement.style.setProperty('--wp-strength', String(c.wallpaperStrength / 100));
           document.documentElement.setAttribute('data-motion', c.motion === 'off' ? 'off' : 'on');

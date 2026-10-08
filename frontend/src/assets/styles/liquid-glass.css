@@ -12,7 +12,7 @@ html[data-ui-theme="glass"] {
 html[data-theme="light"][data-ui-theme="glass"] {
   --glass-surface: rgba(255,255,255,.55);
   --glass-surface-strong: rgba(255,255,255,.72);
-  --glass-sidebar: linear-gradient(165deg, rgba(28,32,44,.82), rgba(18,22,31,.90));
+  --glass-sidebar: linear-gradient(165deg, rgba(255,255,255,.80), rgba(244,246,251,.88));
   --glass-border: rgba(255,255,255,.55);
   --glass-border-soft: rgba(255,255,255,.32);
   --glass-specular: rgba(255,255,255,.85);
@@ -322,7 +322,7 @@ html[data-theme="dark"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"
 /* Thẻ nổi (rule phía trên) cũng theo mức trong suốt đã chọn */
 html[data-theme="light"][data-ui-theme="glass"]{ --glass-surface: rgba(255,255,255, var(--gl-a)); --glass-surface-strong: rgba(255,255,255, calc(var(--gl-a) + .16)); }
 html[data-theme="dark"][data-ui-theme="glass"]{ --glass-surface: rgba(34,38,50, var(--gl-a)); --glass-surface-strong: rgba(34,38,50, calc(var(--gl-a) + .16)); }
-html[data-theme="light"][data-ui-theme="super-glass"]{ --sg-surface: rgba(255,255,255, calc(var(--gl-a) * .5)); --sg-surface-strong: rgba(255,255,255, calc(var(--gl-a) * .8)); --sg-sidebar: rgba(16,20,30,.86); }
+html[data-theme="light"][data-ui-theme="super-glass"]{ --sg-surface: rgba(255,255,255, calc(var(--gl-a) * .5)); --sg-surface-strong: rgba(255,255,255, calc(var(--gl-a) * .8)); --sg-sidebar: rgba(255,255,255,.72); }
 html[data-theme="dark"][data-ui-theme="super-glass"]{ --sg-surface: rgba(15,23,42, calc(var(--gl-a) * .6)); --sg-surface-strong: rgba(15,23,42, calc(var(--gl-a) * .95)); }
 
 /* 3) Lớp nổi viết bằng class (popover, modal, menu, ngăn kéo, khung Dezbot): thêm làm mờ nền để chữ không lẫn với nội dung phía sau */
@@ -379,11 +379,13 @@ html[data-wallpaper]:not([data-wallpaper="none"]) .app-shell{ background: transp
 html[data-wallpaper]:not([data-wallpaper="none"]) .app-shell > div > [class*="-page"]{ background: transparent !important; }
 /* Super Liquid Glass: tắt lớp quầng màu động để nền đã chọn là lớp sau cùng */
 html[data-wallpaper]:not([data-wallpaper="none"])[data-ui-theme="super-glass"] body::before{ display: none; }
-/* Sidebar tô màu tối cố định (#12161F) nên mặc định che mất nền: khi bật nền hệ thống thì chuyển thành
-   kính tối trong mờ để màu nền xuyên qua, chữ sáng của sidebar vẫn đủ tương phản */
+/* Sidebar mặc định tô nền đặc nên che mất nền hệ thống: khi bật nền thì chuyển thành kính trong mờ
+   để màu nền xuyên qua */
 html[data-wallpaper]:not([data-wallpaper="none"]) :is(.app-sidebar, .sidebar-flyout){
-  background: rgba(14,17,28,.56) !important;
-  -webkit-backdrop-filter: blur(26px) saturate(170%); backdrop-filter: blur(26px) saturate(170%);
-  border-right: 1px solid rgba(255,255,255,.14);
+  background: var(--sb-wall) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%);
+  border-right: 1px solid var(--sb-wall-border);
 }
-html[data-wallpaper]:not([data-wallpaper="none"]) :is(.app-sidebar, .sidebar-flyout) .sidebar-nav-item:not(.active){ color: #DDE2EE; }
+/* Kính sáng ở chế độ sáng, kính tối ở chế độ tối; chữ đậm hơn một bậc vì nền sidebar lúc này có màu */
+html[data-theme="light"][data-wallpaper]:not([data-wallpaper="none"]){ --sb-wall: rgba(255,255,255,.66); --sb-wall-border: rgba(255,255,255,.6); --sb-text: #2F3644; --sb-muted: #4B5563; }
+html[data-theme="dark"][data-wallpaper]:not([data-wallpaper="none"]){ --sb-wall: rgba(14,17,28,.56); --sb-wall-border: rgba(255,255,255,.14); --sb-text: #DDE2EE; --sb-muted: #A9B1C4; }

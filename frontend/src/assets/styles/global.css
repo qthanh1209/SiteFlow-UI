@@ -128,12 +128,13 @@ html[data-theme="dark"][data-accent="custom"] body [class*="-page"] {
 /* ===== Density & Font Size =====
    Mật độ: thu nhỏ cả giao diện bằng zoom.
    Cỡ chữ: chỉ phóng chữ — mọi font-size trong app được nhân với --fs lúc build (xem vite.config.js). */
-html { --z-density: 1; --fs: 1; zoom: var(--z-density); }
+html { --z-density: 1; --fs-user: 1; --fs: var(--fs-user); zoom: var(--z-density); }
 html[data-density="compact"]  { --z-density: 0.88; }
-html[data-fontsize="small"]   { --fs: 0.92; }
-html[data-fontsize="large"]   { --fs: 1.12; }
-html[data-fontsize="xlarge"]  { --fs: 1.24; }
-/* data-fontsize="custom": ThemeContext gán --fs trực tiếp lên <html> */
+html[data-fontsize="small"]   { --fs-user: 0.92; }
+html[data-fontsize="large"]   { --fs-user: 1.12; }
+html[data-fontsize="xlarge"]  { --fs-user: 1.24; }
+/* --fs-user là mức người dùng chọn (data-fontsize="custom": ThemeContext gán trực tiếp lên <html>);
+   --fs là hệ số thực dùng, một vùng có thể nhân thêm hệ số riêng (vd. trang QS bù lại mức thu nhỏ của nó) */
 html[data-density="compact"] .app-shell {
   width: calc(100vw / var(--z-density)) !important;
   height: calc(100vh / var(--z-density)) !important;
@@ -201,8 +202,21 @@ a:hover { color: #1F4585; }
   font-size: 14px;
 }
 
-/* ===== Sidebar ===== */
-.app-sidebar { transition: width 0.18s ease; }
+/* ===== Sidebar =====
+   Bảng màu của sidebar (Sidebar.jsx dùng các biến --sb-*): tối ở chế độ tối, sáng ở chế độ sáng. */
+html {
+  --sb-bg: #12161F; --sb-text: #AEB4C2; --sb-strong: #FFFFFF; --sb-muted: #7C8399;
+  --sb-border: #262B37; --sb-hover: rgba(255,255,255,.05); --sb-chip: #2A3040; --sb-btn-bg: rgba(255,255,255,.06);
+  --sb-active-bg: rgba(47,93,168,.38); --sb-active-text: #FFFFFF;
+}
+html[data-theme="light"] {
+  --sb-bg: #FFFFFF; --sb-text: #4B5563; --sb-strong: #161A22; --sb-muted: #6B7280;
+  --sb-border: #E2E5EC; --sb-hover: rgba(15,23,42,.05); --sb-chip: #E6EAF2; --sb-btn-bg: rgba(15,23,42,.04);
+  --sb-active-bg: var(--primary-tint); --sb-active-text: color-mix(in srgb, var(--primary) 62%, #161A22); /* pha tối để màu chủ đạo nhạt vẫn đọc được */
+}
+/* Đường kẻ ngăn sidebar với nội dung (vẽ bằng bóng trong để không hiện khi sidebar thu về 0px) */
+.app-sidebar { transition: width 0.18s ease, background 0.15s ease, color 0.15s ease; box-shadow: inset -1px 0 0 var(--sb-border); }
+html[data-sidebar-pos="right"] .app-sidebar { box-shadow: inset 1px 0 0 var(--sb-border); }
 .app-sidebar a { position: relative; }
 .app-sidebar.collapsed { width: 76px !important; }
 .app-sidebar.collapsed .brand { flex-direction: column !important; gap: 8px !important; }
@@ -220,7 +234,7 @@ a:hover { color: #1F4585; }
   height: 8px;
   border-radius: 50%;
   background: var(--danger);
-  border: 1.5px solid #12161F;
+  border: 1.5px solid var(--sb-bg);
 }
 .app-sidebar.collapsed .navbadge-dot { display: block; }
 .app-sidebar.collapsed .who { justify-content: center !important; padding-left: 0 !important; }
@@ -254,17 +268,70 @@ a:hover { color: #1F4585; }
   box-shadow: 8px 0 24px rgba(0,0,0,.35);
   display: none; overflow-y: auto;
 }
-/* Thu gọn tối đa (React): cụm logo + nút mở rộng nổi trong lề trang, menu bung ra ngay cạnh */
-.sidebar-float {
-  position: fixed; top: 8px; left: 2px; z-index: 90;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+/* Thu gọn tối đa (React, SidebarDock.jsx): sidebar rộng 0px, còn một nút tròn nổi kéo đi được.
+   Rê chuột: nở thành thanh hiện trang đang mở + nút thao tác. Bấm: bung menu ở mép màn hình. */
+.sidebar-dock {
+  position: fixed; z-index: 210; display: flex; align-items: center; gap: 10px;
+  padding: 4px; border-radius: 30px; user-select: none;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
 }
-.sidebar-flyout { left: 30px; }
-/* Trang có lề trái hẹp hơn 28px: đẩy tiêu đề sang phải một chút để không bị cụm nổi che */
-html[data-sidebar-level="logo"]:not([data-sidebar-pos="right"]) .app-topbar { padding-left: 32px !important; }
-html[data-sidebar-level="logo"]:not([data-sidebar-pos="right"]) .ch-conv-head .ch-row1 { padding-left: 16px; }
-html[data-sidebar-pos="right"] .sidebar-float { left: auto; right: 2px; }
-html[data-sidebar-pos="right"] .sidebar-flyout { left: auto; right: 30px; box-shadow: -8px 0 24px rgba(0,0,0,.35) !important; }
+.sidebar-dock.left { flex-direction: row-reverse; }
+.sidebar-dock-logo {
+  width: 44px; height: 44px; flex: none; padding: 0; position: relative; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.22); background: var(--primary, #2F5DA8); color: #fff;
+  font-family: inherit; font-size: 13px; font-weight: 800; letter-spacing: .02em;
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab; touch-action: none; box-shadow: 0 6px 18px rgba(0,0,0,.30);
+}
+.sidebar-dock-logo::after {
+  content: ''; position: absolute; left: 0; bottom: 0; width: 9px; height: 9px; border-radius: 50%;
+  background: #22C55E; border: 2px solid #12161F;
+}
+.sidebar-dock.dragging .sidebar-dock-logo { cursor: grabbing; }
+.sidebar-dock-pill { display: none; align-items: center; gap: 10px; padding: 0 6px 0 2px; color: #fff; white-space: nowrap; }
+.sidebar-dock.left .sidebar-dock-pill { padding: 0 2px 0 6px; }
+.sidebar-dock:hover:not(.dragging):not(.menu-open):not(.pill-off) {
+  background: rgba(38,42,52,.95); box-shadow: 0 10px 28px rgba(0,0,0,.32);
+}
+.sidebar-dock:hover:not(.dragging):not(.menu-open):not(.pill-off) .sidebar-dock-logo { box-shadow: none; }
+.sidebar-dock:hover:not(.dragging):not(.menu-open):not(.pill-off) .sidebar-dock-pill { display: flex; }
+.sidebar-dock-page { width: 32px; height: 32px; flex: none; border-radius: 9px; background: rgba(255,255,255,.10); display: flex; align-items: center; justify-content: center; }
+.sidebar-dock-title { display: flex; flex-direction: column; line-height: 1.25; margin-right: 6px; }
+.sidebar-dock-title b { font-size: 13px; font-weight: 700; }
+.sidebar-dock-title small { font-size: 11px; color: rgba(255,255,255,.62); }
+.sidebar-dock-act {
+  width: 30px; height: 30px; flex: none; padding: 0; border: none; border-radius: 50%; background: none;
+  color: rgba(255,255,255,.78); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.sidebar-dock-act:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+/* Menu bung ra khi bấm nút tròn */
+.sidebar-menu {
+  position: fixed; top: 0; height: 100vh; width: 280px; z-index: 200;
+  display: flex; flex-direction: column; padding: 14px 12px 12px;
+  background: var(--sb-bg); color: var(--sb-text); box-shadow: 8px 0 24px rgba(0,0,0,.35);
+}
+.sidebar-menu-search {
+  height: 42px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 14px;
+  border-radius: 14px; border: 1px solid var(--sb-border); background: var(--sb-btn-bg); color: var(--sb-muted);
+}
+.sidebar-menu-search input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--sb-strong); font-size: 13.5px; font-family: inherit; }
+.sidebar-menu-search button { width: 30px; height: 30px; flex: none; padding: 0; border: none; border-radius: 9px; background: none; color: var(--sb-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.sidebar-menu-search button:hover { background: var(--sb-hover); color: var(--sb-strong); }
+.sidebar-menu nav { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.sidebar-menu-label { font-size: 11.5px; color: var(--sb-muted); padding: 12px 12px 6px; }
+.sidebar-menu .sidebar-nav-item { padding: 11px 12px; gap: 13px; font-size: 14px; border-left: none; border-radius: 12px; }
+.sidebar-menu-badge { flex: none; min-width: 18px; text-align: center; padding: 1px 6px; border-radius: 20px; background: var(--danger, #ff4d4f); color: #fff; font-size: 10px; font-weight: 700; }
+.sidebar-menu-empty { padding: 18px 12px; font-size: 12.5px; color: var(--sb-muted); }
+.sidebar-menu-user { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 6px 0; margin-top: 8px; border-top: 1px solid var(--sb-border); }
+.sidebar-menu-user > span { width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--sb-chip); color: var(--sb-strong); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12.5px; }
+.sidebar-menu-user b { display: block; font-size: 13px; font-weight: 600; color: var(--sb-strong); }
+.sidebar-menu-user small { font-size: 11.5px; color: var(--sb-muted); }
+.sidebar-flyout { left: 0; }
+html[data-sidebar-pos="right"] .sidebar-flyout { left: auto; right: 0; box-shadow: -8px 0 24px rgba(0,0,0,.35) !important; }
+/* Chế độ sáng: bóng của menu bung nhẹ hơn */
+html[data-theme="light"] .sidebar-flyout { box-shadow: 8px 0 24px rgba(15,23,42,.14) !important; }
+html[data-theme="light"][data-sidebar-pos="right"] .sidebar-flyout { box-shadow: -8px 0 24px rgba(15,23,42,.14) !important; }
 html[data-sidebar-pos="right"] .sidebar-flyout-clone {
   left: auto !important; right: 60px !important;
   box-shadow: -8px 0 24px rgba(0,0,0,.35) !important;
