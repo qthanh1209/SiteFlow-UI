@@ -50,16 +50,16 @@ html[data-theme="dark"][data-accent="teal"] .tc-page{--primary:#3FC2B6; --primar
 .tc-page .mono{font-family:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;}
 
 /* ---------- Header + thanh danh mục ---------- */
-.tc-header{height:64px; flex:none; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 28px; background:var(--surface); gap:6px;}
+.tc-header{height:64px; flex:none; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 var(--page-gutter); background:var(--surface); gap:6px;}
 .tc-crumb{color:var(--text-muted); font-size:13px;}
 .tc-crumb-current{font-size:13px; font-weight:600;}
 .tc-theme-toggle{width:34px; height:34px; border-radius:9px; border:1px solid var(--border); background:var(--surface-alt); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer;}
 
-.tc-cat-row{height:52px; flex:none; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 28px; background:var(--surface); gap:4px;}
+.tc-cat-row{height:52px; flex:none; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 var(--page-gutter); background:var(--surface); gap:4px;}
 .tc-cat{padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; color:var(--text-muted); cursor:pointer;}
 .tc-cat.active{color:var(--finance); background:var(--finance-tint);}
 
-.tc-scroll{flex:1; padding:22px 28px; overflow-y:auto; overflow-x:hidden;}
+.tc-scroll{flex:1; padding:var(--page-gutter); overflow-y:auto; overflow-x:hidden;}
 
 /* ---------- Thanh lọc ---------- */
 .tc-filter-bar{display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap;}

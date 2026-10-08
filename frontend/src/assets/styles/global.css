@@ -191,6 +191,9 @@ a:hover { color: #1F4585; }
 ::-webkit-scrollbar-thumb { background: transparent; border-radius: 10px; transition: background 0.2s ease; }
 *:hover::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
 
+/* Lề trái/phải của nội dung mỗi trang (tiêu đề, hàng tab, vùng cuộn). Đổi một chỗ là mọi trang đổi theo. */
+html { --page-gutter: 10px; }
+
 /* ===== App Shell ===== */
 .app-shell {
   width: 100%;
@@ -217,6 +220,9 @@ html[data-theme="light"] {
 /* Đường kẻ ngăn sidebar với nội dung (vẽ bằng bóng trong để không hiện khi sidebar thu về 0px) */
 .app-sidebar { transition: width 0.18s ease, background 0.15s ease, color 0.15s ease; box-shadow: inset -1px 0 0 var(--sb-border); }
 html[data-sidebar-pos="right"] .app-sidebar { box-shadow: inset 1px 0 0 var(--sb-border); }
+/* Menu của sidebar vẫn cuộn được khi màn hình thấp hoặc chữ to, nhưng không hiện thanh cuộn (thanh cuộn chiếm mất một dải bên phải menu) */
+:is(.app-sidebar, .sidebar-menu) nav { scrollbar-width: none; }
+:is(.app-sidebar, .sidebar-menu) nav::-webkit-scrollbar { display: none; }
 .app-sidebar a { position: relative; }
 .app-sidebar.collapsed { width: 76px !important; }
 .app-sidebar.collapsed .brand { flex-direction: column !important; gap: 8px !important; }

@@ -12,7 +12,7 @@ export default function Topbar({ title, subtitle, icon, children }) {
     <div className="app-topbar" style={{
       height: 64, borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center',
-      padding: '0 24px', gap: 14,
+      padding: '0 var(--page-gutter)', gap: 14,
       flex: 'none', background: 'var(--surface)',
     }}>
 

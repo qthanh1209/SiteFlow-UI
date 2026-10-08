@@ -78,7 +78,7 @@ html[data-theme="dark"][data-accent="teal"] .qs-page{--primary:#3FC2B6; --primar
 .qs-top-btn.primary:hover{filter:brightness(1.08);}
 .qs-top-btn.icon{width:32px; padding:0; justify-content:center; position:relative;}
 .qs-top-badge{position:absolute; top:-6px; right:-6px; min-width:16px; height:16px; padding:0 3px; border-radius:8px; background:#EF4444; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; border:2px solid var(--surface);}
-.qs-scroll{flex:1; padding:22px 28px; overflow-y:auto; overflow-x:hidden;}
+.qs-scroll{flex:1; padding:var(--page-gutter); overflow-y:auto; overflow-x:hidden;}
 .qs-scroll.qs-scroll-dash{padding:8px 10px 10px;}
 /* Thu nhỏ toàn bộ nội dung trang QS: trình duyệt ở 100% hiển thị như khi thu nhỏ còn 75% (đổi --qs-zoom để chỉnh) */
 .qs-topbar, .qs-scroll{zoom:var(--qs-zoom, .75);}

@@ -37,7 +37,7 @@ export default function CaiDat() {
       style={{ '--ai-panel-width': `${aiWidth}px` }}
     >
       {/* Header — giữ style inline như HTML để theme Liquid Glass (div[style*="height: 64px"]) vẫn áp dụng */}
-      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
+      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--primary-tint)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
         </div>
@@ -51,7 +51,7 @@ export default function CaiDat() {
         </button>
       </div>
 
-      <div style={{ flex: 1, minWidth: 0, padding: '22px 28px', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden', display: 'flex', gap: 24 }}>
+      <div style={{ flex: 1, minWidth: 0, padding: 'var(--page-gutter)', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden', display: 'flex', gap: 24 }}>
         {/* Menu cài đặt bên trái */}
         <div style={{ width: 190, flex: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {TABS.map(t => (

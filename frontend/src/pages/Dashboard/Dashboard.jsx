@@ -14,9 +14,14 @@ export default function Dashboard() {
 
   return (
     <div className="db-page">
-      {/* Topbar riêng của Newsfeed (cao 72px, có ô tìm kiếm, chuông, đổi giao diện, avatar) */}
+      {/* Topbar riêng của Newsfeed (cao 56px, có hai tab chính, ô tìm kiếm, chuông, đổi giao diện, avatar) */}
       <div className="db-topbar">
-        <div />
+        {/* Hai tab chính nằm ngay trên thanh đầu trang (bên trái vốn để trống) để nội dung không bị đẩy xuống */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {NF_TABS.map(t => (
+            <button key={t.key} type="button" className={`db-newsfeed-tab${activeTab === t.key ? ' active' : ''}`} onClick={() => setActiveTab(t.key)}>{t.label}</button>
+          ))}
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div className="db-search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
@@ -37,11 +42,6 @@ export default function Dashboard() {
 
       <div className="db-content">
         <div className="db-feed-col">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {NF_TABS.map(t => (
-              <button key={t.key} type="button" className={`db-newsfeed-tab${activeTab === t.key ? ' active' : ''}`} onClick={() => setActiveTab(t.key)}>{t.label}</button>
-            ))}
-          </div>
           {/* Hai tab luôn được mount, ẩn/hiện bằng display như bản HTML */}
           <NewsTab active={activeTab === 'tintuc'} filter={filter} onFilter={setFilter} />
           <RankTab active={activeTab === 'nhiemvu'} period={rankPeriod} onPeriod={setRankPeriod} />

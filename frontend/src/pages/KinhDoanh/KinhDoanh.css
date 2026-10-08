@@ -93,7 +93,7 @@ html[data-theme="dark"][data-accent="teal"] .kd-page{--primary:#3FC2B6; --primar
 .kd-grid-item:hover .kd-resize-handle{opacity:1;}
 
 /* Phần dưới đây tương đương gridstack.min.css (column 12, cellHeight 56, margin 8, animate) */
-.kd-grid-stack{position:relative; background:none; transition:left .3s, top .3s, height .3s, width .3s;}
+.kd-grid-stack{position:relative; margin:0 -8px; background:none; transition:left .3s, top .3s, height .3s, width .3s;}
 .kd-grid-item{position:absolute; padding:0; transition:left .3s, top .3s, height .3s, width .3s;}
 .kd-grid-item.kd-grid-placeholder, .kd-grid-item.dragging, .kd-grid-item.resizing{transition:left 0s, top 0s, height 0s, width 0s;}
 .kd-grid-item-content{margin:0; position:absolute; top:8px; right:8px; bottom:8px; left:8px; width:auto; background:transparent; overflow:visible;}

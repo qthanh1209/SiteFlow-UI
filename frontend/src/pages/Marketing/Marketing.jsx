@@ -181,7 +181,7 @@ export default function Marketing() {
       style={{ '--ai-panel-width': `${aiWidth}px` }}
     >
       {/* ---------- Header ---------- */}
-      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
+      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--marketing-tint)', color: 'var(--marketing)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
         </div>
@@ -200,7 +200,7 @@ export default function Marketing() {
       </div>
 
       {/* ---------- Thanh tab ---------- */}
-      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
+      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
         <div className={`mk-tab-list${editingTabs ? ' editing' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0, overflowX: 'auto' }}>
           {tabs.map(t => (
             <button
@@ -234,7 +234,7 @@ export default function Marketing() {
       </div>
 
       {/* ---------- Các panel (đều giữ mount, bật/tắt bằng display như bản HTML) ---------- */}
-      <div style={{ flex: 1, padding: '22px 28px', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div style={{ flex: 1, padding: 'var(--page-gutter)', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
         <CampaignsTab visible={panel === 'campaigns'} catalog={catalog} campaigns={campaigns} onOpenDetail={openCampaignDetail} />
         <CampaignDetail visible={panel === 'campaignDetail'} catalog={catalog} camp={detailCamp} onBack={() => goToTab('campaigns')} onViewQuote={viewQuoteFromDetail} />
         <CatalogTab visible={panel === 'catalog'} catalog={catalog} onAddItem={addCatalogItem} />

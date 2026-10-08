@@ -169,7 +169,7 @@ export default function KinhDoanh() {
       style={{ '--ai-panel-width': `${aiWidth}px` }}
     >
       {/* ---------- Header ---------- */}
-      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
+      <div style={{ height: 64, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 12 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--sales-tint)', color: 'var(--sales)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
         </div>
@@ -188,14 +188,14 @@ export default function KinhDoanh() {
       </div>
 
       {/* ---------- Thanh tab ---------- */}
-      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 28px', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
+      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
         {SALES_TABS.map(([key, label]) => (
           <button key={key} className={`kd-sales-tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>{label}</button>
         ))}
       </div>
 
       {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái đang chọn, giống bản HTML */}
-      <div ref={scrollRef} style={{ flex: 1, padding: '22px 28px', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div ref={scrollRef} style={{ flex: 1, padding: 'var(--page-gutter)', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
 
         {/* ================= TAB: TỔNG QUAN ================= */}
         <div style={panel('overview', 16)}>
