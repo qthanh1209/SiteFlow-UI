@@ -22,11 +22,21 @@ export const FONTS = [
   { font: 'Arial, sans-serif', preview: 'Arial, sans-serif', label: 'Arial', note: 'Font hệ thống' },
 ]
 
+/* percent: mức phóng tương ứng trên thanh chỉnh cỡ chữ */
 export const FONT_SIZES = [
-  { key: 'small', previewSize: 13, label: 'Nhỏ', note: '92%' },
-  { key: 'medium', previewSize: 17, label: 'Vừa', note: '100%' },
-  { key: 'large', previewSize: 21, label: 'Lớn', note: '112%' },
-  { key: 'xlarge', previewSize: 25, label: 'Rất lớn', note: '124%' },
+  { key: 'small', previewSize: 13, label: 'Nhỏ', note: '92%', percent: 92 },
+  { key: 'medium', previewSize: 17, label: 'Vừa', note: '100%', percent: 100 },
+  { key: 'large', previewSize: 21, label: 'Lớn', note: '112%', percent: 112 },
+  { key: 'xlarge', previewSize: 25, label: 'Rất lớn', note: '124%', percent: 124 },
+]
+
+/* Nền hệ thống: key khớp với html[data-wallpaper="..."] trong liquid-glass.css; preview dùng cho thẻ xem trước */
+export const WALLPAPERS = [
+  { key: 'none', label: 'Không dùng', sub: 'Nền một màu theo chế độ sáng/tối', preview: 'var(--bg)' },
+  {
+    key: 'ios26', label: 'iOS 26 Liquid', sub: 'Xanh dương, tím, hồng san hô',
+    preview: 'radial-gradient(60% 55% at 0% 0%, #A9CDEF 0%, transparent 60%), radial-gradient(55% 70% at 0% 78%, #2458C9 0%, transparent 65%), radial-gradient(60% 60% at 55% 4%, #8E4DEB 0%, transparent 65%), radial-gradient(50% 55% at 100% 18%, #B257E0 0%, transparent 60%), radial-gradient(55% 60% at 100% 100%, #F78F96 0%, transparent 62%), linear-gradient(120deg, #4C6FDC 0%, #7C4EDB 50%, #D873B4 100%)',
+  },
 ]
 
 /* Màu gợi ý thêm — áp dụng qua cơ chế "màu tự chọn" (accent = 'custom') */

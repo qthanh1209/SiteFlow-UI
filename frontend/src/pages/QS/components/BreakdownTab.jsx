@@ -1,70 +1,210 @@
-import { ROOM_NAV, ROOM_BREAKDOWN } from '../../../data/qsData'
+import { useRef, useState } from 'react'
+import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../../data/qsDashboardData'
+import { INITIAL_GROUPS, SHEET_COLUMNS, makeRow, rowValues } from '../../../data/qsBreakdownData'
+import ProjectBar from './breakdown/ProjectBar'
+import CatalogPanel from './breakdown/CatalogPanel'
+import SheetHeader from './breakdown/SheetHeader'
+import ProductInfo from './breakdown/ProductInfo'
+import SheetBody from './breakdown/SheetBody'
 
-const PlusIcon = ({ size = 14, stroke = 'currentColor' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-)
+/* Bề rộng cột sản phẩm (px bố cục): mặc định và giới hạn khi kéo vạch ngăn */
+const CATALOG_DEFAULT = 440
+const CATALOG_MIN = 300
+const CATALOG_MAX = 760
 
-export default function BreakdownTab() {
+/* Tab "Bóc tách": cột sản phẩm bên trái + bảng tính bóc tách bên phải */
+export default function BreakdownTab({ sheet, vat, onVat }) {
+  const [projectId, setProjectId] = useState(DASH_DEFAULT_ACTIVE.projectId)
+  const { groups, commit } = sheet
+  const [targetId, setTargetId] = useState(INITIAL_GROUPS[0].id)
+  const [view, setView] = useState('sheet')
+  const [catalogOpen, setCatalogOpen] = useState(true)
+  const [favorites, setFavorites] = useState(() => new Set())
+  /* Cột đang ẩn và dải tuỳ chọn đang mở dưới thanh công cụ (màu, tìm, lọc, cột, lịch sử) */
+  const [hiddenCols, setHiddenCols] = useState(() => new Set())
+  const [panel, setPanel] = useState(null)
+  const [full, setFull] = useState(false)
+  const [catalogW, setCatalogW] = useState(CATALOG_DEFAULT)
+  const [resizing, setResizing] = useState(false)
+  const resizeRef = useRef(null)
+  /* Sản phẩm đang được kéo từ cột trái và vị trí sẽ thả: { groupId, rowId, after } (rowId = null: ngay dưới dòng tên nhóm) */
+  const [dragProduct, setDragProduct] = useState(null)
+  const [drop, setDrop] = useState(null)
+  /* Dòng vừa thêm / vừa tăng số lượng: tô nền vàng + hiện thông báo trong vài giây */
+  /* Sản phẩm đang mở ở cột "Thông tin sản phẩm" */
+  const [detail, setDetail] = useState(null)
+  const [flash, setFlash] = useState(null)
+  const flashTimer = useRef(null)
+
+  const project = DASH_PROJECTS.find(p => p.id === projectId)
+  const rows = groups.flatMap(g => g.rows)
+  const subtotal = rows.reduce((s, r) => s + rowValues(r).amount, 0)
+  const target = groups.find(g => g.id === targetId) || groups[0]
+
+  /* mark = false: chỉ chọn dòng + hiện thông báo, không tô nền vàng */
+  function notify(rowId, text, mark = true) {
+    clearTimeout(flashTimer.current)
+    setFlash(f => ({ rowId, text, mark, n: (f ? f.n : 0) + 1 }))
+    /* Thông báo tự ẩn sau vài giây; nền vàng giữ lại tới khi người dùng bấm chọn ô khác */
+    flashTimer.current = setTimeout(() => setFlash(f => (f ? { ...f, text: null } : f)), 2600)
+  }
+  /* Thêm các dòng vào cuối một nhóm (mặc định là nhóm đang chọn) */
+  const addRows = (newRows, label, groupId = target.id) => commit(label, gs => gs.map(g => (g.id === groupId ? { ...g, collapsed: false, rows: [...g.rows, ...newRows] } : g)))
+  /* Thêm một sản phẩm vào nhóm tại vị trí at (bỏ trống = cuối nhóm).
+     Nhóm đã có sản phẩm đó thì chỉ tăng số lượng lên 1 chứ không thêm dòng mới. */
+  function addProduct(product, groupId = target.id, at = null) {
+    const group = groups.find(g => g.id === groupId)
+    const existing = group.rows.find(r => r.productId === product.id)
+    if (existing) {
+      commit(`+1 số lượng ${product.name}`, gs => gs.map(g => (g.id === groupId ? { ...g, collapsed: false, rows: g.rows.map(r => (r.id === existing.id ? { ...r, qty: r.qty + 1 } : r)) } : g)))
+      notify(existing.id, `+1 số lượng: ${product.name}`)
+      return
+    }
+    const row = makeRow(product)
+    commit(`Thêm ${product.name}`, gs => gs.map(g => {
+      if (g.id !== groupId) return g
+      const i = at === null ? g.rows.length : at
+      return { ...g, collapsed: false, rows: [...g.rows.slice(0, i), row, ...g.rows.slice(i)] }
+    }))
+    notify(row.id, `Đã thêm: ${product.name}`)
+  }
+  /* Thêm một tầng / phòng mới vào cuối bảng; tên đã có thì bỏ qua */
+  const addGroup = name => {
+    if (groups.some(g => g.name.toUpperCase() === name)) return
+    const id = `g${Date.now()}`
+    commit(`Thêm ${name}`, gs => [...gs, { id, name, collapsed: false, rows: [] }])
+    setTargetId(id)
+  }
+  /* Nút "Thêm hạng mục": thêm một dòng trống có sẵn tên / đơn vị / số lượng để sửa ngay trong bảng */
+  const addBlankRow = () => {
+    const row = { ...makeRow(null), name: 'Hạng mục mới', unit: 'Cái', qty: 1 }
+    addRows([row], 'Thêm hạng mục')
+    notify(row.id, 'Đã thêm hạng mục — sửa ngay trong bảng', false)
+  }
+  const toggleFav = id => setFavorites(prev => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    return next
+  })
+
+  /* Kéo vạch ngăn giữa cột sản phẩm và bảng để đổi bề rộng cột trái; bấm đúp về mặc định.
+     Chuột tính theo px màn hình, bề rộng tính theo px bố cục (trang đang zoom) nên quy đổi qua scale. */
+  function startResize(e) {
+    const el = e.currentTarget.previousElementSibling
+    const w = el.offsetWidth
+    resizeRef.current = { x: e.clientX, w, scale: el.getBoundingClientRect().width / w || 1 }
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch {}
+    setResizing(true)
+  }
+  function moveResize(e) {
+    const d = resizeRef.current
+    if (!d) return
+    if (e.buttons === 0) { endResize(); return }
+    setCatalogW(Math.max(CATALOG_MIN, Math.min(CATALOG_MAX, Math.round(d.w + (e.clientX - d.x) / d.scale))))
+  }
+  function endResize() {
+    resizeRef.current = null
+    setResizing(false)
+  }
+
+  /* Kéo sản phẩm từ cột trái thả vào bảng: thả vào nửa trên / nửa dưới của một dòng để chèn trước / sau dòng đó;
+     thả ngoài các dòng thì thêm vào cuối nhóm đang chọn */
+  const dropGroup = (drop && groups.find(g => g.id === drop.groupId)) || target
+  /* Dòng sẽ kẻ vạch chèn và vạch nằm ở mép trên hay mép dưới của nó */
+  const dropMark = !dragProduct ? null
+    : drop ? { key: drop.rowId || `g:${drop.groupId}`, pos: drop.after ? 'after' : 'before' }
+      : { key: target.rows.length && !target.collapsed ? target.rows[target.rows.length - 1].id : `g:${target.id}`, pos: 'after' }
+  function onDragOver(e) {
+    if (!dragProduct) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    const tr = e.target.closest ? e.target.closest('tr[data-group]') : null
+    let next = null
+    if (tr) {
+      const box = tr.getBoundingClientRect()
+      const rowId = tr.dataset.row || null
+      next = { groupId: tr.dataset.group, rowId, after: rowId ? e.clientY > box.top + box.height / 2 : true }
+    }
+    const same = (!next && !drop) || (next && drop && next.groupId === drop.groupId && next.rowId === drop.rowId && next.after === drop.after)
+    if (!same) setDrop(next)
+  }
+  function onDrop(e) {
+    if (!dragProduct) return
+    e.preventDefault()
+    let at = null
+    if (drop) {
+      const i = drop.rowId ? dropGroup.rows.findIndex(r => r.id === drop.rowId) : -1
+      at = drop.rowId ? (i < 0 ? null : i + (drop.after ? 1 : 0)) : 0
+    }
+    addProduct(dragProduct, dropGroup.id, at)
+    setTargetId(dropGroup.id)
+    endDragProduct()
+  }
+  function endDragProduct() {
+    setDragProduct(null)
+    setDrop(null)
+  }
+
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ padding: '8px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface)', fontWeight: 600, fontSize: 13 }}>Căn hộ mẫu tầng 1 — Riverside GĐ2</div>
-          <span className="qs-pill" style={{ background: 'var(--finance-tint)', color: 'var(--finance)' }}>VAT 8%</span>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div className="qs-btn ghost">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M4 12h10M4 18h16" /></svg>
-            Bộ lọc
-          </div>
-          <div className="qs-btn ghost"><PlusIcon />Thêm phòng</div>
-          <div className="qs-btn primary"><PlusIcon stroke="#fff" />Thêm hạng mục</div>
-        </div>
-      </div>
-
-      <div style={{ flex: 1, display: 'flex', gap: 16, minHeight: 0 }}>
-        <div className="qs-card qs-room-nav">
-          <div style={{ fontSize: 11, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--text-muted)', padding: '6px 8px' }}>Danh sách phòng</div>
-          {ROOM_NAV.map((r, i) => (
-            <div key={r.name} className={`qs-room-item${i === 0 ? ' active' : ''}`}>
-              <span>{r.name}</span>
-              <span className="mono" style={i === 0 ? undefined : { color: 'var(--text-muted)' }}>{r.total}</span>
-            </div>
-          ))}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 8, fontSize: 12, color: 'var(--text-muted)', border: '1px dashed var(--border)', marginTop: 4, cursor: 'pointer' }}>
-            <PlusIcon size={12} />
-            Thêm phòng khác
-          </div>
-        </div>
-
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
-          {ROOM_BREAKDOWN.map(room => (
-            <div key={room.room} className="qs-card qs-room-card">
-              <div className={`qs-room-head${room.highlight ? ' highlight' : ''}`}><span>{room.room}</span><span className="mono">{room.total}</span></div>
-              {/* Bản HTML chỉ hiển thị dòng tiêu đề cột ở phòng đầu tiên */}
-              {room.highlight && (
-                <div className="qs-breakdown-cols" style={{ padding: '8px 16px', fontSize: 10.5, letterSpacing: '.05em', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
-                  <span>Sản phẩm</span><span>Thương hiệu</span><span>SL</span><span>Đơn giá</span><span>Thành tiền</span>
-                </div>
-              )}
-              {room.items.map(it => (
-                <div key={it.name} className="qs-breakdown-cols qs-breakdown-row">
-                  <span style={{ fontSize: 13 }}>{it.name}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{it.brand}</span>
-                  <span className="mono" style={{ fontSize: 12 }}>{it.qty}</span>
-                  <span className="mono" style={{ fontSize: 12 }}>{it.price}</span>
-                  <span className="mono" style={{ fontSize: 12.5, fontWeight: 600 }}>{it.amount}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-
-          <div className="qs-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-            <div className="qs-total-row"><span style={{ color: 'var(--text-muted)' }}>Tạm tính (5 phòng)</span><span className="mono">14.755.000 đ</span></div>
-            <div className="qs-total-row"><span style={{ color: 'var(--text-muted)' }}>VAT (8%)</span><span className="mono">1.180.400 đ</span></div>
-            <div className="qs-total-row" style={{ fontSize: 16, fontWeight: 800, borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 4 }}>
-              <span>Tổng cộng</span><span className="mono" style={{ color: 'var(--qs)' }}>15.935.400 đ</span>
-            </div>
+      <ProjectBar projects={DASH_PROJECTS} projectId={projectId} onSelect={setProjectId} />
+      <div className="qs-bd-body">
+        {catalogOpen && (
+          <>
+            <CatalogPanel
+              width={catalogW}
+              onAdd={product => addProduct(product)}
+              onOpen={product => setDetail(d => (d && d.id === product.id ? null : product))}
+              activeId={detail ? detail.id : null}
+              favorites={favorites}
+              onToggleFav={toggleFav}
+              dragId={dragProduct ? dragProduct.id : null}
+              onDragProduct={setDragProduct}
+              onDragEnd={endDragProduct}
+            />
+            <div
+              className={`qs-bd-split${resizing ? ' dragging' : ''}`}
+              title="Kéo để đổi bề rộng · bấm đúp để về mặc định"
+              onPointerDown={startResize}
+              onPointerMove={moveResize}
+              onPointerUp={endResize}
+              onPointerCancel={endResize}
+              onDoubleClick={() => setCatalogW(CATALOG_DEFAULT)}
+            />
+          </>
+        )}
+        {catalogOpen && detail && <ProductInfo product={detail} onClose={() => setDetail(null)} onAdd={product => addProduct(product)} />}
+        <div className="qs-bd-right">
+          <SheetHeader
+            count={rows.length} subtotal={subtotal} vat={vat} onVat={onVat}
+            view={view} onView={setView}
+            catalogOpen={catalogOpen} onToggleCatalog={() => setCatalogOpen(o => !o)}
+            colsShown={SHEET_COLUMNS.length - hiddenCols.size} colsTotal={SHEET_COLUMNS.length}
+            onOpenCols={() => setPanel(p => (p === 'cols' ? null : 'cols'))}
+            onResetCols={() => setHiddenCols(new Set())}
+          />
+          <div
+            className={`qs-card qs-bd-sheet${dragProduct ? ' drop-active' : ''}${full ? ' full' : ''}`}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+          >
+            <SheetBody
+              sheet={sheet}
+              plain={view === 'plain'}
+              hiddenCols={hiddenCols} onHiddenCols={setHiddenCols}
+              panel={panel} onPanel={setPanel}
+              favorites={favorites}
+              targetName={target.name} onTarget={setTargetId}
+              groupNames={groups.map(g => g.name.toUpperCase())}
+              onAddGroup={addGroup} onAddRow={addRows} onAddBlank={addBlankRow}
+              full={full} onFull={() => setFull(f => !f)}
+              dropMark={dropMark}
+              flash={flash}
+              onClearMark={() => setFlash(f => (f && f.mark ? { ...f, mark: false } : f))}
+              dropHint={dragProduct ? `Thả để thêm vào ${dropGroup.name}` : null}
+              fileName={`boc-tach-${project.drafts[0].code}`}
+            />
+            {flash && flash.text && <div key={flash.n} className="qs-bd-toast">{flash.text}</div>}
           </div>
         </div>
       </div>

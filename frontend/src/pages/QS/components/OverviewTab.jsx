@@ -1,53 +1,53 @@
-import { RECENT_PROJECTS, TOP_BRANDS, QS_STATUS } from '../../../data/qsData'
-import Kpi from './Kpi'
+import { useState } from 'react'
+import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE, createProject, draftTotals, formatVnd } from '../../../data/qsDashboardData'
+import ProjectBanner from './dashboard/ProjectBanner'
+import KpiCard from './dashboard/KpiCard'
+import ProjectList from './dashboard/ProjectList'
+import GroupValueCard from './dashboard/GroupValueCard'
+import QuickActions from './dashboard/QuickActions'
+import CreateProjectModal from './dashboard/CreateProjectModal'
 
+/* Tab "Bảng điều khiển": banner + KPI + nhóm giá trị đều tính theo bản nháp đang làm việc */
 export default function OverviewTab({ onGoto }) {
+  const [active, setActive] = useState(DASH_DEFAULT_ACTIVE)
+  const [projects, setProjects] = useState(DASH_PROJECTS)
+  const [creating, setCreating] = useState(false)
+
+  const project = projects.find(p => p.id === active.projectId)
+  const draft = project.drafts.find(d => d.id === active.draftId)
+  const t = draftTotals(draft)
+
   return (
     <>
-      <div className="qs-kpi-grid">
-        <Kpi label="Dự án QS" value="4" sub="2 đang bóc · 1 bản nháp · 1 hoàn tất" />
-        <Kpi label="Tổng giá trị bóc tách" value="64.9 triệu" mono sub="Trên 4 dự án chiếu sáng" />
-        <Kpi label="Đã xuất báo giá" value="1" color="var(--success)" badge={{ text: 'Sảnh & hành lang chung', color: 'success' }} />
-        <Kpi label="Đơn mua hàng đang chờ" value="2" color="var(--finance)" sub="Cần đặt hàng trong tuần" />
+      <ProjectBanner project={project} draft={draft} />
+
+      <div className="qs-dash-kpi-grid">
+        <KpiCard icon="listLines" tone="blue" value={t.lines} label="Dòng sản phẩm" note="toàn dự án" />
+        <KpiCard icon="lock" tone="gray" value={formatVnd(t.cost)} label="Giá vốn" note="toàn dự án" />
+        <KpiCard icon="banknote" tone="blue" value={formatVnd(t.sale)} label="Giá bán" note="chưa VAT" />
+        <KpiCard icon="fileText" tone="gray" value={formatVnd(t.total)} label="Tổng thanh toán" note={`gồm VAT ${draft.vat}%`} />
+        <KpiCard icon="gauge" tone="green" value={formatVnd(t.profit)} label="Lợi nhuận" note={`${t.margin.toFixed(1)}% biên`} positive />
       </div>
 
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, minHeight: 0 }}>
-        <div className="qs-card qs-pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h3 className="qs-card-title">Dự án QS gần đây</h3>
-            <span onClick={() => onGoto('projects')} style={{ fontSize: 12.5, color: 'var(--qs)', fontWeight: 600, cursor: 'pointer' }}>Xem tất cả ›</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {RECENT_PROJECTS.map((p, i) => {
-              const st = QS_STATUS[p.status]
-              return (
-                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', ...(i < RECENT_PROJECTS.length - 1 ? { borderBottom: '1px solid var(--border)' } : {}) }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>{p.name}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{p.meta}</div>
-                  </div>
-                  <div className="qs-track" style={{ width: 90 }}><div style={{ width: `${p.pct}%`, background: st.bar }} /></div>
-                  <span className="qs-pill" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="qs-card qs-pad" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <h3 className="qs-card-title">Top thương hiệu sử dụng</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {TOP_BRANDS.map(b => (
-              <div key={b.name}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 4 }}>
-                  <span>{b.name}</span><span className="mono" style={{ color: 'var(--text-muted)' }}>{b.value}</span>
-                </div>
-                <div className="qs-track"><div style={{ width: `${b.pct}%`, background: 'var(--qs)' }} /></div>
-              </div>
-            ))}
-          </div>
+      <div className="qs-dash-main">
+        <ProjectList
+          projects={projects}
+          active={active}
+          onUse={(projectId, draftId) => setActive({ projectId, draftId })}
+          onCreate={() => setCreating(true)}
+        />
+        <div className="qs-dash-side">
+          <GroupValueCard groups={draft.groups} />
+          <QuickActions onGoto={onGoto} />
         </div>
       </div>
+
+      {creating && (
+        <CreateProjectModal
+          onClose={() => setCreating(false)}
+          onSave={form => { setProjects(list => [createProject(form), ...list]); setCreating(false) }}
+        />
+      )}
     </>
   )
 }

@@ -126,18 +126,17 @@ html[data-theme="dark"][data-accent="custom"] body [class*="-page"] {
 }
 
 /* ===== Density & Font Size =====
-   Hai tuỳ chọn nhân với nhau (trước đây cái sau ghi đè cái trước). */
-html { --z-density: 1; --z-font: 1; zoom: calc(var(--z-density) * var(--z-font)); }
+   Mật độ: thu nhỏ cả giao diện bằng zoom.
+   Cỡ chữ: chỉ phóng chữ — mọi font-size trong app được nhân với --fs lúc build (xem vite.config.js). */
+html { --z-density: 1; --fs: 1; zoom: var(--z-density); }
 html[data-density="compact"]  { --z-density: 0.88; }
-html[data-fontsize="small"]   { --z-font: 0.92; }
-html[data-fontsize="large"]   { --z-font: 1.12; }
-html[data-fontsize="xlarge"]  { --z-font: 1.24; }
-html[data-density="compact"] .app-shell,
-html[data-fontsize="small"] .app-shell,
-html[data-fontsize="large"] .app-shell,
-html[data-fontsize="xlarge"] .app-shell {
-  width: calc(100vw / (var(--z-density) * var(--z-font))) !important;
-  height: calc(100vh / (var(--z-density) * var(--z-font))) !important;
+html[data-fontsize="small"]   { --fs: 0.92; }
+html[data-fontsize="large"]   { --fs: 1.12; }
+html[data-fontsize="xlarge"]  { --fs: 1.24; }
+/* data-fontsize="custom": ThemeContext gán --fs trực tiếp lên <html> */
+html[data-density="compact"] .app-shell {
+  width: calc(100vw / var(--z-density)) !important;
+  height: calc(100vh / var(--z-density)) !important;
 }
 
 /* ===== Font đồng nhất =====

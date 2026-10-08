@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { useThemeContext } from '../../../context/ThemeContext'
-import { ACCENTS, EXTRA_ACCENTS, FONTS, FONT_SIZES, GLASS_LEVELS } from '../../../data/caiDatData'
+import { useThemeContext, FONT_SCALE_MIN, FONT_SCALE_MAX } from '../../../context/ThemeContext'
+import { ACCENTS, EXTRA_ACCENTS, FONTS, FONT_SIZES, GLASS_LEVELS, WALLPAPERS } from '../../../data/caiDatData'
+import { FONT_CATALOG, findFont } from '../../../data/fontCatalog'
+import FontPicker from './FontPicker'
 import { cardStyle, titleStyle, descStyle, RowText, ToggleSwitch } from './shared'
 
 const pickCard = { border: '2px solid var(--border)', borderRadius: 12, padding: 14, cursor: 'pointer' }
@@ -31,6 +33,8 @@ function Check({ show }) {
     </span>
   )
 }
+
+const clampScale = v => Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, Math.round(Number(v) || 100)))
 
 function readSidebarCollapsed() {
   try { return localStorage.getItem('siteflow-sidebar-collapsed') === '1' } catch { return false }
@@ -73,6 +77,7 @@ function UiThemePreview({ kind }) {
 export default function AppearanceTab() {
   const { theme, themeMode, setThemeMode, customize, updateCustomize, uiTheme, setUiTheme, resetAppearance } = useThemeContext()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed)
+  const [fontPickerOpen, setFontPickerOpen] = useState(false)
 
   const accent = customize.accent || 'blue'
   const accentCustom = customize.accentCustom || '#2F5DA8'
@@ -85,7 +90,27 @@ export default function AppearanceTab() {
   const monoNumbers = !!customize.monoNumbers
   const currentUi = uiTheme || 'default'
   const isGlass = currentUi !== 'default'
-  const currentFont = FONTS.find(f => f.font === fontFamily) || FONTS[0]
+  const pickedFont = findFont(fontFamily)
+  const currentFont = { label: pickedFont ? pickedFont.name : 'Montserrat', preview: fontFamily || "'Montserrat', sans-serif" }
+  const fontPins = customize.fontPins || []
+  const fontRecent = customize.fontRecent || []
+  const wallpaper = customize.wallpaper || 'none'
+  const wallpaperStrength = customize.wallpaperStrength || 60
+  const presetSize = FONT_SIZES.find(s => s.key === fontSize)
+  const fontPct = fontSize === 'custom' ? clampScale(customize.fontScale) : (presetSize ? presetSize.percent : 100)
+
+  function pickFont(f) {
+    updateCustomize({ fontFamily: f.value, fontRecent: [f.name, ...fontRecent.filter(n => n !== f.name)].slice(0, 5) })
+  }
+  function togglePin(name) {
+    updateCustomize({ fontPins: fontPins.includes(name) ? fontPins.filter(n => n !== name) : [...fontPins, name] })
+  }
+  /* Cỡ chữ tự chỉnh: trúng đúng một mức có sẵn thì lưu như mức đó */
+  function applyScale(value) {
+    const pct = clampScale(value)
+    const preset = FONT_SIZES.find(p => p.percent === pct)
+    updateCustomize(preset ? { fontSize: preset.key, fontScale: undefined } : { fontSize: 'custom', fontScale: pct })
+  }
 
   /* Giống #toggleSidebar: lưu cờ thu gọn mặc định và xoá mức sidebar đã nhớ */
   function toggleSidebarDefault() {
@@ -149,6 +174,28 @@ export default function AppearanceTab() {
         ) : null}
       </Section>
 
+      <Section title="Nền hệ thống" desc="Nền phía sau toàn bộ SiteFlow, áp dụng trên mọi trang. Đẹp nhất khi dùng cùng bộ giao diện Liquid Glass hoặc Super Liquid Glass.">
+        <div style={grid(3)}>
+          {WALLPAPERS.map(w => (
+            <div key={w.key} style={{ ...activeBorder(wallpaper === w.key), position: 'relative' }} onClick={() => updateCustomize({ wallpaper: w.key })}>
+              <Check show={wallpaper === w.key} />
+              <div style={{ height: 56, borderRadius: 8, marginBottom: 10, background: w.preview, border: '1px solid var(--border)' }} />
+              <div style={cardLabel}>{w.label}</div>
+              <div style={cardSub}>{w.sub}</div>
+            </div>
+          ))}
+        </div>
+        {wallpaper !== 'none' ? (
+          <div className="cd-settings-row" style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingBottom: 0 }}>
+            <RowText title="Độ đậm của nền" desc="Giảm xuống nếu chữ nằm trực tiếp trên nền khó đọc" />
+            <div className="cd-range">
+              <input type="range" min="30" max="100" step="5" value={wallpaperStrength} title="Độ đậm của nền" onChange={e => updateCustomize({ wallpaperStrength: Number(e.target.value) })} />
+              <span className="cd-range-value">{wallpaperStrength}%</span>
+            </div>
+          </div>
+        ) : null}
+      </Section>
+
       <Section title="Màu chủ đạo" desc="Áp dụng cho nút, tab và trạng thái active trên toàn bộ SiteFlow.">
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
           {ACCENTS.map(a => (
@@ -199,6 +246,11 @@ export default function AppearanceTab() {
             </div>
           ))}
         </div>
+        <div className="cd-settings-row" style={{ marginTop: 6, borderBottom: 'none', paddingBottom: 0 }}>
+          <RowText title="Font khác" desc={`Chọn trong ${FONT_CATALOG.length} font có hỗ trợ tiếng Việt — tìm theo tên, ghim font hay dùng`} />
+          <button className={`cd-sidebar-pos-btn${fontPickerOpen ? ' active' : ''}`} onClick={() => setFontPickerOpen(o => !o)}>{fontPickerOpen ? 'Đóng danh sách' : 'Mở danh sách font'}</button>
+        </div>
+        {fontPickerOpen ? <FontPicker value={fontFamily} pins={fontPins} recent={fontRecent} onPick={pickFont} onTogglePin={togglePin} /> : null}
         <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, border: '1px dashed var(--border)', fontFamily: currentFont.preview }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Xem thử — {currentFont.label}</div>
           <div style={{ fontSize: 15, fontWeight: 700 }}>Công trình Riverside — Giai đoạn 2</div>
@@ -210,20 +262,32 @@ export default function AppearanceTab() {
         </div>
       </Section>
 
-      <Section title="Cỡ chữ" desc="Phóng to/thu nhỏ toàn bộ giao diện — bố cục tự responsive theo cỡ chữ, không chỉ phóng to hình ảnh.">
+      <Section title="Cỡ chữ" desc="Chỉ đổi độ lớn của chữ trên toàn bộ SiteFlow — khung, nút, biểu tượng và khoảng cách giữ nguyên kích thước.">
         <div style={grid(4)}>
           {FONT_SIZES.map(s => (
             <div
               key={s.key}
               className={`cd-fontsize-card${fontSize === s.key ? ' active' : ''}`}
               style={{ ...pickCard, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minHeight: 92 }}
-              onClick={() => updateCustomize({ fontSize: s.key })}
+              onClick={() => updateCustomize({ fontSize: s.key, fontScale: undefined })}
             >
               <div style={{ fontWeight: 700, fontSize: s.previewSize, marginBottom: 6, lineHeight: 1 }}>Aa</div>
               <div style={cardLabel}>{s.label}</div>
               <div style={cardSub}>{s.note}</div>
             </div>
           ))}
+        </div>
+        <div className="cd-settings-row" style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingBottom: 0 }}>
+          <RowText title="Tự chỉnh cỡ chữ" desc={`Kéo để chọn mức bất kỳ từ ${FONT_SCALE_MIN}% đến ${FONT_SCALE_MAX}%`} />
+          <div className="cd-range">
+            <button type="button" className="cd-step-btn" title="Nhỏ hơn" disabled={fontPct <= FONT_SCALE_MIN} onClick={() => applyScale(fontPct - 2)}>−</button>
+            <input
+              type="range" min={FONT_SCALE_MIN} max={FONT_SCALE_MAX} step="1" value={fontPct} title="Cỡ chữ"
+              onChange={e => applyScale(e.target.value)}
+            />
+            <button type="button" className="cd-step-btn" title="Lớn hơn" disabled={fontPct >= FONT_SCALE_MAX} onClick={() => applyScale(fontPct + 2)}>+</button>
+            <span className="cd-range-value">{fontPct}%</span>
+          </div>
         </div>
       </Section>
 
@@ -267,7 +331,7 @@ export default function AppearanceTab() {
 
       <Section title="Khôi phục" titleMb={14}>
         <div className="cd-settings-row">
-          <RowText title="Đưa giao diện về mặc định" desc="Chế độ theo hệ thống, bộ giao diện Mặc định, màu xanh dương, font Montserrat, cỡ chữ Vừa" />
+          <RowText title="Đưa giao diện về mặc định" desc="Chế độ theo hệ thống, bộ giao diện Mặc định, không dùng nền hệ thống, màu xanh dương, font Montserrat, cỡ chữ Vừa" />
           <button className="cd-sidebar-pos-btn" onClick={resetAll}>Khôi phục mặc định</button>
         </div>
       </Section>

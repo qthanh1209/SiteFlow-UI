@@ -137,8 +137,8 @@ html[data-ui-theme="glass"] ::-webkit-scrollbar-thumb{ backdrop-filter:none; }
    animated mesh-gradient backdrop, near-transparent surfaces, deep blur, two-layer specular border. */
 
 html[data-ui-theme="super-glass"]{
-  --sg-blur: blur(64px) saturate(180%);
-  --sg-blur-chip: blur(24px) saturate(160%);
+  --sg-blur: blur(64px) saturate(125%);
+  --sg-blur-chip: blur(24px) saturate(115%);
   --sg-radius-outer: 24px;
   --sg-radius-inner: 16px;
 }
@@ -148,8 +148,8 @@ html[data-theme="light"][data-ui-theme="super-glass"]{
   --sg-surface-strong: rgba(255,255,255,.22);
   --sg-sidebar: rgba(255,255,255,.10);
   --sg-border: rgba(255,255,255,.40);
-  --sg-ring: rgba(255,255,255,.30);
-  --sg-specular: rgba(255,255,255,.9);
+  --sg-ring: rgba(255,255,255,.14);
+  --sg-specular: rgba(255,255,255,.4);
   --sg-text-on-glass: #12161f;
   --sg-shadow-card: 0 8px 32px rgba(31,41,71,.14), 0 1px 2px rgba(31,41,71,.08);
   --sg-shadow-deep: 0 30px 90px rgba(31,41,71,.30), 0 2px 8px rgba(31,41,71,.12);
@@ -161,7 +161,7 @@ html[data-theme="dark"][data-ui-theme="super-glass"]{
   --sg-sidebar: rgba(2,4,10,.35);
   --sg-border: rgba(255,255,255,.10);
   --sg-ring: rgba(255,255,255,.05);
-  --sg-specular: rgba(255,255,255,.25);
+  --sg-specular: rgba(255,255,255,.12);
   --sg-text-on-glass: #f1f4fb;
   --sg-shadow-card: 0 8px 32px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35);
   --sg-shadow-deep: 0 30px 90px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.4);
@@ -272,7 +272,7 @@ html[data-ui-theme="super-glass"] button[style*="background: var(--primary)"],
 html[data-ui-theme="super-glass"] button[style*="background:var(--primary)"]{
   backdrop-filter: var(--sg-blur-chip);
   -webkit-backdrop-filter: var(--sg-blur-chip);
-  box-shadow: inset 0 0 0 1px var(--sg-ring), inset 0 1px 0 rgba(255,255,255,.5), 0 8px 20px rgba(20,25,40,.22);
+  box-shadow: inset 0 0 0 1px var(--sg-ring), inset 0 1px 0 rgba(255,255,255,.2), 0 8px 20px rgba(20,25,40,.18);
   border: 1px solid var(--sg-border) !important;
 }
 
@@ -322,7 +322,7 @@ html[data-theme="dark"]:is([data-ui-theme="glass"], [data-ui-theme="super-glass"
 /* Thẻ nổi (rule phía trên) cũng theo mức trong suốt đã chọn */
 html[data-theme="light"][data-ui-theme="glass"]{ --glass-surface: rgba(255,255,255, var(--gl-a)); --glass-surface-strong: rgba(255,255,255, calc(var(--gl-a) + .16)); }
 html[data-theme="dark"][data-ui-theme="glass"]{ --glass-surface: rgba(34,38,50, var(--gl-a)); --glass-surface-strong: rgba(34,38,50, calc(var(--gl-a) + .16)); }
-html[data-theme="light"][data-ui-theme="super-glass"]{ --sg-surface: rgba(255,255,255, calc(var(--gl-a) * .5)); --sg-surface-strong: rgba(255,255,255, calc(var(--gl-a) * .8)); --sg-sidebar: rgba(16,20,30,.66); }
+html[data-theme="light"][data-ui-theme="super-glass"]{ --sg-surface: rgba(255,255,255, calc(var(--gl-a) * .5)); --sg-surface-strong: rgba(255,255,255, calc(var(--gl-a) * .8)); --sg-sidebar: rgba(16,20,30,.86); }
 html[data-theme="dark"][data-ui-theme="super-glass"]{ --sg-surface: rgba(15,23,42, calc(var(--gl-a) * .6)); --sg-surface-strong: rgba(15,23,42, calc(var(--gl-a) * .95)); }
 
 /* 3) Lớp nổi viết bằng class (popover, modal, menu, ngăn kéo, khung Dezbot): thêm làm mờ nền để chữ không lẫn với nội dung phía sau */
@@ -330,7 +330,7 @@ html[data-ui-theme="glass"] body :is([class*="-popover"], [class*="-modal"], [cl
   -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
 }
 html[data-ui-theme="super-glass"] body :is([class*="-popover"], [class*="-modal"], [class*="-menu"], [class*="-drawer"], [class*="-ai-panel"]){
-  -webkit-backdrop-filter: blur(40px) saturate(170%); backdrop-filter: blur(40px) saturate(170%);
+  -webkit-backdrop-filter: blur(40px) saturate(125%); backdrop-filter: blur(40px) saturate(125%);
 }
 
 /* 4) Danh sách thả xuống của <select> do trình duyệt vẽ: cần nền đặc, nếu không chữ sẽ chìm */
@@ -346,3 +346,44 @@ html[data-theme="dark"][data-ui-theme="glass"] body{
     radial-gradient(1000px 800px at 100% 10%, rgba(160,90,255,.22), transparent 55%),
     radial-gradient(900px 700px at 60% 110%, rgba(40,180,170,.14), transparent 60%);
 }
+
+/* =====================================================================
+   Nền hệ thống (Cài đặt ▸ Giao diện ▸ Nền hệ thống) — <html data-wallpaper="...">
+   Dùng được với mọi bộ giao diện; với bộ kính thì nền này thay cho quầng màu mặc định.
+   --wp-strength (0.3 – 1, mặc định 0.6) là độ đậm: càng thấp càng phủ nhiều lớp sáng/tối lên nền để chữ dễ đọc.
+   ===================================================================== */
+html{ --wp-strength: .6; }
+html[data-theme="light"]{ --wp-veil: rgb(255 255 255 / calc(1.1 - var(--wp-strength))); }
+html[data-theme="dark"]{ --wp-veil: rgb(10 12 20 / calc(1.2 - var(--wp-strength))); }
+
+/* Nền "iOS 26 Liquid": xanh nhạt góc trên trái, xanh đậm bên trái, tím ở giữa, hồng san hô góc dưới phải */
+html[data-wallpaper="ios26"]{
+  --wp-image:
+    radial-gradient(60% 55% at 0% 0%, #A9CDEF 0%, transparent 60%),
+    radial-gradient(55% 70% at 0% 78%, #2458C9 0%, transparent 65%),
+    radial-gradient(60% 60% at 55% 4%, #8E4DEB 0%, transparent 65%),
+    radial-gradient(50% 55% at 100% 18%, #B257E0 0%, transparent 60%),
+    radial-gradient(55% 60% at 100% 100%, #F78F96 0%, transparent 62%),
+    radial-gradient(45% 45% at 55% 100%, #B95C9C 0%, transparent 60%),
+    linear-gradient(120deg, #4C6FDC 0%, #7C4EDB 50%, #D873B4 100%);
+}
+
+html[data-wallpaper]:not([data-wallpaper="none"]) body{
+  background-image: linear-gradient(var(--wp-veil), var(--wp-veil)), var(--wp-image) !important;
+  background-attachment: fixed !important;
+  background-size: cover !important;
+}
+/* Lộ nền: khung app và lớp gốc của từng trang không tô nền đặc nữa.
+   Chỉ bỏ nền của chính lớp gốc, giữ nguyên biến --bg vì nhiều thành phần dùng nó làm nền đặc (hộp thoại, ô thống kê). */
+html[data-wallpaper]:not([data-wallpaper="none"]) .app-shell{ background: transparent !important; }
+html[data-wallpaper]:not([data-wallpaper="none"]) .app-shell > div > [class*="-page"]{ background: transparent !important; }
+/* Super Liquid Glass: tắt lớp quầng màu động để nền đã chọn là lớp sau cùng */
+html[data-wallpaper]:not([data-wallpaper="none"])[data-ui-theme="super-glass"] body::before{ display: none; }
+/* Sidebar tô màu tối cố định (#12161F) nên mặc định che mất nền: khi bật nền hệ thống thì chuyển thành
+   kính tối trong mờ để màu nền xuyên qua, chữ sáng của sidebar vẫn đủ tương phản */
+html[data-wallpaper]:not([data-wallpaper="none"]) :is(.app-sidebar, .sidebar-flyout){
+  background: rgba(14,17,28,.56) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(170%); backdrop-filter: blur(26px) saturate(170%);
+  border-right: 1px solid rgba(255,255,255,.14);
+}
+html[data-wallpaper]:not([data-wallpaper="none"]) :is(.app-sidebar, .sidebar-flyout) .sidebar-nav-item:not(.active){ color: #DDE2EE; }

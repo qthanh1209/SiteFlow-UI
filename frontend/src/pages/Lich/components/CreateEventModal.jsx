@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
-import { EVENT_COLORS, DATE_OPTIONS, CAL_OPTIONS, ROOMS, COLLEAGUE_DIRECTORY, COLLEAGUE_SCHEDULE, decHourToLabel, initialsOf, timeToDecimalHour, randCode } from '../../../data/lichData'
+import { useMemo, useRef, useState } from 'react'
+import { EVENT_COLORS, DATE_OPTIONS, CAL_OPTIONS, ROOMS, COLLEAGUE_DIRECTORY, COLLEAGUE_SCHEDULE, CURRENT_USER, DAYCOL_ROW_HEIGHT, decHourToLabel, timeToDecimalHour, randCode } from '../../../data/lichData'
+import GuestSchedulePanel from './GuestSchedulePanel'
+import Avatar from './Avatar'
 
 const EyeIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -7,13 +9,20 @@ const EyeIcon = () => (
 const CheckIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
 )
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+)
 const ROOM_PLACEHOLDER = 'Chọn phòng họp (không bắt buộc)'
+const EXTERNAL_COLOR = '#8892A6' // màu cho khách ngoài danh bạ (nhập tay tên hoặc email)
+/* So tên không phân biệt hoa thường và dấu tiếng Việt ("kien" khớp "Kiên") */
+const fold = s => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+const sameName = (a, b) => fold(a) === fold(b)
 
 /*
  * Modal "Tạo sự kiện" — luôn được mount (như bản HTML) để giữ các ô
  * không bị reset khi đóng: quyền khách, ngày, giờ, lịch, lặp lại, ô khách mời...
  */
-export default function CreateEventModal({ open, onClose, onCreate }) {
+export default function CreateEventModal({ open, onClose, onCreate, events = [] }) {
   const [title, setTitle] = useState('')
   const [color, setColor] = useState('')
   const [guestPerm, setGuestPerm] = useState('Mời người khác')
@@ -27,11 +36,14 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
   const [meetLink, setMeetLink] = useState('')
   const [videoMeeting, setVideoMeeting] = useState(true)
   const [guestQuery, setGuestQuery] = useState('')
-  const [guests, setGuests] = useState([]) // [{name, color}]
+  const [guests, setGuests] = useState([]) // [{name, color, external?}]
   const [roomListOpen, setRoomListOpen] = useState(false)
   const [room, setRoom] = useState(null)
   const [chatLinked, setChatLinked] = useState(false)
   const [docLinked, setDocLinked] = useState(false)
+  const [photos, setPhotos] = useState({}) // ảnh tự chọn cho từng người: { tên: đường dẫn ảnh }
+  const photoInput = useRef(null)
+  const photoFor = useRef(null)
 
   /* Cảnh báo trùng lịch với khách mời (checkConflicts) */
   const conflicts = useMemo(() => {
@@ -66,6 +78,44 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
     setGuests(prev => (prev.some(g => g.name === c.name) ? prev.filter(g => g.name !== c.name) : [...prev, { name: c.name, color: c.color }]))
   }
 
+  /* Ô "Khách mời": gợi ý từ danh bạ theo chữ đang gõ; Enter mời người gợi ý đầu tiên,
+     không khớp ai thì mời đúng tên / email vừa gõ như một khách bên ngoài */
+  const query = guestQuery.trim()
+  const suggestions = query
+    ? COLLEAGUE_DIRECTORY.filter(c => fold(c.name).includes(fold(query)) && !guests.some(g => g.name === c.name))
+    : []
+  const canInviteTyped = query !== '' && !sameName(query, CURRENT_USER.name)
+    && !COLLEAGUE_DIRECTORY.some(c => sameName(c.name, query)) && !guests.some(g => sameName(g.name, query))
+  function inviteColleague(c) {
+    setGuests(prev => (prev.some(g => g.name === c.name) ? prev : [...prev, { name: c.name, color: c.color }]))
+    setGuestQuery('')
+  }
+  function inviteExternal() {
+    setGuests(prev => (prev.some(g => sameName(g.name, query)) ? prev : [...prev, { name: query, color: EXTERNAL_COLOR, external: true }]))
+    setGuestQuery('')
+  }
+  function inviteTyped() {
+    if (suggestions.length) inviteColleague(suggestions[0])
+    else if (canInviteTyped) inviteExternal()
+  }
+
+  /* Bấm avatar ở danh sách khách để chọn ảnh từ máy (chỉ giữ trong phiên làm việc) */
+  const withPhoto = p => ({ ...p, avatar: photos[p.name] || p.avatar })
+  function pickPhoto(name) {
+    photoFor.current = name
+    photoInput.current.click()
+  }
+  function onPhoto(e) {
+    const file = e.target.files[0]
+    e.target.value = ''
+    if (!file) return
+    const name = photoFor.current
+    setPhotos(prev => {
+      if (prev[name]) URL.revokeObjectURL(prev[name])
+      return { ...prev, [name]: URL.createObjectURL(file) }
+    })
+  }
+
   function pickMeet(kind) {
     setMeet(kind)
     if (kind === 'none') setMeetLink('')
@@ -84,6 +134,15 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
     onCreate({ title: t, dayIdx: parseInt(date, 10), startStr: start, endStr: end, calKey: cal, isAllDay: allDay, guests, color })
     close()
   }
+
+  /* Sự kiện của mình trong ngày đang chọn, hiện ở cột đầu của bảng so lịch */
+  const dayIdx = parseInt(date, 10)
+  const myEvents = events
+    .filter(ev => ev.cal === 'me' && ev.day === dayIdx && !ev.allday)
+    .map(ev => ({ id: ev.id, title: ev.title, color: ev.color, tint: ev.tint, start: 8 + ev.top / DAYCOL_ROW_HEIGHT, end: 8 + (ev.top + ev.height) / DAYCOL_ROW_HEIGHT }))
+
+  const host = withPhoto(CURRENT_USER)
+  const shownGuests = guests.map(withPhoto)
 
   const roomSummary = room ? room.room + (room.status === 'busy' ? ' (đang dùng — vẫn có thể đặt)' : ' — đã đặt') : ROOM_PLACEHOLDER
 
@@ -165,20 +224,39 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
           <div className="lc-cal-modal-col">
             <div className="lc-cal-modal-field">
               <label>Khách mời</label>
-              <input type="text" placeholder="Thêm liên hệ, nhóm hoặc email" value={guestQuery} onChange={e => setGuestQuery(e.target.value)} style={{ marginBottom: 4 }} />
+              <input
+                type="text" placeholder="Thêm liên hệ, nhóm hoặc email" value={guestQuery} style={{ marginBottom: 4 }}
+                onChange={e => setGuestQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && query) { e.preventDefault(); inviteTyped() } }}
+              />
+              {(suggestions.length > 0 || canInviteTyped) && (
+                <div className="lc-ev-guest-suggest">
+                  {suggestions.map(c => (
+                    <button key={c.name} type="button" onClick={() => inviteColleague(c)}>
+                      <Avatar person={withPhoto(c)} /><span className="lc-name">{c.name}</span>
+                    </button>
+                  ))}
+                  {canInviteTyped && (
+                    <button type="button" onClick={inviteExternal}>
+                      <span className="lc-avatar" style={{ background: EXTERNAL_COLOR }}>+</span><span className="lc-name">Mời “{query}”</span><span className="lc-ext-tag">Bên ngoài</span>
+                    </button>
+                  )}
+                </div>
+              )}
               <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-muted)', margin: '6px 0 4px' }}>Khách ({1 + guests.length})</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
-                <div className="lc-ev-guest-row" style={{ '--row-c': 'var(--primary)', '--row-tint': 'var(--primary-tint)' }}>
-                  <span className="lc-avatar">CQ</span><span className="lc-name">Chu Quang Thành</span>
-                  <button className="lc-icon-btn-sm" title="Hiện trên lịch"><EyeIcon /></button>
+                <input ref={photoInput} type="file" accept="image/*" onChange={onPhoto} style={{ display: 'none' }} />
+                {/* Người tạo sự kiện luôn có sẵn trong danh sách, đánh dấu tích xanh để phân biệt với khách mời */}
+                <div className="lc-ev-guest-row" style={{ '--row-c': host.color, '--row-tint': 'var(--primary-tint)' }}>
+                  <Avatar person={host} className="lc-avatar pick" title="Bấm để chọn ảnh" onClick={() => pickPhoto(host.name)}><span className="lc-ok">✓</span></Avatar><span className="lc-name">{host.name}</span>
+                  <span className="lc-icon-btn-sm static" title="Người tổ chức"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><polyline points="16 11 18 13 22 9" /></svg></span>
+                  <button type="button" className="lc-icon-btn-sm" title="Hiện trên lịch"><EyeIcon /></button>
                 </div>
-                {guests.map(g => (
+                {shownGuests.map(g => (
                   <div key={g.name} className="lc-ev-guest-row" style={{ '--row-c': g.color, '--row-tint': g.color + '1c' }}>
-                    <span className="lc-avatar">{initialsOf(g.name)}</span><span className="lc-name">{g.name}</span><span className="lc-ext-tag">Bên ngoài</span>
+                    <Avatar person={g} className="lc-avatar pick" title="Bấm để chọn ảnh" onClick={() => pickPhoto(g.name)} /><span className="lc-name">{g.name}</span>{g.external && <span className="lc-ext-tag">Bên ngoài</span>}
                     <button className="lc-icon-btn-sm" title="Hiện trên lịch"><EyeIcon /></button>
-                    <button className="lc-icon-btn-sm" title="Bỏ mời" onClick={() => setGuests(prev => prev.filter(x => x.name !== g.name))}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                    </button>
+                    <button type="button" className="lc-icon-btn-sm" title="Bỏ mời" onClick={() => setGuests(prev => prev.filter(x => x.name !== g.name))}><CloseIcon /></button>
                   </div>
                 ))}
               </div>
@@ -186,7 +264,7 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {COLLEAGUE_DIRECTORY.map(c => (
                   <div key={c.name} className={`lc-ev-guest-pill${guests.some(g => g.name === c.name) ? ' selected' : ''}`} style={{ '--pill-c': c.color, '--pill-tint': c.color + '1c' }} onClick={() => toggleGuest(c)}>
-                    <span className="lc-avatar">{initialsOf(c.name)}</span><span>{c.name}</span><span className="lc-check">✓</span>
+                    <Avatar person={withPhoto(c)} /><span>{c.name}</span><span className="lc-check">✓</span>
                   </div>
                 ))}
               </div>
@@ -237,6 +315,15 @@ export default function CreateEventModal({ open, onClose, onCreate }) {
           <button className="lc-cal-modal-btn submit" onClick={submit}>Tạo sự kiện</button>
         </div>
       </div>
+      {/* Mời khách xong thì hiện bảng so lịch bận của từng người bên cạnh */}
+      {guests.length > 0 && (
+        <GuestSchedulePanel
+          dayIdx={dayIdx} onDay={i => setDate(String(i))}
+          host={host} guests={shownGuests} myEvents={myEvents}
+          startH={allDay ? 8 : timeToDecimalHour(start)} endH={allDay ? 22 : timeToDecimalHour(end)}
+          conflict={conflicts.length > 0}
+        />
+      )}
     </div>
   )
 }

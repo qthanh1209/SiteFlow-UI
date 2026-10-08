@@ -12,6 +12,10 @@ export const CAL_COLOR_VARS = {
 export const DAYCOL_ROW_HEIGHT = 40 // px mỗi giờ, lưới bắt đầu lúc 8:00
 export const GRID_HEIGHT = 560
 
+/* Người đang đăng nhập (chủ sự kiện). avatar = đường dẫn ảnh, để trống thì hiện chữ viết tắt */
+export const CURRENT_USER = { name: 'Chu Quang Thành', color: 'var(--primary)', avatar: '' }
+
+/* Danh bạ đồng nghiệp; thêm avatar: '/duong-dan-anh.jpg' cho từng người nếu có ảnh */
 export const COLLEAGUE_DIRECTORY = [
   { name: 'Cao Hưng (CEO)', color: '#E07B39' },
   { name: 'Lê Trung Kiên', color: '#4F86C6' },
@@ -21,10 +25,31 @@ export const COLLEAGUE_DIRECTORY = [
 
 /* Lịch bận mẫu của đồng nghiệp, dùng để cảnh báo trùng giờ */
 export const COLLEAGUE_SCHEDULE = {
-  'Cao Hưng (CEO)': [{ day: 2, start: 9, end: 10, title: 'họp nội bộ' }],
-  'Lê Trung Kiên': [{ day: 4, start: 13.5, end: 15, title: 'công tác' }],
-  'Nguyễn Trung Thành': [{ day: 1, start: 16, end: 17, title: 'họp khách hàng' }],
-  'Ngô Mỹ Duyên': [{ day: 5, start: 9.5, end: 11, title: 'đào tạo' }],
+  'Cao Hưng (CEO)': [
+    { day: 2, start: 9, end: 10, title: 'họp nội bộ' },
+    { day: 3, start: 12.5, end: 13.5, title: 'họp BOD' },
+    { day: 3, start: 14, end: 15, title: 'tiếp khách' },
+    { day: 3, start: 15.5, end: 17.5, title: 'duyệt hồ sơ thầu' },
+    { day: 4, start: 10, end: 11.5, title: 'họp cổ đông' },
+  ],
+  'Lê Trung Kiên': [
+    { day: 4, start: 13.5, end: 15, title: 'công tác' },
+    { day: 3, start: 10, end: 11, title: 'họp tài chính' },
+    { day: 3, start: 16, end: 17, title: 'khảo sát công trình' },
+    { day: 2, start: 14, end: 15.5, title: 'nghiệm thu' },
+  ],
+  'Nguyễn Trung Thành': [
+    { day: 1, start: 16, end: 17, title: 'họp khách hàng' },
+    { day: 3, start: 9, end: 10.5, title: 'họp thiết kế' },
+    { day: 3, start: 13, end: 14, title: 'gặp nhà cung cấp' },
+    { day: 5, start: 14, end: 16, title: 'họp vua thầu' },
+  ],
+  'Ngô Mỹ Duyên': [
+    { day: 5, start: 9.5, end: 11, title: 'đào tạo' },
+    { day: 3, start: 11, end: 12, title: 'phỏng vấn' },
+    { day: 3, start: 15, end: 16, title: 'họp nhân sự' },
+    { day: 2, start: 10, end: 11, title: 'onboarding' },
+  ],
 }
 
 /* Khung giờ bận mẫu khi thêm đồng nghiệp để so sánh lịch */

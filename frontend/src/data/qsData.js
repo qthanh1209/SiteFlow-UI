@@ -1,12 +1,12 @@
 /* Dữ liệu mẫu & tiện ích cho trang QS — Bóc tách & Báo giá (qs.html) */
 
 export const QS_TABS = [
-  { key: 'overview', label: 'Tổng quan' },
-  { key: 'projects', label: 'Dự án' },
-  { key: 'breakdown', label: 'Bóc tách chi phí' },
-  { key: 'products', label: 'Danh sách sản phẩm' },
-  { key: 'quote', label: 'Xuất báo giá' },
-  { key: 'po', label: 'Mua hàng' },
+  { key: 'overview', label: 'Bảng điều khiển', icon: 'grid' },
+  { key: 'breakdown', label: 'Bóc tách', icon: 'layers' },
+  { key: 'cost', label: 'Chi phí', icon: 'banknote' },
+  { key: 'quote', label: 'Xuất báo giá', icon: 'fileText' },
+  { key: 'po', label: 'Mua hàng', icon: 'cart' },
+  { key: 'projects', label: 'Dự án', icon: 'scan' },
 ]
 
 /* status: doing | draft | done */

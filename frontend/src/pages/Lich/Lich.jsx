@@ -110,7 +110,8 @@ export default function Lich() {
       id: newEventId(), cal: calKey, day, top, height, dim: false, allday: isAllDay, compact: isCompact,
       color: colors[0], tint: colors[1], title, sub: isCompact ? startStr : (timeLabel + guestSuffix),
     }]
-    const [, trackedList] = trackMany(guests.map(g => g.name))
+    /* Khách bên ngoài (nhập tay) chỉ ghi vào tên sự kiện, không tạo lịch theo dõi */
+    const [, trackedList] = trackMany(guests.filter(g => !g.external).map(g => g.name))
     trackedList.forEach((tracked, i) => {
       created.push({
         id: newEventId(), cal: tracked.calKey, day, top, height, left: 18 + i * 10, dim: false, allday: isAllDay, compact: false,
@@ -208,7 +209,7 @@ export default function Lich() {
         </div>
       </div>
 
-      <CreateEventModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={createEvent} />
+      <CreateEventModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={createEvent} events={events} />
       <EventDetailPopover ref={popRef} detail={detail} onClose={() => setDetail(null)} onDelete={deleteDetailEvent} />
 
       <Dezbot
