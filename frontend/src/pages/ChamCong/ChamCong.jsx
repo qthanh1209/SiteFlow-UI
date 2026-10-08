@@ -6,10 +6,9 @@ import { useTheme } from '../../hooks/useTheme'
 import Icon from '../../components/ui/Icon'
 import {
   INITIAL_HR_EMPLOYEES, INITIAL_SHIFTS, TODAY_LOGS, INITIAL_HR_REQUESTS, HR_TODAY, initialSchedule, EMPTY_EMPLOYEE,
-  INITIAL_ORG_UNITS, INITIAL_UNIT_HEADS, syncDepts,
-} from '../../data/hrData'
+  INITIAL_ORG_UNITS, INITIAL_UNIT_HEADS, syncDepts, monthlySummary, MONTHS, MOTHER_KEY, PARENT_COMPANY, HOLDING, HOLDING_KEY } from '../../data/hrData'
 import {
-  ROLES, DEFAULT_PERMS, SECURITY_SETTINGS, INITIAL_AUDIT, DEFAULT_PAYROLL_CONFIG, INITIAL_ADJUSTMENTS,
+  ROLES, DEFAULT_PERMS, SECURITY_SETTINGS, INITIAL_AUDIT, DEFAULT_PAYROLL_CONFIG, INITIAL_ADJUSTMENTS, INITIAL_FIXED_COSTS,
   INITIAL_JOBS, INITIAL_JDS, INITIAL_CANDIDATES, INITIAL_INTERVIEWS, INITIAL_OKRS, INITIAL_REVIEWS, INITIAL_ENROLL,
 } from '../../data/hrData2'
 import EmployeesModule from './hr/EmployeesModule'
@@ -19,7 +18,7 @@ import AttendanceToday from './hr/AttendanceToday'
 import ShiftSchedule from './hr/ShiftSchedule'
 import LeaveRequests, { reqStatus } from './hr/LeaveRequests'
 import MonthlySummary from './hr/MonthlySummary'
-import PayrollModule from './hr/PayrollModule'
+import PayrollModule, { calcPay } from './hr/PayrollModule'
 import RecruitModule from './hr/RecruitModule'
 import PerformanceModule from './hr/PerformanceModule'
 import SecurityModule from './hr/SecurityModule'
@@ -74,7 +73,17 @@ export default function ChamCong() {
   const [units, setUnits] = useState(INITIAL_ORG_UNITS)
   const [heads, setHeads] = useState(INITIAL_UNIT_HEADS)
   // Thành viên kiêm nhiệm của HĐQT & các ban (không đổi phòng ban trong hồ sơ)
-  const [extraMembers, setExtraMembers] = useState({ hdqt: [1, 22, 2], bod: [1, 22, 2, 3], bks: [3, 19], bcl: [1, 22, 23, 26] })
+  // pct: tỉ lệ thời gian/công việc dành cho ban (trừ vào phòng ban chính) · allowance: phụ cấp kiêm nhiệm / tháng
+  const [extraMembers, setExtraMembers] = useState({
+    hdqt: [{ id: 1, pct: 10, title: 'Chủ tịch HĐQT', allowance: 0 }, { id: 22, pct: 5, title: 'Thành viên HĐQT', allowance: 3000000 }, { id: 2, pct: 5, title: 'Thành viên HĐQT', allowance: 3000000 }],
+    bod: [{ id: 1, pct: 10, title: 'Chủ trì', allowance: 0 }, { id: 22, pct: 10, title: 'Thành viên', allowance: 0 }, { id: 2, pct: 10, title: 'Thành viên', allowance: 0 }, { id: 3, pct: 10, title: 'Thành viên', allowance: 2000000 }],
+    bks: [{ id: 3, pct: 15, title: 'Trưởng ban kiểm soát', allowance: 3000000 }, { id: 19, pct: 20, title: 'Kiểm soát viên', allowance: 2000000 }],
+    bcl: [{ id: 1, pct: 10, title: 'Chủ trì', allowance: 0 }, { id: 22, pct: 10, title: 'Thành viên', allowance: 0 }, { id: 23, pct: 15, title: 'Thành viên', allowance: 2000000 }, { id: 26, pct: 20, title: 'Thành viên', allowance: 2000000 }],
+  })
+  /* Danh sách kiêm nhiệm của 1 nhân sự: [{ unit, pct, title, allowance }] — phòng ban chính giữ phần còn lại (tối thiểu 10%) */
+  const concurrentOf = useCallback(empId => units
+    .filter(u => (extraMembers[u.key] || []).some(m => m.id === empId))
+    .map(u => ({ unit: u, ...(extraMembers[u.key].find(m => m.id === empId)) })), [units, extraMembers])
   syncDepts(units) // danh sách phòng ban dùng chung luôn khớp với cơ cấu đang thiết lập
   const [openEmp, setOpenEmp] = useState(null)
   const [form, setForm] = useState({ open: false, emp: null })
@@ -82,9 +91,17 @@ export default function ChamCong() {
   const [schedule, setSchedule] = useState(() => initialSchedule(INITIAL_HR_EMPLOYEES))
   const [logs, setLogs] = useState(TODAY_LOGS)
   const [requests, setRequests] = useState(INITIAL_HR_REQUESTS)
-  const [payroll, setPayroll] = useState({ config: DEFAULT_PAYROLL_CONFIG, adjustments: INITIAL_ADJUSTMENTS, runs: { '2026-08': { status: 'paid', sent: [] }, '2026-07': { status: 'paid', sent: [] } } })
+  const [payroll, setPayroll] = useState({ config: DEFAULT_PAYROLL_CONFIG, adjustments: INITIAL_ADJUSTMENTS, fixed: INITIAL_FIXED_COSTS, runs: { '2026-08': { status: 'paid', sent: [] }, '2026-07': { status: 'paid', sent: [] } } })
   const [recruit, setRecruit] = useState({ jobs: INITIAL_JOBS, jds: INITIAL_JDS, candidates: INITIAL_CANDIDATES, interviews: INITIAL_INTERVIEWS })
   const [perf, setPerf] = useState({ okrs: INITIAL_OKRS, reviews: INITIAL_REVIEWS, enroll: INITIAL_ENROLL })
+
+  /* Lương tháng hiện tại của 1 nhân sự (dùng cho bảng phân bổ trong hồ sơ) */
+  const payOf = useCallback(empId => {
+    const emp = employees.find(e => e.id === empId)
+    const att = emp && monthlySummary([emp], MONTHS[0].key)[0]
+    if (!att) return null
+    return calcPay(emp, att, payroll.adjustments[MONTHS[0].key]?.[empId] || [], payroll.config, concurrentOf(empId))
+  }, [employees, payroll, concurrentOf])
 
   const [aiOpen, setAiOpen] = useState(false)
   const [aiWidth, setAiWidth] = useState(loadAiPanelWidth)
@@ -166,6 +183,56 @@ export default function ChamCong() {
     log('employees', origKey ? 'edit' : 'create', `Cơ cấu tổ chức: ${origKey ? 'cập nhật' : 'thêm'} đơn vị "${unit.label}"`)
     toast(origKey ? `Đã cập nhật ${unit.label}` : `Đã thêm ${unit.label} vào cơ cấu tổ chức`)
   }
+  /* Thêm bộ phận (phòng ban / công ty con) kèm liên kết người đứng đầu:
+     lead.mode = concurrent (quản lý kiêm nhiệm) | independent (lãnh đạo độc lập — điều chuyển toàn thời gian) | none
+     boards: ban kiểm soát / ban chiến lược của công ty con — thành viên bổ nhiệm từ công ty mẹ (kiêm nhiệm) */
+  function createUnit({ unit, lead, boards = [] }) {
+    const freePct = id => 90 - concurrentOf(id).reduce((s, c) => s + c.pct, 0)
+    const newUnits = [unit]
+    const newHeads = {}
+    const newExtras = {}
+    const skipped = []
+    if (lead.mode === 'concurrent' && lead.empId) {
+      const pct = Math.min(lead.pct, freePct(lead.empId))
+      if (pct <= 0) skipped.push(employees.find(e => e.id === lead.empId)?.name)
+      else { newExtras[unit.key] = [{ id: lead.empId, pct, title: lead.title || 'Quản lý kiêm nhiệm', allowance: 0 }]; newHeads[unit.key] = lead.empId }
+    }
+    if (lead.mode === 'independent' && lead.empId) newHeads[unit.key] = lead.empId
+    boards.forEach(b => {
+      const key = unit.key + '_' + b.kind
+      newUnits.push({ key, label: b.label, name: `${b.label} — ${unit.label}`, type: 'board', parent: unit.key, tone: 'qs', desc: b.desc, appointedFromParent: true })
+      newExtras[key] = b.members.map((id, i) => {
+        const pct = Math.min(5, freePct(id))
+        if (pct <= 0) skipped.push(employees.find(e => e.id === id)?.name)
+        return { id, pct: Math.max(0, pct), title: i === 0 ? (b.kind === 'bks' ? 'Trưởng ban kiểm soát' : 'Trưởng ban chiến lược') : (b.kind === 'bks' ? 'Kiểm soát viên' : 'Thành viên'), allowance: 0 }
+      }).filter(m => m.pct > 0)
+      if (newExtras[key][0]) newHeads[key] = newExtras[key][0].id
+    })
+    setUnits(prev => [...prev, ...newUnits])
+    setHeads(prev => ({ ...prev, ...newHeads }))
+    setExtraMembers(prev => ({ ...prev, ...newExtras }))
+    if (lead.mode === 'independent' && lead.empId) {
+      const boss = heads[unit.parent]
+      setEmployees(prev => prev.map(e => (e.id === lead.empId ? { ...e, dept: unit.key, position: lead.title || e.position, managerId: boss && boss !== e.id ? boss : e.managerId, promotions: [...e.promotions, { date: HR_TODAY, note: `Bổ nhiệm ${lead.title || 'lãnh đạo'} — ${unit.name}` }] } : e)))
+    }
+    log('employees', 'create', `Cơ cấu tổ chức: thêm ${unit.type === 'subsidiary' ? 'công ty con' : 'phòng ban'} "${unit.label}"${boards.length ? ' + ' + boards.map(b => b.label).join(', ') : ''}`)
+    toast(`Đã thêm ${unit.label}` + (skipped.length ? ` — ${skipped.join(', ')} đã kiêm nhiệm tối đa 90%, chưa được gán` : ''), skipped.length ? 'danger' : 'success')
+  }
+
+  /* Kéo thả trên sơ đồ: chuyển đơn vị sang cấp quản lý mới; trưởng đơn vị báo cáo cho trưởng đơn vị mới */
+  function moveUnit(key, newParent, isUndo) {
+    const unit = units.find(u => u.key === key)
+    // newParent: key đơn vị | MOTHER_KEY (trực thuộc công ty mẹ) | null (công ty thành viên độc lập)
+    const target = newParent === HOLDING_KEY ? { label: `${HOLDING.name} (tập đoàn)` } : newParent === MOTHER_KEY ? { label: `${PARENT_COMPANY.name} (công ty mẹ)` } : !newParent ? { label: 'độc lập (không trực thuộc công ty mẹ)' } : units.find(u => u.key === newParent)
+    if (!unit || !target) return
+    setUnits(prev => prev.map(u => (u.key === key ? { ...u, parent: newParent || null } : u)))
+    const head = heads[key], boss = heads[newParent]
+    if (head && boss && head !== boss) {
+      setEmployees(prev => prev.map(e => (e.id === head ? { ...e, managerId: boss } : e)))
+    }
+    log('employees', 'edit', `Cơ cấu tổ chức: ${isUndo ? 'hoàn tác — ' : ''}chuyển "${unit.label}" về trực thuộc "${target.label}"`)
+    toast(isUndo ? `Đã hoàn tác: ${unit.label} về lại ${target.label}` : `Đã chuyển ${unit.label} sang ${target.label}`)
+  }
   function deleteUnit(unit, memberCount, childCount) {
     if (memberCount || childCount) { toast(`Không thể xoá: ${unit.label} còn ${memberCount} nhân sự, ${childCount} đơn vị trực thuộc`, 'danger'); return }
     if (!confirm(`Xoá đơn vị "${unit.label}" khỏi cơ cấu tổ chức?`)) return
@@ -174,10 +241,15 @@ export default function ChamCong() {
     toast(`Đã xoá ${unit.label}`, 'danger')
   }
 
-  function assignMembers(unit, ids) {
+  function assignMembers(unit, ids, mode) {
     const names = ids.map(id => employees.find(e => e.id === id)?.name).filter(Boolean)
-    if (['board', 'governance'].includes(unit.type)) {
-      setExtraMembers(prev => ({ ...prev, [unit.key]: [...new Set([...(prev[unit.key] || []), ...ids])] }))
+    if (['board', 'governance'].includes(unit.type) || mode === 'conc') {
+      // Mặc định 10% (không vượt quá phần còn lại — phòng ban chính giữ tối thiểu 10%)
+      const add = ids.filter(id => !(extraMembers[unit.key] || []).some(m => m.id === id)).map(id => {
+        const used = concurrentOf(id).reduce((s, c) => s + c.pct, 0)
+        return { id, pct: Math.max(0, Math.min(10, 90 - used)), title: 'Thành viên', allowance: 0 }
+      })
+      setExtraMembers(prev => ({ ...prev, [unit.key]: [...(prev[unit.key] || []), ...add] }))
     } else {
       const head = heads[unit.key]
       // Không gán trưởng đơn vị làm quản lý nếu người đó là cấp trên (trực tiếp/gián tiếp) của trưởng đơn vị — tránh vòng lặp
@@ -188,9 +260,34 @@ export default function ChamCong() {
     toast(`Đã thêm ${names.length} nhân sự vào ${unit.label}`)
   }
   function removeExtra(unit, emp) {
-    setExtraMembers(prev => ({ ...prev, [unit.key]: (prev[unit.key] || []).filter(id => id !== emp.id) }))
+    setExtraMembers(prev => ({ ...prev, [unit.key]: (prev[unit.key] || []).filter(m => m.id !== emp.id) }))
     log('employees', 'edit', `${unit.label}: gỡ ${emp.name}`)
     toast(`Đã gỡ ${emp.name} khỏi ${unit.label}`)
+  }
+
+  function updateExtra(unit, empId, patch) {
+    if (patch.pct != null) {
+      const others = concurrentOf(empId).filter(c => c.unit.key !== unit.key).reduce((s, c) => s + c.pct, 0)
+      const max = 90 - others
+      if (patch.pct > max) { toast(`Tổng kiêm nhiệm tối đa 90% — phòng ban chính giữ ít nhất 10% (còn ${max}%)`, 'danger'); patch = { ...patch, pct: Math.max(0, max) } }
+    }
+    setExtraMembers(prev => ({ ...prev, [unit.key]: (prev[unit.key] || []).map(m => (m.id === empId ? { ...m, ...patch } : m)) }))
+  }
+  /* Ghi đè danh sách kiêm nhiệm của 1 nhân sự (sửa từ hồ sơ): gỡ khỏi các ban cũ, thêm vào các ban mới */
+  function saveConcurrent(emp, list) {
+    setExtraMembers(prev => {
+      const next = {}
+      Object.entries(prev).forEach(([k, arr]) => { next[k] = arr.filter(m => m.id !== emp.id) })
+      list.forEach(c => { next[c.unitKey] = [...(next[c.unitKey] || []), { id: emp.id, pct: c.pct, title: c.title, allowance: c.allowance }] })
+      return next
+    })
+    const desc = list.length ? list.map(c => `${units.find(u => u.key === c.unitKey)?.label} ${c.pct}% (${c.title})`).join(', ') : 'không kiêm nhiệm'
+    log('employees', 'edit', `Phân bổ kiêm nhiệm ${emp.name}: ${desc}`)
+    toast(`Đã cập nhật kiêm nhiệm của ${emp.name}`)
+  }
+  function commitExtra(unit, emp) {
+    const m = (extraMembers[unit.key] || []).find(x => x.id === emp.id)
+    if (m) log('employees', 'edit', `Kiêm nhiệm ${unit.label} — ${emp.name}: ${m.title}, ${m.pct}%, phụ cấp ${Number(m.allowance || 0).toLocaleString('vi-VN')}đ`)
   }
 
   /* Ứng viên trúng tuyển → hồ sơ nhân viên thử việc */
@@ -256,12 +353,13 @@ export default function ChamCong() {
           {current.perm && !allowed(current) ? <NoAccess /> : <>
             {module === 'employees' && (
               <EmployeesModule
-                employees={scoped} openId={openEmp} onOpen={setOpenEmp}
+                employees={scoped} openId={openEmp} onOpen={setOpenEmp} concurrentOf={concurrentOf}
+                boardUnits={units.filter(u => u.type !== 'exec')} onSaveConcurrent={saveConcurrent} payOf={payOf}
                 onAdd={() => setForm({ open: true, emp: null })} onEdit={emp => setForm({ open: true, emp })}
                 onDelete={deleteEmployee} onOffboard={offboard}
               />
             )}
-            {module === 'org' && <OrgChart employees={employees} units={units} heads={heads} extraMembers={extraMembers} onSaveUnit={saveUnit} onDeleteUnit={deleteUnit} onAssign={assignMembers} onRemoveExtra={removeExtra} onOpen={id => { if (access.inScope(employees.find(e => e.id === id))) { setOpenEmp(id); setModule('employees') } else toast('Bạn chỉ xem được hồ sơ trong phạm vi được phân quyền', 'danger') }} />}
+            {module === 'org' && <OrgChart employees={employees} units={units} heads={heads} extraMembers={extraMembers} onSaveUnit={saveUnit} onDeleteUnit={deleteUnit} onAssign={assignMembers} onRemoveExtra={removeExtra} onMoveUnit={moveUnit} onCreateUnit={createUnit} onUpdateExtra={updateExtra} onCommitExtra={commitExtra} onOpen={id => { if (access.inScope(employees.find(e => e.id === id))) { setOpenEmp(id); setModule('employees') } else toast('Bạn chỉ xem được hồ sơ trong phạm vi được phân quyền', 'danger') }} />}
             {module === 'attendance' && (
               <div className="cc-stack">
                 <Seg value={attTab} onChange={setAttTab} options={ATT_TABS.map(t => (t.value === 'requests' ? { ...t, count: pending || undefined } : t))} />
@@ -271,7 +369,7 @@ export default function ChamCong() {
                 {attTab === 'monthly' && <MonthlySummary employees={scoped} toast={toast} />}
               </div>
             )}
-            {module === 'payroll' && <PayrollModule employees={scoped} payroll={payroll} setPayroll={setPayroll} toast={toast} maskDefault={security.settings.maskSalary.value} />}
+            {module === 'payroll' && <PayrollModule employees={scoped} units={units} concurrentOf={concurrentOf} payroll={payroll} setPayroll={setPayroll} toast={toast} maskDefault={security.settings.maskSalary.value} />}
             {module === 'recruit' && <RecruitModule recruit={recruit} setRecruit={setRecruit} onHire={hireCandidate} toast={toast} />}
             {module === 'performance' && <PerformanceModule employees={employees} perf={perf} setPerf={setPerf} toast={toast} />}
             {module === 'security' && <SecurityModule employees={employees} security={security} setSecurity={setSecurity} audit={audit} toast={toast} />}
