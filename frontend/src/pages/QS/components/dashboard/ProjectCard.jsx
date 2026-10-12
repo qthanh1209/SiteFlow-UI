@@ -1,7 +1,7 @@
 import Icon from '../../../../components/ui/Icon'
 import DraftItem from './DraftItem'
 
-export default function ProjectCard({ project, activeDraftId, onUse }) {
+export default function ProjectCard({ project, activeDraftId, onUse, onAddDraft }) {
   const sub = project.client
     ? (project.phone ? `${project.client} · ${project.phone}` : project.client)
     : 'Chưa có khách hàng'
@@ -24,8 +24,7 @@ export default function ProjectCard({ project, activeDraftId, onUse }) {
         {project.drafts.map(d => (
           <DraftItem key={d.id} draft={d} active={d.id === activeDraftId} onUse={() => onUse(project.id, d.id)} />
         ))}
-        {/* TODO: thêm bản nháp khi có API */}
-        <button className="qs-dash-add-draft"><Icon name="plus" size={14} />Thêm bản nháp</button>
+        <button className="qs-dash-add-draft" onClick={() => onAddDraft(project.id)}><Icon name="plus" size={14} />Thêm bản nháp</button>
       </div>
     </div>
   )

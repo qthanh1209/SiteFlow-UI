@@ -20,71 +20,121 @@ export const SHEET_COLUMNS = [
   { key: 'amount', label: 'Thành tiền', w: 130, align: 'right' },
   { key: 'note', label: 'Ghi chú', w: 170 },
 ]
+/* Bộ cột chọn nhanh của bảng bóc tách (nút "Mặc định x/y"): keep = các cột giữ lại.
+   "Mặc định" không nằm ở đây: là bộ cột người dùng đã lưu, chưa lưu thì hiện đủ cột */
+const sheetKeep = (key, label, keep) => ({ key, label, hidden: SHEET_COLUMNS.filter(c => !keep.includes(c.key)).map(c => c.key) })
+export const SHEET_COL_PRESETS = [
+  sheetKeep('quote', 'Báo giá cho khách', ['stt', 'room', 'name', 'brand', 'info', 'features', 'image', 'unit', 'qty', 'price', 'amount', 'note']),
+  sheetKeep('product', 'Thông tin sản phẩm', ['stt', 'room', 'name', 'brand', 'info', 'features', 'image', 'docs', 'unit', 'note']),
+  sheetKeep('pricing', 'Giá & lợi nhuận', ['stt', 'room', 'name', 'unit', 'qty', 'retail', 'discount', 'dealer', 'margin', 'price', 'amount']),
+  sheetKeep('minimal', 'Tối giản', ['stt', 'name', 'qty', 'price', 'amount']),
+]
 export const ROW_NUM_WIDTH = 57
 
 export const CATALOG_TOTAL = 146
 export const FAVORITE_BASE = 10
 export const ACTIVE_CATEGORY = { code: '3.2.2', name: 'Sơn nước' }
 
-const p = (no, name, price, brand, combo, variants, tone, extra = {}) => ({
-  id: `sp${no}`, no, name, price, brand, combo, variants, tone, unit: 'Kg', docs: 1, discount: 0, margin: 0, info: '', features: '', ...extra,
+const p = (no, name, price, brand, tone, extra = {}) => ({
+  id: `sp${no}`, no, name, price, brand, tone, unit: 'Kg', docs: 1, discount: 0, margin: 0, info: '', features: '', ...extra,
 })
 
-/* Danh sách sản phẩm ở cột trái (tone: màu thùng sơn minh hoạ) */
-export const CATALOG = [
-  p(1, 'Bột trét nội thất - Trắng - 20 Kg', 268000, 'Dulux', 2, 2, '#8FA3B8', {
+/* Danh sách sản phẩm ở cột trái (tone: màu thùng sơn minh hoạ); combo / biến thể gắn thêm ở dưới */
+const BASE_CATALOG = [
+  p(1, 'Bột trét nội thất - Trắng - 20 Kg', 268000, 'Dulux', '#8FA3B8', {
     info: 'Độ phủ: 1-1,2 m2/kg/ 2 lớp với độ dày tiêu chuẩn 1mm/lớp\nThời gian khô: 1-2 giờ *tùy thuộc vào điều kiện thi công\nSố lớp: 2\nDòng sản phẩm: Bột trét\nHạng mục: Sơn nước\nKích thước: 20 Kg',
     features: 'Bề mặt nhẵn mịn\nĐộ bám dính cao\nDễ thi công, dễ xả nhám',
   }),
-  p(3, 'Bột trét nội và ngoại thất - Trắng - 20 Kg', 358000, 'Dulux', 1, 2, '#6F8FB5', {
+  p(3, 'Bột trét nội và ngoại thất - Trắng - 20 Kg', 358000, 'Dulux', '#6F8FB5', {
     info: 'Độ phủ: 1-1,2 m2/kg/ 2 lớp\nThời gian khô: 2-3 giờ\nSố lớp: 2\nDòng sản phẩm: Bột trét\nHạng mục: Sơn nước\nKích thước: 20 Kg',
     features: 'Chống nứt chân chim\nChịu thời tiết tốt\nĐộ bám dính cao',
   }),
-  p(5, 'Bột trét tường Nội & Ngoại thất Maxilite từ Dulux - Trắng - 20 Kg', 210000, 'Maxilite', 1, 2, '#B5483E', {
+  p(5, 'Bột trét tường Nội & Ngoại thất Maxilite từ Dulux - Trắng - 20 Kg', 210000, 'Maxilite', '#B5483E', {
     info: 'Độ phủ: 1 m2/kg/ 2 lớp\nThời gian khô: 2 giờ\nSố lớp: 2\nDòng sản phẩm: Bột trét\nHạng mục: Sơn nước\nKích thước: 20 Kg',
     features: 'Kinh tế\nBề mặt láng mịn\nDễ thi công',
   }),
-  p(7, 'Chống thấm hiệu quả tường ngoại thất Dulux Aquatech - Trắng - 6 Kg', 929000, 'Dulux', 1, 2, '#2E7CC4', {
+  p(7, 'Chống thấm hiệu quả tường ngoại thất Dulux Aquatech - Trắng - 6 Kg', 929000, 'Dulux', '#2E7CC4', {
     info: 'Bề mặt hoàn thiện: Không phân loại\nĐộ phủ: 4 - 5 m2/kg/lớp (tùy thuộc độ dày màng sơn và bề mặt tường)\nThời gian khô: 6-8 giờ\nSố lớp: 2\nKích thước: 6 Kg\nDòng sản phẩm: Chất chống thấm cao cấp\nHạng mục: Sơn nước',
     features: 'Chống thấm hiệu quả, độ bám dính cao, bề mặt sáng đẹp.\nSản phẩm pha trộn với xi măng.\nĐộ phủ lý thuyết: 4-5m²/kg/lớp.',
   }),
-  p(9, 'Chống thấm sàn Dulux Aquatech Max', 1355000, 'Dulux', 0, 1, '#1F8FD1', {
+  p(9, 'Chống thấm sàn Dulux Aquatech Max', 1355000, 'Dulux', '#1F8FD1', {
     info: 'Bề mặt hoàn thiện: Mờ\nĐộ phủ: 3 - 4 m2/kg/lớp (tùy thuộc vào điều kiện bề mặt sàn, phương pháp thi công và tỉ lệ pha loãng)\nThời gian khô: 1-2 giờ\nSố lớp: 3\nDòng sản phẩm: Chất chống thấm siêu cao cấp\nHạng mục: Sơn nước\nKích thước: 6 Kg',
     features: 'Chất chống thấm SÀN THẾ HỆ MỚI\nChống thấm gấp 2 lần\nMàng chống thấm dày với độ co giãn cao, che lấp khe nứt nhỏ\nSản phẩm không cần pha xi măng, dễ thi công\nĐộ phủ lý thuyết: 3-4m²/kg/lớp',
   }),
-  p(11, 'Sơn lót nội thất Dulux Interior Primer - 18 L', 1450000, 'Dulux', 1, 2, '#3F6FB0', {
+  p(11, 'Sơn lót nội thất Dulux Interior Primer - 18 L', 1450000, 'Dulux', '#3F6FB0', {
     unit: 'Thùng', info: 'Bề mặt hoàn thiện: Mờ\nĐộ phủ: 10 - 12 m2/lít/lớp\nThời gian khô: 1 giờ\nSố lớp: 1\nHạng mục: Sơn nước\nKích thước: 18 L',
     features: 'Kháng kiềm\nTăng độ bám dính cho lớp phủ\nChống nấm mốc',
   }),
-  p(13, 'Sơn lót ngoại thất Dulux Weathershield Primer - 18 L', 1890000, 'Dulux', 2, 2, '#205C9E', {
+  p(13, 'Sơn lót ngoại thất Dulux Weathershield Primer - 18 L', 1890000, 'Dulux', '#205C9E', {
     unit: 'Thùng', info: 'Bề mặt hoàn thiện: Mờ\nĐộ phủ: 10 - 12 m2/lít/lớp\nThời gian khô: 2 giờ\nSố lớp: 1\nHạng mục: Sơn nước\nKích thước: 18 L',
     features: 'Kháng kiềm, kháng muối\nChống thấm ngược\nBám dính vượt trội',
   }),
-  p(15, 'Sơn nội thất Dulux EasyClean Lau chùi hiệu quả - Bóng - 15 L', 2150000, 'Dulux', 2, 3, '#4A90C8', {
+  p(15, 'Sơn nội thất Dulux EasyClean Lau chùi hiệu quả - Bóng - 15 L', 2150000, 'Dulux', '#4A90C8', {
     unit: 'Thùng', info: 'Bề mặt hoàn thiện: Bóng\nĐộ phủ: 12 - 14 m2/lít/lớp\nThời gian khô: 1 giờ\nSố lớp: 2\nHạng mục: Sơn nước\nKích thước: 15 L',
     features: 'Lau chùi vết bẩn dễ dàng\nKháng khuẩn\nMàu sắc bền đẹp',
   }),
-  p(17, 'Sơn nội thất Maxilite Smooth - Mờ - 18 L', 760000, 'Maxilite', 1, 2, '#C0564B', {
+  p(17, 'Sơn nội thất Maxilite Smooth - Mờ - 18 L', 760000, 'Maxilite', '#C0564B', {
     unit: 'Thùng', info: 'Bề mặt hoàn thiện: Mờ\nĐộ phủ: 9 - 11 m2/lít/lớp\nThời gian khô: 1 giờ\nSố lớp: 2\nHạng mục: Sơn nước\nKích thước: 18 L',
     features: 'Màng sơn mịn\nĐộ che phủ cao\nKinh tế',
   }),
-  p(19, 'Sơn ngoại thất Maxilite Tough - Mờ - 18 L', 1240000, 'Maxilite', 1, 2, '#A9443A', {
+  p(19, 'Sơn ngoại thất Maxilite Tough - Mờ - 18 L', 1240000, 'Maxilite', '#A9443A', {
     unit: 'Thùng', info: 'Bề mặt hoàn thiện: Mờ\nĐộ phủ: 9 - 11 m2/lít/lớp\nThời gian khô: 2 giờ\nSố lớp: 2\nHạng mục: Sơn nước\nKích thước: 18 L',
     features: 'Chống rêu mốc\nBền màu\nChịu thời tiết',
   }),
-  p(21, 'Sơn chống thấm đa năng Dulux Aquatech Flex - 6 Kg', 985000, 'Dulux', 0, 1, '#2A86C9', {
+  p(21, 'Sơn chống thấm đa năng Dulux Aquatech Flex - 6 Kg', 985000, 'Dulux', '#2A86C9', {
     info: 'Độ phủ: 2 - 3 m2/kg/lớp\nThời gian khô: 2 giờ\nSố lớp: 2\nDòng sản phẩm: Chất chống thấm\nHạng mục: Sơn nước\nKích thước: 6 Kg',
     features: 'Co giãn 300%\nChống thấm tường, sàn, mái\nKhông cần pha xi măng',
   }),
-  p(23, 'Sơn ngoại thất Dulux Weathershield Powerflexx - Bóng - 5 L', 1675000, 'Dulux', 2, 3, '#1D5FA8', {
+  p(23, 'Sơn ngoại thất Dulux Weathershield Powerflexx - Bóng - 5 L', 1675000, 'Dulux', '#1D5FA8', {
     unit: 'Lon', info: 'Bề mặt hoàn thiện: Bóng\nĐộ phủ: 11 - 13 m2/lít/lớp\nThời gian khô: 2 giờ\nSố lớp: 2\nHạng mục: Sơn nước\nKích thước: 5 L',
     features: 'Che phủ vết nứt\nChống bám bụi\nBảo vệ 10 năm',
   }),
-  p(25, 'Sơn nội thất Dulux Ambiance 5in1 Superflexx - Bóng mờ - 5 L', 1320000, 'Dulux', 1, 3, '#5B9BD5', {
+  p(25, 'Sơn nội thất Dulux Ambiance 5in1 Superflexx - Bóng mờ - 5 L', 1320000, 'Dulux', '#5B9BD5', {
     unit: 'Lon', info: 'Bề mặt hoàn thiện: Bóng mờ\nĐộ phủ: 13 - 15 m2/lít/lớp\nThời gian khô: 1 giờ\nSố lớp: 2\nHạng mục: Sơn nước\nKích thước: 5 L',
     features: 'Che phủ vết nứt nhỏ\nBề mặt sang trọng\nÍt mùi',
   }),
 ]
+
+/* Combo: sản phẩm thường mua kèm — [số thứ tự sản phẩm, số lượng] */
+const COMBOS = {
+  1: [[11, 1], [17, 1]], 3: [[13, 1]], 5: [[17, 1]], 7: [[21, 1]], 11: [[25, 1]], 13: [[3, 1], [23, 1]],
+  15: [[1, 1], [11, 1]], 17: [[5, 1]], 19: [[5, 1]], 23: [[13, 1], [7, 1]], 25: [[11, 1]],
+}
+/* Biến thể: [thông số…, giá]. Biến thể đầu tiên chính là sản phẩm ở dòng chính (giá lấy theo sản phẩm) */
+const VARIANTS = {
+  1: [['Trắng', '20 Kg'], ['Trắng', '40 Kg', 516000]],
+  3: [['Trắng', '20 Kg'], ['Trắng', '40 Kg', 689000]],
+  5: [['Trắng', '20 Kg'], ['Trắng', '40 Kg', 405000]],
+  7: [['Trắng', '6 Kg'], ['Trắng', '20 Kg', 2890000]],
+  9: [['Xám', '6 Kg']],
+  11: [['18 L'], ['5 L', 445000]],
+  13: [['18 L'], ['5 L', 575000]],
+  15: [['Bóng', '15 L'], ['Bóng', '5 L', 765000], ['Mờ', '15 L', 1980000]],
+  17: [['Mờ', '18 L'], ['Mờ', '5 L', 235000]],
+  19: [['Mờ', '18 L'], ['Mờ', '5 L', 375000]],
+  21: [['6 Kg']],
+  23: [['Bóng', '5 L'], ['Bóng', '1 L', 365000], ['Mờ', '5 L', 1590000]],
+  25: [['Bóng mờ', '5 L'], ['Bóng mờ', '1 L', 289000], ['Mờ', '5 L', 1250000]],
+}
+
+/* Biến thể là một sản phẩm đầy đủ (thêm vào bảng / xem thông tin như sản phẩm thường):
+   tên và thông tin chính thay các thông số khác với dòng chính, vd. "20 Kg" → "40 Kg" */
+function makeVariants(base) {
+  const list = VARIANTS[base.no] || [[]]
+  const main = list[0]
+  return list.map((v, i) => {
+    const specs = v.filter(x => typeof x === 'string')
+    if (i === 0) return { ...base, specs }
+    const swap = text => specs.reduce((t, s, j) => (s !== main[j] ? t.split(main[j]).join(s) : t), text)
+    return { ...base, id: `${base.id}-v${i + 1}`, name: swap(base.name), info: swap(base.info), price: v[v.length - 1], specs, variantOf: base.id }
+  })
+}
+
+/* combo: [{ id sản phẩm, qty }]; variants: danh sách biến thể (ít nhất 1 — chính sản phẩm); specs: thông số của dòng chính */
+export const CATALOG = BASE_CATALOG.map(c => {
+  const variants = makeVariants(c)
+  return { ...c, specs: variants[0].specs, variants, combo: (COMBOS[c.no] || []).map(([no, qty]) => ({ id: `sp${no}`, qty })) }
+})
 
 /* Thứ tự 13 dòng đã bóc của hạng mục Sơn nước (tổng 14.590.000 đ) */
 const SHEET_ORDER = [9, 1, 3, 5, 7, 11, 13, 15, 17, 19, 21, 23, 25]
@@ -158,7 +208,14 @@ export const FILTER_DEFS = [
   { key: 'brand', label: 'Thương hiệu', type: 'brand' },
   { key: 'price', label: 'Khoảng giá', type: 'price' },
 ]
-export const CATALOG_BRANDS = [...new Set(CATALOG.map(c => c.brand))]
+/* Danh sách tick của mục "Hạng mục sản phẩm": [nhãn, số sản phẩm] — số đếm theo giao diện mẫu như trên.
+   Giá trị chọn dùng chung filters.cat với bộ lọc "Hạng mục" */
+export const PRODUCT_CATEGORIES = [
+  ['Bả matit', 6], ['Bồn cầu', 33], ['Bồn tắm', 4], ['Lavabo', 18], ['Nắp rửa điện tử', 1], ['Phụ kiện vệ sinh', 69],
+  ['Sen tắm', 63], ['Sơn chống thấm', 10], ['Sơn hiệu ứng', 4], ['Sơn lót', 20], ['Sơn ngoại thất', 50], ['Sơn nội thất', 59],
+  ['Thiết bị khác', 29], ['Vòi lavabo', 50], ['Đèn kỹ thuật', 1], ['Đèn ngoại thất', 58],
+]
+export const CATALOG_BRANDS =[...new Set(CATALOG.map(c => c.brand))]
 export const EMPTY_FILTERS = { cat: [], finish: [], size: [], fav: false, combo: [], brand: '', priceFrom: '', priceTo: '' }
 
 const infoField = (c, label) => {
@@ -176,7 +233,7 @@ export function productFacets(c) {
     cat,
     finish: infoField(c, 'Bề mặt hoàn thiện') || 'Không phân loại',
     size: infoField(c, 'Kích thước').replace(/ L$/, 'L'),
-    combo: c.combo > 0 ? 'Có' : 'Không có',
+    combo: c.combo.length ? 'Có' : 'Không có',
   }
 }
 /* Sản phẩm có khớp bộ lọc đang chọn không (bỏ trống một mục = không lọc theo mục đó) */

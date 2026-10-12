@@ -3,7 +3,7 @@ import Icon from '../../../../components/ui/Icon'
 import ProjectCard from './ProjectCard'
 
 /* Danh sách dự án + ô tìm kiếm (lọc theo tên dự án / khách hàng, debounce 300ms) */
-export default function ProjectList({ projects, active, onUse, onCreate }) {
+export default function ProjectList({ projects, active, onUse, onAddDraft, onCreate }) {
   const [query, setQuery] = useState('')
   const [keyword, setKeyword] = useState('')
 
@@ -35,7 +35,7 @@ export default function ProjectList({ projects, active, onUse, onCreate }) {
         ? (
           <div className="qs-dash-project-grid">
             {shown.map(p => (
-              <ProjectCard key={p.id} project={p} activeDraftId={p.id === active.projectId ? active.draftId : null} onUse={onUse} />
+              <ProjectCard key={p.id} project={p} activeDraftId={p.id === active.projectId ? active.draftId : null} onUse={onUse} onAddDraft={onAddDraft} />
             ))}
           </div>
         )

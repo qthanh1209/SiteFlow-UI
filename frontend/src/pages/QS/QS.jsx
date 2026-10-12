@@ -10,8 +10,10 @@ import ProductsTab from './components/ProductsTab'
 import CostTab from './components/CostTab'
 import { useSheetHistory } from './components/breakdown/useSheetHistory'
 import { INITIAL_GROUPS } from '../../data/qsBreakdownData'
+import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../data/qsDashboardData'
 import QuoteTab from './components/QuoteTab'
 import PurchaseTab from './components/PurchaseTab'
+import ImportTab from './components/ImportTab'
 import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
 /* Hướng bố cục và khoảng cách của từng tab (giống style inline của các .qs-panel trong bản HTML) */
@@ -20,14 +22,18 @@ const PANEL_LAYOUT = {
   projects: { flexDirection: 'column', gap: 8, minHeight: '100%' },
   breakdown: { flexDirection: 'column', gap: 10, height: '100%', minHeight: 560 },
   cost: { flexDirection: 'column', gap: 8, minHeight: '100%' },
-  catalog: { flexDirection: 'row', gap: 16, minHeight: 0 },
-  quote: { flexDirection: 'column', gap: 8, minHeight: '100%' },
+  catalog: { flexDirection: 'row', gap: 10, height: '100%', minHeight: 560 },
+  quote: { flexDirection: 'column', gap: 8, height: '100%', minHeight: 560 },
   po: { flexDirection: 'column', gap: 8 },
+  import: { flexDirection: 'column', gap: 10 },
 }
 
 export default function QS() {
   const { theme, toggleTheme } = useTheme()
   const [tab, setTab] = useState('overview')
+  /* Danh sách dự án + bản nháp đang làm việc, dùng chung cho Bảng điều khiển và tab Bóc tách */
+  const [projects, setProjects] = useState(DASH_PROJECTS)
+  const [active, setActive] = useState(DASH_DEFAULT_ACTIVE)
   /* Bảng bóc tách + VAT dùng chung cho tab Bóc tách và tab Chi phí */
   const sheet = useSheetHistory(INITIAL_GROUPS)
   const [vat, setVat] = useState(0)
@@ -53,8 +59,8 @@ export default function QS() {
         </div>
         <div className="qs-top-actions">
           <button className="qs-top-btn" onClick={() => setTab('catalog')}><Icon name="listLines" size={14} /><span>Danh sách sản phẩm</span></button>
-          {/* TODO: Nhập dữ liệu / thông báo chưa có màn tương ứng */}
-          <button className="qs-top-btn primary"><Icon name="upload" size={14} /><span>Nhập dữ liệu</span></button>
+          {/* TODO: thông báo chưa có màn tương ứng */}
+          <button className="qs-top-btn primary" onClick={() => setTab('import')}><Icon name="upload" size={14} /><span>Nhập dữ liệu</span></button>
           <button className="qs-top-btn icon" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
           </button>
@@ -63,15 +69,17 @@ export default function QS() {
       </div>
 
       {/* Các tab luôn được mount (ẩn bằng display) để giữ trạng thái bộ lọc, giống bản HTML */}
-      <div className={`qs-scroll${tab === 'catalog' ? '' : ' qs-scroll-dash'}`}>
-        <div style={panel('overview')}><OverviewTab onGoto={setTab} /></div>
+      <div className="qs-scroll qs-scroll-dash">
+        <div style={panel('overview')}><OverviewTab projects={projects} onProjects={setProjects} active={active} onActive={setActive} onGoto={setTab} /></div>
         <div style={panel('projects')}><ProjectsTab sheet={sheet} onGoto={setTab} /></div>
-        <div style={panel('breakdown')}><BreakdownTab sheet={sheet} vat={vat} onVat={setVat} /></div>
+        <div style={panel('breakdown')}><BreakdownTab sheet={sheet} vat={vat} onVat={setVat} projects={projects} active={active} onActive={setActive} /></div>
         <div style={panel('cost')}><CostTab sheet={sheet} vat={vat} onVat={setVat} onGoto={setTab} /></div>
         {/* Danh sách sản phẩm không nằm trên thanh tab, mở bằng nút "Danh sách sản phẩm" */}
-        <div style={panel('catalog')}><ProductsTab /></div>
-        <div style={panel('quote')}><QuoteTab sheet={sheet} vat={vat} onVat={setVat} /></div>
+        <div style={panel('catalog')}><ProductsTab onGoto={setTab} /></div>
+        <div style={panel('quote')}><QuoteTab sheet={sheet} vat={vat} onVat={setVat} projects={projects} active={active} onActive={setActive} /></div>
         <div style={panel('po')}><PurchaseTab sheet={sheet} vat={vat} onGoto={setTab} /></div>
+        {/* Nhập dữ liệu cũng không nằm trên thanh tab, mở bằng nút "Nhập dữ liệu" */}
+        <div style={panel('import')}><ImportTab active={tab === 'import'} onGoto={setTab} /></div>
       </div>
 
       <Dezbot
