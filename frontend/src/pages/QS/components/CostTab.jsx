@@ -8,6 +8,13 @@ import {
 import SheetBody from './breakdown/SheetBody'
 import CostOverview from './cost/CostOverview'
 import DropMenu from './cost/DropMenu'
+import CategoryMenu from './cost/CategoryMenu'
+import { PRODUCT_SECTIONS, ALL_SECTIONS, sectionName } from '../../../data/qsProductsData'
+
+/* Dữ liệu mẫu chỉ có dòng ở một đề mục; "Tất cả hạng mục" và các đề mục cha của nó cũng tính các dòng đó */
+const LIVE_CODE = COST_CATEGORIES.find(c => c.live).code
+const coversLive = code => code === ALL_SECTIONS || code === LIVE_CODE || LIVE_CODE.startsWith(`${code}.`)
+const RECENT_MAX = 6
 
 const GROUP_MODES = [
   { key: 'none', label: 'Không gom', note: 'Danh sách phẳng, đánh số liên tục' },
@@ -36,6 +43,8 @@ function marginOf(r) {
 export default function CostTab({ sheet, vat, onGoto }) {
   const { groups } = sheet
   const [catCode, setCatCode] = useState(COST_CATEGORIES[0].code)
+  /* Dải hạng mục dùng gần đây ở đầu tab; chọn trong hộp "Chọn hạng mục" thì đưa hạng mục đó lên đầu dải */
+  const [recent, setRecent] = useState(COST_CATEGORIES)
   const [q, setQ] = useState('')
   const [chip, setChip] = useState('all')
   const [groupBy, setGroupBy] = useState('none')
@@ -50,8 +59,14 @@ export default function CostTab({ sheet, vat, onGoto }) {
   const [targetVal, setTargetVal] = useState('20')
   const searchRef = useRef(null)
 
-  const category = COST_CATEGORIES.find(c => c.code === catCode)
-  const live = Boolean(category.live)
+  const category = catCode === ALL_SECTIONS ? { code: ALL_SECTIONS, name: sectionName(ALL_SECTIONS) } : PRODUCT_SECTIONS.find(s => s.code === catCode)
+  const live = coversLive(catCode)
+  const lineCount = groups.reduce((s, g) => s + g.rows.length, 0)
+  const pickCategory = code => {
+    setCatCode(code)
+    if (code === ALL_SECTIONS) return
+    setRecent(list => [list.find(c => c.code === code) || PRODUCT_SECTIONS.find(s => s.code === code), ...list.filter(c => c.code !== code)].slice(0, RECENT_MAX))
+  }
   const project = DASH_PROJECTS.find(p => p.id === DASH_DEFAULT_ACTIVE.projectId)
   const rows = useMemo(() => (live ? groups.flatMap(g => g.rows) : []), [groups, live])
 
@@ -166,10 +181,10 @@ export default function CostTab({ sheet, vat, onGoto }) {
       <div className="qs-card qs-ct-top">
         <Icon name="history" size={15} className="qs-ct-top-icon" />
         <div className="qs-ct-cats">
-          {COST_CATEGORIES.map(c => (
+          {recent.map(c => (
             <button key={c.code} className={`qs-ct-cat-chip${c.code === catCode ? ' on' : ''}`} onClick={() => setCatCode(c.code)}>
               <small>{c.code}</small>{c.name}
-              {(c.live || c.count) && <span>{c.live ? groups.reduce((s, g) => s + g.rows.length, 0) : c.count}</span>}
+              {(coversLive(c.code) || c.count) && <span>{coversLive(c.code) ? lineCount : c.count}</span>}
             </button>
           ))}
         </div>
@@ -185,12 +200,7 @@ export default function CostTab({ sheet, vat, onGoto }) {
       <div className="qs-card qs-ct-bar">
         <span className="qs-ct-title">Hạng mục đã bóc</span>
         <span className="qs-bd-count">[{rows.length}]</span>
-        <button className="qs-bd-category">
-          <b>{category.code}.{category.name}</b>
-          <span className="qs-bd-count">[{rows.length}]</span>
-          <span style={{ flex: 1 }} />
-          <span className="qs-bd-acc-plus"><Icon name="plus" size={10} stroke={3} /></span>
-        </button>
+        <CategoryMenu value={catCode} onPick={pickCategory} countOf={code => (coversLive(code) ? lineCount : 0)} />
         <div className="qs-bd-seg">
           <button className={view === 'sheet' ? 'on' : ''} onClick={() => setView('sheet')}><Icon name="table" size={15} />Bảng tính</button>
           <button className={view === 'plain' ? 'on' : ''} onClick={() => setView('plain')}><Icon name="listLines" size={15} />Bảng thường</button>

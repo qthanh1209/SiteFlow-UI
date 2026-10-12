@@ -63,7 +63,7 @@ export const DASH_DEFAULT_ACTIVE = { projectId: 'p01', draftId: 'DA-20261006-133
 export const DASH_QUICK_ACTIONS = [
   { key: 'po', label: 'Mua hàng', icon: 'cart', tab: 'po' },
   { key: 'lines', label: 'SP trong dự án', icon: 'listLines', tab: 'breakdown' },
-  { key: 'import', label: 'Nhập dữ liệu', icon: 'download', tab: null },
+  { key: 'import', label: 'Nhập dữ liệu', icon: 'download', tab: 'import' },
   { key: 'products', label: 'Danh sách SP', icon: 'tag', tab: 'catalog' },
 ]
 
@@ -78,6 +78,23 @@ export function draftTotals(d) {
     lines: d.lines, cost: d.cost, sale, profit,
     total: sale * (1 + d.vat / 100),
     margin: sale ? (profit / sale) * 100 : 0,
+  }
+}
+
+/* Tạo bản nháp trống kế tiếp cho một dự án; mã dạng DA-YYYYMMDD-HHMMSSXX (XX = 2 ký tự ngẫu nhiên) */
+export function createDraft(project) {
+  const now = new Date()
+  const p = n => String(n).padStart(2, '0')
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const pick = () => chars[Math.floor(Math.random() * chars.length)]
+  const stamp = `DA-${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`
+  let code = stamp + pick() + pick()
+  while (project.drafts.some(d => d.id === code)) code = stamp + pick() + pick()
+  const last = project.drafts[project.drafts.length - 1]
+  return {
+    id: code, name: `Bản nháp ${project.drafts.length + 1}`, code, status: 'Bản nháp',
+    date: `${p(now.getDate())}/${p(now.getMonth() + 1)}/${now.getFullYear()}`,
+    vat: last ? last.vat : 0, lines: 0, cost: 0, groups: [],
   }
 }
 

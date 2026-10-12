@@ -1,0 +1,298 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic "Dezon" [ref=e6]
+      - generic [ref=e10]: Dezon
+      - generic [ref=e11]:
+        - button "Thu gọn tối đa (chỉ còn logo)" [ref=e12] [cursor=pointer]
+        - button "Thu gọn menu" [ref=e14] [cursor=pointer]
+    - navigation [ref=e17]:
+      - link "Newsfeed" [ref=e18] [cursor=pointer]:
+        - /url: /
+      - link "Chat 6" [ref=e25] [cursor=pointer]:
+        - /url: /chat
+        - generic [ref=e28]: Chat
+        - generic [ref=e29]: "6"
+      - link "Marketing" [ref=e30] [cursor=pointer]:
+        - /url: /marketing
+      - link "Kinh doanh" [ref=e35] [cursor=pointer]:
+        - /url: /kinh-doanh
+      - link "Quản lý thiết kế" [ref=e40] [cursor=pointer]:
+        - /url: /quan-ly-thiet-ke
+      - link "Quản lý dự án" [ref=e45] [cursor=pointer]:
+        - /url: /du-an
+      - link "HR" [ref=e51] [cursor=pointer]:
+        - /url: /cham-cong
+      - link "Tài chính" [ref=e56] [cursor=pointer]:
+        - /url: /tai-chinh
+      - link "QS" [ref=e61] [cursor=pointer]:
+        - /url: /qs
+      - link "BIM" [ref=e67] [cursor=pointer]:
+        - /url: /bim
+      - link "Mua hàng" [ref=e72] [cursor=pointer]:
+        - /url: /mua-hang
+      - link "Sản xuất" [ref=e78] [cursor=pointer]:
+        - /url: /san-xuat
+      - link "IT" [ref=e82] [cursor=pointer]:
+        - /url: /it
+      - link "R&D" [ref=e86] [cursor=pointer]:
+        - /url: /rd
+      - link "Bàn làm việc" [ref=e90] [cursor=pointer]:
+        - /url: /ban-lam-viec
+      - link "Lịch" [ref=e95] [cursor=pointer]:
+        - /url: /lich
+      - link "Wiki" [ref=e99] [cursor=pointer]:
+        - /url: /wiki
+      - link "Cài đặt" [ref=e104] [cursor=pointer]:
+        - /url: /cai-dat
+    - generic [ref=e109]:
+      - generic [ref=e110]: TA
+      - generic [ref=e111]:
+        - generic [ref=e112]: Trần Anh
+        - generic [ref=e113]: Quản lý dự án
+  - generic [ref=e115]:
+    - generic [ref=e116]:
+      - generic [ref=e117]:
+        - button "Tin tức" [ref=e118] [cursor=pointer]
+        - button "Nhiệm vụ" [ref=e119] [cursor=pointer]
+      - generic [ref=e120]:
+        - generic [ref=e121]: Tìm công việc, hồ sơ...
+        - button "Chuyển giao diện sáng/tối" [ref=e131] [cursor=pointer]
+        - generic [ref=e134]: TA
+    - generic [ref=e135]:
+      - generic [ref=e137]:
+        - generic [ref=e142]:
+          - heading "Tin tức & cập nhật công ty" [level=2] [ref=e143]
+          - paragraph [ref=e144]: "Cập nhật hàng ngày: dự án mới, sự kiện, giải thưởng và thông báo nội bộ."
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - generic [ref=e147]: TA
+            - generic [ref=e148] [cursor=pointer]: Bạn có tin gì muốn chia sẻ?
+          - generic [ref=e150]:
+            - button "Ảnh/Video" [ref=e151] [cursor=pointer]
+            - button "Sự kiện" [ref=e156] [cursor=pointer]
+            - button "Đăng tin" [ref=e159] [cursor=pointer]
+        - generic [ref=e161]:
+          - button "Tất cả" [ref=e162] [cursor=pointer]
+          - button "Dự án" [ref=e163] [cursor=pointer]
+          - button "Sự kiện" [ref=e164] [cursor=pointer]
+          - button "Giải thưởng" [ref=e165] [cursor=pointer]
+          - button "Thông báo" [ref=e166] [cursor=pointer]
+          - button "Nhân sự" [ref=e167] [cursor=pointer]
+        - generic [ref=e168]:
+          - generic [ref=e169]: Bài viết đã ghim
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - generic [ref=e174]: BGĐ
+              - generic [ref=e175]:
+                - generic [ref=e176]: Ban Giám đốc
+                - generic [ref=e177]: Hôm nay · 08:30
+              - button [ref=e182] [cursor=pointer]
+            - generic [ref=e187]:
+              - generic [ref=e188]: "Khởi công dự án mới: Biệt thự Song lập Thảo Điền"
+              - generic [ref=e189]: SiteFlow chính thức khởi công dự án Biệt thự Song lập Thảo Điền — quy mô 18 căn, tổng mức đầu tư dự kiến 42 tỷ đồng. Lễ động thổ diễn ra sáng nay với sự tham dự của toàn thể ban lãnh đạo và đối tác chiến lược. Xem thêm
+            - generic [ref=e195]:
+              - generic [ref=e196]: "142"
+              - generic [ref=e199]: 38 bình luận · 12 chia sẻ
+            - generic [ref=e203]:
+              - button "Thích" [ref=e204] [cursor=pointer]
+              - button "Bình luận" [ref=e207] [cursor=pointer]
+              - button "Chia sẻ" [ref=e210] [cursor=pointer]
+            - generic [ref=e217] [cursor=pointer]: Xem thêm bình luận
+            - generic [ref=e218]:
+              - generic [ref=e219]: BGĐ
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - generic [ref=e222]:
+                    - text: Ban Giám đốc
+                    - generic [ref=e223]: Tác giả
+                  - generic [ref=e224]: Cảm ơn cả nhà đã đồng hành, dự án chính thức khởi công từ hôm nay!
+                - generic [ref=e225]:
+                  - generic [ref=e226] [cursor=pointer]: 17 tuần
+                  - generic [ref=e227] [cursor=pointer]: Thích
+                  - generic [ref=e228] [cursor=pointer]: Phản hồi
+            - generic [ref=e229]:
+              - generic [ref=e230]: TA
+              - generic [ref=e231]:
+                - generic [ref=e232]: Bình luận dưới tên Trần Anh...
+                - img [ref=e233] [cursor=pointer]
+                - img [ref=e236] [cursor=pointer]
+          - generic [ref=e239]:
+            - generic [ref=e240]:
+              - generic [ref=e241]: HC
+              - generic [ref=e242]:
+                - generic [ref=e243]: Hành chính
+                - generic [ref=e244]:
+                  - generic [ref=e245]: Hôm nay · 07:00
+                  - generic [ref=e246]: ·
+                  - generic [ref=e247]: THÔNG BÁO
+              - button [ref=e248] [cursor=pointer]
+            - generic [ref=e253]:
+              - generic [ref=e254]: "Nghỉ lễ Quốc khánh 2/9: Văn phòng đóng cửa 2 ngày"
+              - generic [ref=e255]: Toàn công ty nghỉ lễ từ 01/09 đến hết 02/09/2026. Công trường vẫn duy trì lịch thi công bình thường theo phân công của chỉ huy trưởng.
+            - generic [ref=e257]:
+              - generic [ref=e258]: "26"
+              - generic [ref=e261]: 4 bình luận
+            - generic [ref=e262]:
+              - button "Thích" [ref=e263] [cursor=pointer]
+              - button "Bình luận" [ref=e266] [cursor=pointer]
+              - button "Chia sẻ" [ref=e269] [cursor=pointer]
+          - generic [ref=e276]:
+            - generic [ref=e277]:
+              - generic [ref=e278]: BGĐ
+              - generic [ref=e279]:
+                - generic [ref=e280]: Ban Giám đốc
+                - generic [ref=e281]:
+                  - generic [ref=e282]: Hôm qua · 16:10
+                  - generic [ref=e283]: ·
+                  - generic [ref=e284]: SỰ KIỆN
+              - button [ref=e285] [cursor=pointer]
+            - generic [ref=e290]:
+              - generic [ref=e291]: Họp toàn công ty quý 3 — 09:00 thứ Hai tuần sau
+              - generic [ref=e292]: "Tổng kết kết quả kinh doanh quý 3 và phương hướng quý 4. Địa điểm: Hội trường tầng 5, văn phòng chính. Yêu cầu toàn thể trưởng bộ phận tham dự."
+            - generic [ref=e294]:
+              - generic [ref=e295]: "51"
+              - generic [ref=e298]: 9 bình luận
+            - generic [ref=e299]:
+              - button "Thích" [ref=e300] [cursor=pointer]
+              - button "Bình luận" [ref=e303] [cursor=pointer]
+              - button "Chia sẻ" [ref=e306] [cursor=pointer]
+          - generic [ref=e313]:
+            - generic [ref=e314]:
+              - generic [ref=e315]: TT
+              - generic [ref=e316]:
+                - generic [ref=e317]: Truyền thông
+                - generic [ref=e318]:
+                  - generic [ref=e319]: 2 ngày trước
+                  - generic [ref=e320]: ·
+                  - generic [ref=e321]: GIẢI THƯỞNG
+              - button [ref=e322] [cursor=pointer]
+            - generic [ref=e327]:
+              - generic [ref=e328]: SiteFlow đạt giải "Nhà thầu uy tín 2026"
+              - generic [ref=e329]: Giải thưởng do Hiệp hội Xây dựng trao tặng, ghi nhận chất lượng thi công và tiến độ bàn giao đúng cam kết trong 3 năm liên tiếp.
+            - generic [ref=e335]:
+              - generic [ref=e336]: "210"
+              - generic [ref=e339]: 47 bình luận · 33 chia sẻ
+            - generic [ref=e340]:
+              - button "Thích" [ref=e341] [cursor=pointer]
+              - button "Bình luận" [ref=e344] [cursor=pointer]
+              - button "Chia sẻ" [ref=e347] [cursor=pointer]
+          - generic [ref=e354]:
+            - generic [ref=e355]:
+              - generic [ref=e356]: AT
+              - generic [ref=e357]:
+                - generic [ref=e358]: Anh Tuấn (PM)
+                - generic [ref=e359]:
+                  - generic [ref=e360]: 3 ngày trước
+                  - generic [ref=e361]: ·
+                  - generic [ref=e362]: DỰ ÁN
+              - button [ref=e363] [cursor=pointer]
+            - generic [ref=e368]:
+              - generic [ref=e369]: Nghiệm thu hoàn thành phần thô — Riverside Tòa A
+              - generic [ref=e370]: Toàn bộ phần thô Tòa A đã được tư vấn giám sát nghiệm thu đạt yêu cầu, chuyển sang giai đoạn hoàn thiện từ tuần sau.
+            - generic [ref=e372]:
+              - generic [ref=e373]: "33"
+              - generic [ref=e376]: 6 bình luận
+            - generic [ref=e377]:
+              - button "Thích" [ref=e378] [cursor=pointer]
+              - button "Bình luận" [ref=e381] [cursor=pointer]
+              - button "Chia sẻ" [ref=e384] [cursor=pointer]
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - generic [ref=e393]: HR
+              - generic [ref=e394]:
+                - generic [ref=e395]: HR
+                - generic [ref=e396]:
+                  - generic [ref=e397]: 4 ngày trước
+                  - generic [ref=e398]: ·
+                  - generic [ref=e399]: NHÂN SỰ
+              - button [ref=e400] [cursor=pointer]
+            - generic [ref=e405]:
+              - generic [ref=e406]: Chào mừng 5 thành viên mới gia nhập Đội thi công B
+              - generic [ref=e407]: Đội thi công B chính thức bổ sung 5 nhân sự mới nhằm đáp ứng tiến độ Riverside GĐ2 và chuẩn bị cho dự án Thảo Điền.
+            - generic [ref=e409]:
+              - generic [ref=e410]: "64"
+              - generic [ref=e413]: 15 bình luận
+            - generic [ref=e414]:
+              - button "Thích" [ref=e415] [cursor=pointer]
+              - button "Bình luận" [ref=e418] [cursor=pointer]
+              - button "Chia sẻ" [ref=e421] [cursor=pointer]
+          - generic [ref=e428]:
+            - generic [ref=e429]:
+              - generic [ref=e430]: CĐ
+              - generic [ref=e431]:
+                - generic [ref=e432]: Công đoàn
+                - generic [ref=e433]:
+                  - generic [ref=e434]: 5 ngày trước
+                  - generic [ref=e435]: ·
+                  - generic [ref=e436]: SỰ KIỆN
+              - button [ref=e437] [cursor=pointer]
+            - generic [ref=e442]:
+              - generic [ref=e443]: Team building cuối năm dự kiến tổ chức tại Đà Lạt
+              - generic [ref=e444]: Dự kiến diễn ra cuối tháng 12, công đoàn sẽ khảo sát nhu cầu đăng ký của toàn thể nhân viên trong tuần tới.
+            - generic [ref=e446]:
+              - generic [ref=e447]: "88"
+              - generic [ref=e450]: 21 bình luận
+            - generic [ref=e451]:
+              - button "Thích" [ref=e452] [cursor=pointer]
+              - button "Bình luận" [ref=e455] [cursor=pointer]
+              - button "Chia sẻ" [ref=e458] [cursor=pointer]
+          - generic [ref=e465]:
+            - generic [ref=e466]:
+              - generic [ref=e467]: HR
+              - generic [ref=e468]:
+                - generic [ref=e469]: HR
+                - generic [ref=e470]:
+                  - generic [ref=e471]: 1 tuần trước
+                  - generic [ref=e472]: ·
+                  - generic [ref=e473]: THÔNG BÁO
+              - button [ref=e474] [cursor=pointer]
+            - generic [ref=e479]:
+              - generic [ref=e480]: Cập nhật quy trình chấm công qua app từ 01/10
+              - generic [ref=e481]: Toàn bộ nhân sự công trường chuyển sang chấm công bằng định vị GPS trên app SiteFlow, không dùng chấm công giấy từ tháng 10.
+            - generic [ref=e483]:
+              - generic [ref=e484]: "19"
+              - generic [ref=e487]: 3 bình luận
+            - generic [ref=e488]:
+              - button "Thích" [ref=e489] [cursor=pointer]
+              - button "Bình luận" [ref=e492] [cursor=pointer]
+              - button "Chia sẻ" [ref=e495] [cursor=pointer]
+          - generic [ref=e502]:
+            - generic [ref=e503]:
+              - generic [ref=e504]: KD
+              - generic [ref=e505]:
+                - generic [ref=e506]: Kinh doanh
+                - generic [ref=e507]:
+                  - generic [ref=e508]: 1 tuần trước
+                  - generic [ref=e509]: ·
+                  - generic [ref=e510]: DỰ ÁN
+              - button [ref=e511] [cursor=pointer]
+            - generic [ref=e516]:
+              - generic [ref=e517]: "Ký hợp đồng mới: Văn phòng cho thuê Q3 giai đoạn mở rộng"
+              - generic [ref=e518]: Hợp đồng mở rộng giai đoạn 2 chính thức được ký kết, dự kiến khởi công đầu quý 4/2026.
+            - generic [ref=e520]:
+              - generic [ref=e521]: "57"
+              - generic [ref=e524]: 11 bình luận
+            - generic [ref=e525]:
+              - button "Thích" [ref=e526] [cursor=pointer]
+              - button "Bình luận" [ref=e529] [cursor=pointer]
+              - button "Chia sẻ" [ref=e532] [cursor=pointer]
+      - generic [ref=e539]:
+        - generic "Kéo để thu hẹp / mở rộng" [ref=e540]
+        - generic [ref=e541]:
+          - generic [ref=e542]:
+            - generic [ref=e554]:
+              - heading "Dezbot" [level=3] [ref=e555]
+              - generic [ref=e556]: Trợ lý AI · hỏi dữ liệu hệ thống
+            - button "Hội thoại mới" [ref=e557] [cursor=pointer]
+          - generic [ref=e561]:
+            - generic [ref=e562]: Hỏi mình về tiến độ, chấm công, dòng tiền, khách hàng, bóc tách hay quy trình — mình đọc trực tiếp dữ liệu trong workspace.
+            - generic [ref=e563]:
+              - button "Tiến độ" [ref=e564] [cursor=pointer]
+              - button "Chấm công" [ref=e565] [cursor=pointer]
+              - button "Dòng tiền" [ref=e566] [cursor=pointer]
+              - button "Khách hàng" [ref=e567] [cursor=pointer]
+              - button "Tin nhắn" [ref=e568] [cursor=pointer]
+          - generic [ref=e570]:
+            - textbox "Hỏi Dezbot..." [ref=e571]
+            - button [ref=e572] [cursor=pointer]

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE, createProject, draftTotals, formatVnd } from '../../../data/qsDashboardData'
+import { createProject, createDraft, draftTotals, formatVnd } from '../../../data/qsDashboardData'
 import ProjectBanner from './dashboard/ProjectBanner'
 import KpiCard from './dashboard/KpiCard'
 import ProjectList from './dashboard/ProjectList'
@@ -8,14 +8,21 @@ import QuickActions from './dashboard/QuickActions'
 import CreateProjectModal from './dashboard/CreateProjectModal'
 
 /* Tab "Bảng điều khiển": banner + KPI + nhóm giá trị đều tính theo bản nháp đang làm việc */
-export default function OverviewTab({ onGoto }) {
-  const [active, setActive] = useState(DASH_DEFAULT_ACTIVE)
-  const [projects, setProjects] = useState(DASH_PROJECTS)
+export default function OverviewTab({ projects, onProjects: setProjects, active, onActive: setActive, onGoto }) {
   const [creating, setCreating] = useState(false)
 
   const project = projects.find(p => p.id === active.projectId)
   const draft = project.drafts.find(d => d.id === active.draftId)
   const t = draftTotals(draft)
+
+  /* Thêm bản nháp trống vào dự án và chuyển sang dùng luôn bản đó */
+  const addDraft = projectId => {
+    const target = projects.find(p => p.id === projectId)
+    if (!target) return
+    const created = createDraft(target)
+    setProjects(list => list.map(p => (p.id === projectId ? { ...p, drafts: [...p.drafts, created] } : p)))
+    setActive({ projectId, draftId: created.id })
+  }
 
   return (
     <>
@@ -33,7 +40,8 @@ export default function OverviewTab({ onGoto }) {
         <ProjectList
           projects={projects}
           active={active}
-          onUse={(projectId, draftId) => setActive({ projectId, draftId })}
+          onUse={(projectId, draftId) => { setActive({ projectId, draftId }); onGoto('breakdown') }}
+          onAddDraft={addDraft}
           onCreate={() => setCreating(true)}
         />
         <div className="qs-dash-side">

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
-import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../../data/qsDashboardData'
-import { INITIAL_GROUPS, SHEET_COLUMNS, makeRow, rowValues } from '../../../data/qsBreakdownData'
+import { INITIAL_GROUPS, SHEET_COLUMNS, SHEET_COL_PRESETS, makeRow, rowValues } from '../../../data/qsBreakdownData'
 import ProjectBar from './breakdown/ProjectBar'
 import CatalogPanel from './breakdown/CatalogPanel'
 import SheetHeader from './breakdown/SheetHeader'
@@ -12,16 +11,26 @@ const CATALOG_DEFAULT = 440
 const CATALOG_MIN = 300
 const CATALOG_MAX = 760
 
+/* Bộ cột "Mặc định" người dùng tự lưu: mảng key cột ẩn; null = chưa lưu (mặc định hiện đủ cột) */
+const COLS_DEFAULT_KEY = 'siteflow-qs-breakdown-cols'
+function readColsDefault() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLS_DEFAULT_KEY))
+    return Array.isArray(saved) ? saved.filter(k => SHEET_COLUMNS.some(c => c.key === k)) : null
+  } catch { return null }
+}
+const sameKeys = (keys, set) => keys.length === set.size && keys.every(k => set.has(k))
+
 /* Tab "Bóc tách": cột sản phẩm bên trái + bảng tính bóc tách bên phải */
-export default function BreakdownTab({ sheet, vat, onVat }) {
-  const [projectId, setProjectId] = useState(DASH_DEFAULT_ACTIVE.projectId)
+export default function BreakdownTab({ sheet, vat, onVat, projects, active, onActive }) {
   const { groups, commit } = sheet
   const [targetId, setTargetId] = useState(INITIAL_GROUPS[0].id)
   const [view, setView] = useState('sheet')
   const [catalogOpen, setCatalogOpen] = useState(true)
   const [favorites, setFavorites] = useState(() => new Set())
   /* Cột đang ẩn và dải tuỳ chọn đang mở dưới thanh công cụ (màu, tìm, lọc, cột, lịch sử) */
-  const [hiddenCols, setHiddenCols] = useState(() => new Set())
+  const [colsDefault, setColsDefault] = useState(readColsDefault)
+  const [hiddenCols, setHiddenCols] = useState(() => new Set(colsDefault || []))
   const [panel, setPanel] = useState(null)
   const [full, setFull] = useState(false)
   const [catalogW, setCatalogW] = useState(CATALOG_DEFAULT)
@@ -36,10 +45,32 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
   const [flash, setFlash] = useState(null)
   const flashTimer = useRef(null)
 
-  const project = DASH_PROJECTS.find(p => p.id === projectId)
+  const project = projects.find(p => p.id === active.projectId)
+  const draft = project.drafts.find(d => d.id === active.draftId) || project.drafts[0]
+  /* Đổi dự án ngay trên thanh dự án: dùng bản nháp đầu tiên của dự án đó */
+  const selectProject = id => onActive({ projectId: id, draftId: projects.find(p => p.id === id).drafts[0].id })
   const rows = groups.flatMap(g => g.rows)
   const subtotal = rows.reduce((s, r) => s + rowValues(r).amount, 0)
   const target = groups.find(g => g.id === targetId) || groups[0]
+
+  /* Hộp "Chọn nhanh cột": khi nhiều bộ cùng khớp thì ưu tiên "Mặc định" */
+  const colPresets = [
+    { key: 'all', label: 'Hiện tất cả cột', hidden: [] },
+    { key: 'default', label: 'Mặc định', hidden: colsDefault || [] },
+    ...SHEET_COL_PRESETS,
+  ]
+  const colMatch = colPresets.filter(p => sameKeys(p.hidden, hiddenCols))
+  const colMenu = {
+    presets: colPresets,
+    activeKey: (colMatch.find(p => p.key === 'default') || colMatch[0] || {}).key || null,
+    onPick: hidden => setHiddenCols(new Set(hidden)),
+    savedIsCurrent: !!colsDefault && sameKeys(colsDefault, hiddenCols),
+    onSaveDefault: () => {
+      const keys = [...hiddenCols]
+      try { localStorage.setItem(COLS_DEFAULT_KEY, JSON.stringify(keys)) } catch { /* bỏ qua */ }
+      setColsDefault(keys)
+    },
+  }
 
   /* mark = false: chỉ chọn dòng + hiện thông báo, không tô nền vàng */
   function notify(rowId, text, mark = true) {
@@ -147,7 +178,7 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
 
   return (
     <>
-      <ProjectBar projects={DASH_PROJECTS} projectId={projectId} onSelect={setProjectId} />
+      <ProjectBar projects={projects} projectId={active.projectId} draftId={draft.id} onSelect={selectProject} />
       <div className="qs-bd-body">
         {catalogOpen && (
           <>
@@ -180,8 +211,8 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
             view={view} onView={setView}
             catalogOpen={catalogOpen} onToggleCatalog={() => setCatalogOpen(o => !o)}
             colsShown={SHEET_COLUMNS.length - hiddenCols.size} colsTotal={SHEET_COLUMNS.length}
-            onOpenCols={() => setPanel(p => (p === 'cols' ? null : 'cols'))}
-            onResetCols={() => setHiddenCols(new Set())}
+            colsOpen={panel === 'cols'} onToggleCols={() => setPanel(p => (p === 'cols' ? null : 'cols'))}
+            colMenu={colMenu}
           />
           <div
             className={`qs-card qs-bd-sheet${dragProduct ? ' drop-active' : ''}${full ? ' full' : ''}`}
@@ -202,7 +233,7 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
               flash={flash}
               onClearMark={() => setFlash(f => (f && f.mark ? { ...f, mark: false } : f))}
               dropHint={dragProduct ? `Thả để thêm vào ${dropGroup.name}` : null}
-              fileName={`boc-tach-${project.drafts[0].code}`}
+              fileName={`boc-tach-${draft.code}`}
             />
             {flash && flash.text && <div key={flash.n} className="qs-bd-toast">{flash.text}</div>}
           </div>

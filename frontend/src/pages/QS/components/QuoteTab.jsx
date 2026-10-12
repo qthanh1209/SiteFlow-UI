@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Icon from '../../../components/ui/Icon'
-import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../../data/qsDashboardData'
 import { formatTable, roman, rowValues } from '../../../data/qsBreakdownData'
 import {
-  AUTO_ROWS, DEFAULT_TERMS, EMPTY_INFO, QUOTE_COLUMNS, QUOTE_COL_PRESETS, QUOTE_DEFAULT_HIDDEN, QUOTE_INTERNAL_LABEL, ROWS_PER_PAGE, ZOOMS,
-  coverTemplate, coverTotal, quoteCell, quoteMoney,
+  AUTO_ROWS, DEFAULT_COMPANY, DEFAULT_TERMS, EMPTY_INFO, QUOTE_ACCENTS, QUOTE_COLUMNS, QUOTE_COL_PRESETS, QUOTE_DEFAULT_HIDDEN, QUOTE_INTERNAL_LABEL, ROWS_PER_PAGE, ZOOMS,
+  coverTemplate, coverTotal, quoteCell, quoteDates, quoteMoney,
 } from '../../../data/qsQuoteData'
 import ProjectBar from './breakdown/ProjectBar'
 import DropMenu from './cost/DropMenu'
 import { CoverPage, DetailPage } from './quote/QuotePages'
 import CoverEditor from './quote/CoverEditor'
 import DetailEditor, { AreaTable } from './quote/DetailEditor'
+import CompanyModal from './quote/CompanyModal'
 
-const today = () => { const d = new Date(); const p = n => String(n).padStart(2, '0'); return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}` }
+/* Bề rộng trang giấy (px bố cục, khớp .qs-qt-page) và giới hạn phóng của chế độ "Vừa khung" */
+const PAGE_WIDTH = 1010
+const STAGE_PAD = 40
+const FIT_MAX = 1.3
+const pad2 = n => String(n).padStart(2, '0')
 
 /* Các số trang hiện trên thanh phân trang: luôn có trang đầu, trang cuối và vùng quanh trang hiện tại */
 function pageList(cur, total) {
@@ -33,38 +37,65 @@ function ModeToggle({ mode, onMode }) {
   )
 }
 
+/* Một bước đánh số ở cột điều khiển bên trái */
+function Step({ no, title, sub, children }) {
+  return (
+    <section className="qs-card qs-qt-step">
+      <header><i>{no}</i><div><b>{title}</b>{sub && <small>{sub}</small>}</div></header>
+      {children}
+    </section>
+  )
+}
+
+/* Dòng bật / tắt một tuỳ chọn */
+function SwitchRow({ on, onToggle, title, children }) {
+  return (
+    <button className="qs-qt-switch-row" title={title} onClick={onToggle}>
+      <span>{children}</span><span className={`qs-bd-switch${on ? ' on' : ''}`}><i /></span>
+    </button>
+  )
+}
+
 /* Tab "Xuất báo giá": tờ bìa ước tính chi phí + bảng báo giá chi tiết lấy từ bảng Bóc tách.
-   Hai chế độ: "Xem trước & Xuất" (xem từng trang, chọn cột, in / xuất) và "Chỉnh sửa" (sửa tờ bìa, diện tích, bảng chi tiết). */
-export default function QuoteTab({ sheet, vat, onVat }) {
+   Hai chế độ: "Xem trước & Xuất" (cột điều khiển 5 bước bên trái, trang giấy bên phải) và "Chỉnh sửa" (sửa tờ bìa, diện tích, bảng chi tiết). */
+export default function QuoteTab({ sheet, vat, onVat, projects, active, onActive }) {
   const { groups } = sheet
-  const [projectId, setProjectId] = useState(DASH_DEFAULT_ACTIVE.projectId)
-  const draft = DASH_PROJECTS.find(p => p.id === projectId).drafts[0]
+  const project = projects.find(p => p.id === active.projectId)
+  const draft = project.drafts.find(d => d.id === active.draftId) || project.drafts[0]
+  const selectProject = id => onActive({ projectId: id, draftId: projects.find(p => p.id === id).drafts[0].id })
   const [mode, setMode] = useState('preview')
   const [template, setTemplate] = useState(1)
   const [sections, setSections] = useState(coverTemplate)
   const [info, setInfo] = useState(EMPTY_INFO)
-  const [code, setCode] = useState(`BG-${draft.code.replace(/^DA-/, '')}`)
+  /* Mã báo giá đi theo mã bản nháp đang dùng, trừ khi người dùng tự sửa ở tờ bìa */
+  const [customCode, setCustomCode] = useState(null)
+  const code = customCode ?? `BG-${draft.code.replace(/^DA-/, '')}`
   const [areaRows, setAreaRows] = useState([])
   const [hidden, setHidden] = useState(() => new Set(QUOTE_DEFAULT_HIDDEN))
+  const [colsOpen, setColsOpen] = useState(false)
   const [internalOut, setInternalOut] = useState(false)
   const [scope, setScope] = useState('all')
-  const [split, setSplit] = useState(false)
-  const [perPage, setPerPage] = useState('auto')
+  const [split, setSplit] = useState(true)
+  const [perPage, setPerPage] = useState('12')
   const [zoom, setZoom] = useState('fit')
+  const [stageWidth, setStageWidth] = useState(0)
+  const [accent, setAccent] = useState(QUOTE_ACCENTS[0])
   const [page, setPage] = useState(1)
   /* Các phiên bản đã chốt; phiên bản đang soạn là số kế tiếp */
   const [versions, setVersions] = useState([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [terms, setTerms] = useState(DEFAULT_TERMS)
-  const [company, setCompany] = useState('Dezon')
+  /* Thông tin công ty in trên báo giá (sửa ở hộp thoại "Thông tin công ty") */
+  const [company, setCompany] = useState(DEFAULT_COMPANY)
+  const [companyOpen, setCompanyOpen] = useState(false)
   const [toast, setToast] = useState(null)
   const [printing, setPrinting] = useState(false)
   const toastTimer = useRef(null)
-  const companyRef = useRef(null)
   const stageRef = useRef(null)
 
   const version = versions.length + 1
+  const dates = useMemo(quoteDates, [])
   const notify = text => { clearTimeout(toastTimer.current); setToast(text); toastTimer.current = setTimeout(() => setToast(null), 2400) }
 
   /* Phạm vi bảng chi tiết: tất cả hoặc một tầng / phòng của bảng Bóc tách (bỏ các khối chưa có dòng) */
@@ -83,12 +114,11 @@ export default function QuoteTab({ sheet, vat, onVat }) {
 
   /* Cột được in: cột đang bật, trừ cột nội bộ khi không xuất kèm bản nội bộ */
   const outCols = QUOTE_COLUMNS.filter(c => !hidden.has(c.key) && (internalOut || !c.internal))
-  const internalOn = QUOTE_COLUMNS.some(c => c.internal && !hidden.has(c.key))
   const colLabel = `${QUOTE_COLUMNS.length - hidden.size}/${QUOTE_COLUMNS.length}`
   const activePreset = QUOTE_COL_PRESETS.find(p => p.hidden.length === hidden.size && p.hidden.every(k => hidden.has(k))) || null
   const toggleCol = key => setHidden(prev => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next })
 
-  /* Chia bảng chi tiết thành các trang */
+  /* Chia bảng chi tiết thành các trang; chưa bóc dòng nào thì báo giá chỉ có tờ bìa */
   const detailPages = useMemo(() => {
     const per = perPage === 'auto' ? AUTO_ROWS : Number(perPage)
     const out = []
@@ -107,12 +137,16 @@ export default function QuoteTab({ sheet, vat, onVat }) {
     flush()
     return out
   }, [scoped, split, perPage])
-  const pages = 1 + Math.max(1, detailPages.length)
+  const pages = 1 + detailPages.length
   const cur = Math.min(page, pages)
-  const doc = { company, code, version, date: today(), info, areas, template }
-  const summary = { subtotal, vat, vatAmount, terms }
+  const doc = { company: company.name, brand: company, code, version, date: dates.date, until: dates.until, info, areas, template, accent }
+  /* Phần kết (tổng cộng, tiến độ thanh toán, điều khoản, ô ký) in ở trang cuối; chỉ có tờ bìa thì tính theo tổng tờ bìa */
+  const summary = detailPages.length
+    ? { subtotal, vat, vatAmount, terms }
+    : { subtotal: cTotal, vat, vatAmount: (cTotal * vat) / 100, terms }
+  const grand = summary.subtotal + summary.vatAmount
   const renderPage = n => (n === 1
-    ? <CoverPage key={n} doc={doc} sections={sections} sheetTotal={sheetTotal} total={cTotal} page={1} pages={pages} />
+    ? <CoverPage key={n} doc={doc} sections={sections} sheetTotal={sheetTotal} total={cTotal} page={1} pages={pages} summary={pages === 1 ? summary : null} />
     : <DetailPage key={n} doc={doc} lines={detailPages[n - 2] || []} cols={outCols} page={n} pages={pages} summary={n === pages ? summary : null} />)
 
   function exportExcel() {
@@ -139,117 +173,146 @@ export default function QuoteTab({ sheet, vat, onVat }) {
     return () => { clearTimeout(t); window.removeEventListener('afterprint', done) }
   }, [printing])
   function lockVersion() {
-    setVersions(v => [...v, { v: v.length + 1, date: today(), total: subtotal + vatAmount, rows: rowCount }])
+    setVersions(v => [...v, { v: v.length + 1, date: dates.date, total: grand, rows: rowCount }])
     notify(`Đã chốt báo giá v${version}`)
   }
   /* Đổi trang thì cuộn khung xem trước về đầu trang */
   useEffect(() => { if (stageRef.current) stageRef.current.scrollTop = 0 }, [cur])
-  const openCompany = () => { setMoreOpen(true); setTimeout(() => companyRef.current && companyRef.current.focus(), 60) }
+  /* Theo dõi bề rộng khung xem trước để "Vừa khung" tự co giãn trang giấy theo màn hình */
+  useEffect(() => {
+    const el = stageRef.current
+    if (mode !== 'preview' || !el) return undefined
+    const measure = () => setStageWidth(el.clientWidth)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [mode])
+  const scale = zoom === 'fit'
+    ? (stageWidth ? Math.min(FIT_MAX, Math.max(0.3, (stageWidth - STAGE_PAD) / PAGE_WIDTH)) : 1)
+    : Number(zoom) / 100
 
   return (
     <>
-      <ProjectBar projects={DASH_PROJECTS} projectId={projectId} onSelect={setProjectId} />
+      <ProjectBar projects={projects} projectId={active.projectId} draftId={draft.id} onSelect={selectProject} />
 
       {mode === 'preview' ? (
-        <>
-          {internalOn && (
-            <div className="qs-qt-banner">
-              <Icon name="lock" size={14} />
-              <span>Cột nội bộ ({QUOTE_INTERNAL_LABEL}) đang bật ở Bóc tách {internalOut ? <>và <b>sẽ in</b> trên bản nội bộ này.</> : <>nhưng <b>không in</b> trên báo giá gửi khách.</>}</span>
-              <span style={{ flex: 1 }} />
-              <button className={`qs-qt-btn${internalOut ? ' on' : ''}`} onClick={() => setInternalOut(v => !v)}>Xuất kèm (bản nội bộ)</button>
-            </div>
-          )}
-
-          <div className="qs-card qs-qt-tools">
-            <span className="qs-qt-cap">Trang 1 · Tờ bìa</span>
-            <div className="qs-qt-seg">
-              <button className={template === 1 ? 'on' : ''} onClick={() => setTemplate(1)}>Mẫu 1</button>
-              <button className={template === 2 ? 'on' : ''} onClick={() => setTemplate(2)}>Mẫu 2</button>
-            </div>
-            <span className="qs-qt-cap">Trang 2+</span>
-            <DropMenu className="qs-qt-btn" options={scopeOptions} value={scopeKey} onPick={k => { setScope(k); setPage(1) }}>
-              <Icon name="layers" size={13} />{scopeOptions.find(o => o.key === scopeKey).label}<span className="qs-bd-count">[{rowCount}]</span>
-            </DropMenu>
-            <button className={`qs-qt-btn${split ? ' on' : ''}`} title="Mỗi tầng / phòng bắt đầu ở một trang mới" onClick={() => setSplit(v => !v)}><Icon name="fileText" size={13} />Mỗi phần 1 trang</button>
-            <label className="qs-qt-field">Dòng/trang
-              <select value={perPage} onChange={e => { setPerPage(e.target.value); setPage(1) }}>{ROWS_PER_PAGE.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-            </label>
-            <label className="qs-qt-field">Phóng
-              <select value={zoom} onChange={e => setZoom(e.target.value)}>{ZOOMS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
-            </label>
-            <label className="qs-qt-field">VAT
-              <input type="number" min="0" max="100" value={vat} onChange={e => onVat(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} />%
-            </label>
-            <span className="qs-qt-pages"><Icon name="file" size={12} />Số trang <b>{pages}</b></span>
-            <span style={{ flex: 1 }} />
-            <span className="qs-qt-code"><Icon name="file" size={12} /><b>{code}</b> · v{version}</span>
-            <button className="qs-qt-btn" onClick={lockVersion}><Icon name="check" size={13} />Chốt v{version}</button>
-            <div className="qs-ct-drop">
-              <button className={`qs-qt-btn${historyOpen ? ' on' : ''}`} onClick={() => setHistoryOpen(o => !o)}><Icon name="layers" size={13} />Lịch sử</button>
-              {historyOpen && (
-                <div className="qs-ct-drop-menu right qs-qt-history">
-                  {!versions.length && <p>Chưa chốt phiên bản nào.</p>}
-                  {[...versions].reverse().map(v => <div key={v.v}><b>v{v.v}</b><span>{v.date} · {v.rows} dòng</span><b>{quoteMoney(v.total)} đ</b></div>)}
+        <div className="qs-qt-layout">
+          <aside className="qs-qt-side">
+            <div className="qs-qt-side-scroll">
+              <Step no={1} title="Phiên bản báo giá" sub={`${draft.name} · ${rowCount} dòng đã bóc`}>
+                <div className="qs-qt-codebox"><span>Mã</span><b title={code}>{code}</b><i>v{version}</i></div>
+                <div className="qs-qt-pair">
+                  <button className="qs-qt-btn" onClick={lockVersion}><Icon name="check" size={13} />Chốt v{version}</button>
+                  <button className={`qs-qt-btn${historyOpen ? ' on' : ''}`} onClick={() => setHistoryOpen(o => !o)}><Icon name="layers" size={13} />Lịch sử</button>
                 </div>
-              )}
-            </div>
-            <button className="qs-qt-btn green" onClick={exportExcel}><Icon name="download" size={13} />Xuất Excel</button>
-            <button className="qs-qt-btn red" onClick={() => setPrinting(true)}><Icon name="download" size={13} />Xuất PDF / In</button>
-          </div>
+                {historyOpen && (
+                  <div className="qs-qt-history">
+                    {!versions.length && <p>Chưa chốt phiên bản nào.</p>}
+                    {[...versions].reverse().map(v => <div key={v.v}><b>v{v.v}</b><span>{v.date} · {v.rows} dòng</span><b>{quoteMoney(v.total)} đ</b></div>)}
+                  </div>
+                )}
+              </Step>
 
-          <div className="qs-card qs-qt-cols">
-            <div className="qs-qt-cols-head">
-              <span className="qs-qt-cap">Cột xuất <span>{colLabel}</span></span>
-              <DropMenu className="qs-bd-preset" title="Chọn nhanh bộ cột xuất" options={QUOTE_COL_PRESETS} value={activePreset ? activePreset.key : null} onPick={k => setHidden(new Set(QUOTE_COL_PRESETS.find(p => p.key === k).hidden))}>
-                <Icon name="sliders" size={12} />Chọn nhanh {colLabel}
-              </DropMenu>
-            </div>
-            <div className="qs-qt-colchips">
-              {QUOTE_COLUMNS.map(c => <button key={c.key} className={hidden.has(c.key) ? '' : 'on'} title={c.internal ? 'Cột nội bộ' : undefined} onClick={() => toggleCol(c.key)}>{c.label}</button>)}
-            </div>
-          </div>
+              <Step no={2} title="Nội dung các trang">
+                <span className="qs-qt-label">Trang 1 · Tờ bìa</span>
+                <div className="qs-qt-seg">
+                  <button className={template === 1 ? 'on' : ''} onClick={() => setTemplate(1)}>Mẫu 1</button>
+                  <button className={template === 2 ? 'on' : ''} onClick={() => setTemplate(2)}>Mẫu 2</button>
+                </div>
+                <span className="qs-qt-label">Trang 2+ · Bảng chi tiết</span>
+                <DropMenu className="qs-qt-select" options={scopeOptions} value={scopeKey} onPick={k => { setScope(k); setPage(1) }}>
+                  <Icon name="layers" size={14} /><b>{scopeOptions.find(o => o.key === scopeKey).label}</b><span className="qs-bd-count">[{pad2(rowCount)}]</span>
+                </DropMenu>
+                <div className="qs-qt-pair">
+                  <label className="qs-qt-field"><span>Dòng / trang</span>
+                    <select value={perPage} onChange={e => { setPerPage(e.target.value); setPage(1) }}>{ROWS_PER_PAGE.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+                  </label>
+                  <label className="qs-qt-field"><span>Số trang</span><output>{pages} trang</output></label>
+                </div>
+                <SwitchRow on={split} onToggle={() => { setSplit(v => !v); setPage(1) }} title="Mỗi tầng / phòng bắt đầu ở một trang mới">Mỗi hạng mục một trang mới</SwitchRow>
+              </Step>
 
-          <div className="qs-card qs-qt-total">
-            <div className="qs-qt-total-row">
-              <Icon name="banknote" size={15} className="qs-dash-accent" />
-              <b>Tổng kết &amp; điều khoản</b>
-              <span className="qs-qt-total-nums">Tạm tính <b>{quoteMoney(subtotal)}</b> · VAT <b>{quoteMoney(vatAmount)}</b> · Tổng <b>{quoteMoney(subtotal + vatAmount)} đ</b></span>
-              <span style={{ flex: 1 }} />
-              <button className="qs-qt-btn" onClick={openCompany}><Icon name="building" size={13} />Thông tin công ty</button>
-              <button className="qs-qt-caret-btn" title={moreOpen ? 'Thu gọn' : 'Mở rộng'} onClick={() => setMoreOpen(o => !o)}><span className={`qs-bd-caret${moreOpen ? ' up' : ''}`} /></button>
+              <Step no={3} title="Cột xuất" sub={`Đang in ${outCols.length} cột`}>
+                <DropMenu className="qs-bd-preset qs-qt-preset" title="Chọn nhanh bộ cột xuất" options={QUOTE_COL_PRESETS} value={activePreset ? activePreset.key : null} onPick={k => setHidden(new Set(QUOTE_COL_PRESETS.find(p => p.key === k).hidden))}>
+                  <Icon name="sliders" size={13} /><b>{activePreset ? activePreset.label : 'Tuỳ chỉnh'}</b><span>{colLabel}</span>
+                </DropMenu>
+                <button className="qs-qt-link" onClick={() => setColsOpen(o => !o)}>Bật / tắt từng cột<span className={`qs-bd-caret${colsOpen ? ' up' : ''}`} /></button>
+                {colsOpen && (
+                  <div className="qs-qt-colchips">
+                    {QUOTE_COLUMNS.map(c => <button key={c.key} className={hidden.has(c.key) ? '' : 'on'} title={c.internal ? 'Cột nội bộ' : undefined} onClick={() => toggleCol(c.key)}>{c.label}</button>)}
+                  </div>
+                )}
+                <SwitchRow on={internalOut} onToggle={() => setInternalOut(v => !v)}>Xuất kèm cột nội bộ (bản nội bộ)</SwitchRow>
+                <p className="qs-qt-hint"><Icon name="lock" size={12} />Cột {QUOTE_INTERNAL_LABEL} {internalOut ? <><b>sẽ in</b> trên bản nội bộ này.</> : 'không in trên báo giá gửi khách.'}</p>
+              </Step>
+
+              <Step no={4} title="Giao diện báo giá" sub="Không bắt buộc · áp dụng cho cả bản in.">
+                <div className="qs-qt-color-row">
+                  <span className="qs-qt-label">Màu tiêu đề &amp; bảng</span>
+                  <code>{accent.toUpperCase()}</code>
+                  <input type="color" value={accent} title="Chọn màu khác" onChange={e => setAccent(e.target.value)} />
+                </div>
+                <div className="qs-qt-swatches">
+                  {QUOTE_ACCENTS.map(c => <button key={c} className={c.toLowerCase() === accent.toLowerCase() ? 'on' : ''} style={{ background: c }} title={c} onClick={() => setAccent(c)} />)}
+                </div>
+              </Step>
+
+              <Step no={5} title="Tổng kết &amp; điều khoản" sub="VAT · chiết khấu · thanh toán · ghi chú">
+                <label className="qs-qt-vat"><span>VAT của dự án</span>
+                  <input type="number" min="0" max="100" value={vat} onChange={e => onVat(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} />%
+                </label>
+                <div className="qs-qt-company">
+                  <Icon name="banknote" size={15} className="qs-dash-accent" />
+                  <span style={{ flex: 1 }} />
+                  <button className="qs-qt-btn" onClick={() => setCompanyOpen(true)}><Icon name="building" size={13} />Thông tin công ty</button>
+                  <button className="qs-qt-caret-btn" title={moreOpen ? 'Thu gọn' : 'Mở rộng'} onClick={() => setMoreOpen(o => !o)}><span className={`qs-bd-caret${moreOpen ? ' up' : ''}`} /></button>
+                </div>
+                {moreOpen && (
+                  <div className="qs-qt-more">
+                    <label><span>Ghi chú &amp; điều khoản (mỗi dòng một mục, in ở trang cuối)</span><textarea rows={5} value={terms} onChange={e => setTerms(e.target.value)} /></label>
+                  </div>
+                )}
+                <p className="qs-qt-total-nums">Tạm tính <b>{quoteMoney(summary.subtotal)}</b> · VAT <b>{quoteMoney(summary.vatAmount)}</b> · Tổng <b>{quoteMoney(grand)} đ</b></p>
+              </Step>
             </div>
-            {moreOpen && (
-              <div className="qs-qt-more">
-                <label><span>Tên công ty (in ở đầu trang)</span><input ref={companyRef} value={company} onChange={e => setCompany(e.target.value)} /></label>
-                <label className="wide"><span>Điều khoản (in ở trang cuối)</span><textarea rows={3} value={terms} onChange={e => setTerms(e.target.value)} /></label>
-              </div>
-            )}
-          </div>
+
+            <div className="qs-card qs-qt-export">
+              <button className="qs-qt-btn green" onClick={exportExcel}><Icon name="download" size={14} />Xuất Excel</button>
+              <button className="qs-qt-btn red" onClick={() => setPrinting(true)}><Icon name="download" size={14} />Xuất PDF / In</button>
+            </div>
+          </aside>
 
           <div className="qs-card qs-qt-preview">
             <div className="qs-qt-preview-head">
               <b>{cur === 1 ? 'Tờ bìa' : 'Bảng báo giá chi tiết'}</b>
+              <span className="qs-qt-pill">Mẫu {template}</span>
+              <span className="qs-qt-pill">{vat ? `VAT ${vat}%` : 'Chưa VAT'}</span>
+              <span className="qs-qt-pill">A4 · Ngang</span>
               <span style={{ flex: 1 }} />
+              <div className="qs-qt-zoom">
+                {ZOOMS.map(([v, l]) => <button key={v} className={zoom === v ? 'on' : ''} onClick={() => setZoom(v)}>{l}</button>)}
+              </div>
               <ModeToggle mode={mode} onMode={setMode} />
-              <span className="qs-qt-pageno">Trang {cur} / {pages}</span>
             </div>
             <div className="qs-qt-stage" ref={stageRef}>
-              <div style={{ zoom: zoom === 'fit' ? undefined : Number(zoom) / 100 }}>{renderPage(cur)}</div>
+              <div style={{ zoom: scale }}>{renderPage(cur)}</div>
+            </div>
+            <div className="qs-qt-pager">
+              {pages > 1 && <button disabled={cur <= 1} title="Trang trước" onClick={() => setPage(cur - 1)}>←</button>}
+              {pages > 1 && pageList(cur, pages).map((n, i) => (n === null
+                ? <span key={`gap${i}`}>…</span>
+                : <button key={n} className={n === cur ? 'on' : ''} onClick={() => setPage(n)}>{n}</button>))}
+              {pages > 1 && <button disabled={cur >= pages} title="Trang sau" onClick={() => setPage(cur + 1)}>→</button>}
+              <span className="qs-qt-pageno">Trang {cur} / {pages}</span>
             </div>
           </div>
-          <div className="qs-qt-pager">
-            {pageList(cur, pages).map((n, i) => (n === null
-              ? <span key={`gap${i}`}>…</span>
-              : <button key={n} className={n === cur ? 'on' : ''} onClick={() => setPage(n)}>{n}</button>))}
-            <button disabled={cur >= pages} title="Trang sau" onClick={() => setPage(cur + 1)}>→</button>
-          </div>
-        </>
+        </div>
       ) : (
-        <>
+        <div className="qs-qt-edit">
           <div className="qs-qt-edit-top"><ModeToggle mode={mode} onMode={setMode} /></div>
           <CoverEditor
-            sections={sections} onSections={setSections} info={info} onInfo={setInfo} code={code} onCode={setCode}
+            sections={sections} onSections={setSections} info={info} onInfo={setInfo} code={code} onCode={setCustomCode}
             quoteArea={areas.quote} sheetTotal={sheetTotal} total={cTotal}
             template={template} onTemplate={setTemplate}
             onLoadTemplate={() => { setSections(coverTemplate()); notify('Đã nạp lại mẫu tờ bìa') }}
@@ -261,9 +324,15 @@ export default function QuoteTab({ sheet, vat, onVat }) {
             hidden={hidden} onToggleCol={toggleCol} subtotal={subtotal} vat={vat}
             onExcel={exportExcel} onPrint={() => setPrinting(true)}
           />
-        </>
+        </div>
       )}
 
+      {companyOpen && (
+        <CompanyModal
+          value={company} onClose={() => setCompanyOpen(false)}
+          onSave={next => { setCompany(next); setCompanyOpen(false); notify('Đã lưu thông tin công ty') }}
+        />
+      )}
       {toast && <div className="qs-qt-toast">{toast}</div>}
       {printing && createPortal(
         <div className="qs-qt-print">{Array.from({ length: pages }, (_, i) => renderPage(i + 1))}</div>,

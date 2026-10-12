@@ -1,9 +1,10 @@
 import Icon from '../../../../components/ui/Icon'
 
 /* Thanh dự án đang bóc tách: tên, trạng thái, mã, tiến độ, chọn dự án */
-export default function ProjectBar({ projects, projectId, onSelect, progress = 0 }) {
+export default function ProjectBar({ projects, projectId, draftId, onSelect, progress = 0 }) {
   const project = projects.find(p => p.id === projectId)
-  const draft = project.drafts[0]
+  /* draftId bỏ trống (tab chưa theo bản nháp đang dùng) thì lấy bản nháp đầu tiên */
+  const draft = project.drafts.find(d => d.id === draftId) || project.drafts[0]
   return (
     <div className="qs-bd-bar">
       <span className="qs-bd-bar-name" title={project.name}>{project.name}</span>
