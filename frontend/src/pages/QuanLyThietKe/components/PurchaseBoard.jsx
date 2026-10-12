@@ -3,6 +3,8 @@ import {
   PO_STAGES, TODAY, STATUS_LABEL, avatarColor, initials, parseD, dayDiff, fmt, fmtFull, statusOf, fmtMillion,
 } from '../../../data/quanLyThietKeData'
 
+const STAGE_BY_KEY = Object.fromEntries(PO_STAGES.map(s => [s.key, s]))
+
 /* Trang chi tiết mua hàng dạng kanban — mở khi bấm công việc thuộc giai đoạn "Mua hàng & cung ứng" */
 export default function PurchaseBoard({ task, items, open, onClose, onMove }) {
   const [dragId, setDragId] = useState(null)
@@ -16,10 +18,12 @@ export default function PurchaseBoard({ task, items, open, onClose, onMove }) {
   }, [open, onClose])
 
   const list = items || []
-  const total = list.reduce((s, it) => s + it.value, 0)
-  const received = list.filter(it => it.stage === 'received')
+  const active = list.filter(it => !STAGE_BY_KEY[it.stage]?.closed)
+  const total = active.reduce((s, it) => s + it.value, 0)
+  const received = active.filter(it => STAGE_BY_KEY[it.stage]?.received)
   const receivedValue = received.reduce((s, it) => s + it.value, 0)
-  const lateCount = list.filter(it => it.stage !== 'received' && parseD(it.due) < TODAY).length
+  const isPending = it => !STAGE_BY_KEY[it.stage]?.received && !STAGE_BY_KEY[it.stage]?.closed
+  const lateCount = list.filter(it => isPending(it) && parseD(it.due) < TODAY).length
   const st = task ? statusOf(task) : 'notstarted'
 
   function drop(stageKey) {
@@ -80,8 +84,8 @@ export default function PurchaseBoard({ task, items, open, onClose, onMove }) {
                 <div className="tk-pb-cards">
                   {cards.length === 0 && <div className="tk-pb-empty">Kéo thả đơn vào đây</div>}
                   {cards.map(it => {
-                    const late = it.stage !== 'received' && parseD(it.due) < TODAY
-                    const soon = !late && it.stage !== 'received' && dayDiff(TODAY, parseD(it.due)) <= 7
+                    const late = isPending(it) && parseD(it.due) < TODAY
+                    const soon = !late && isPending(it) && dayDiff(TODAY, parseD(it.due)) <= 7
                     return (
                       <div
                         key={it.id}

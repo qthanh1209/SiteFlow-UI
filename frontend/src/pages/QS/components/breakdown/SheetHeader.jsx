@@ -22,14 +22,7 @@ export default function SheetHeader({ count, subtotal, vat, onVat, view, onView,
       <div className="qs-bd-head-row">
         <button className="qs-bd-icon-btn" title={catalogOpen ? 'Ẩn cột hạng mục' : 'Hiện cột hạng mục'} onClick={onToggleCatalog}><Icon name="panelLeft" size={17} /></button>
         <span className="qs-bd-h">Hạng mục đã bóc</span>
-        <span className="qs-bd-count">[{count}]</span>
-        {/* TODO: chọn / thêm hạng mục khác */}
-        <button className="qs-bd-category">
-          <b>{ACTIVE_CATEGORY.code}.{ACTIVE_CATEGORY.name}</b>
-          <span className="qs-bd-count">[{count}]</span>
-          <span style={{ flex: 1 }} />
-          <span className="qs-bd-acc-plus"><Icon name="plus" size={10} stroke={3} /></span>
-        </button>
+        <span className="qs-bd-badge" title="Hạng mục đang bóc · số dòng">{ACTIVE_CATEGORY.code} {ACTIVE_CATEGORY.name} · {count}</span>
         <span style={{ flex: 1 }} />
         <div className="qs-bd-seg">
           <button className={view === 'sheet' ? 'on' : ''} onClick={() => onView('sheet')}><Icon name="table" size={15} />Bảng tính</button>

@@ -9,11 +9,12 @@ const pairs = text => text.split('\n').filter(Boolean).map(line => {
 })
 
 /* Cột "Thông tin sản phẩm" mở ra khi bấm một sản phẩm ở cột trái */
-export default function ProductInfo({ product, onClose, onAdd }) {
+/* width: bằng bề rộng cột Sản phẩm để hai khung cân nhau */
+export default function ProductInfo({ width, product, onClose, onAdd }) {
   const code = productCode(product)
   const features = product.features.split('\n').filter(Boolean)
   return (
-    <div className="qs-card qs-bd-info">
+    <div className="qs-card qs-bd-info" style={{ width }}>
       <div className="qs-bd-info-head">
         <span>Thông tin sản phẩm</span>
         <button className="qs-bd-info-close" title="Đóng" onClick={onClose}><Icon name="x" size={15} /></button>

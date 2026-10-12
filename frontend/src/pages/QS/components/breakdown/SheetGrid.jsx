@@ -3,6 +3,9 @@ import Icon from '../../../../components/ui/Icon'
 import PaintThumb from './PaintThumb'
 import { ROW_NUM_WIDTH, colLetter, entryText, roman } from '../../../../data/qsBreakdownData'
 
+/* Các cột chữ dài được rút gọn số dòng (xem .qs-bd-clamp) */
+const LONG_TEXT = new Set(['info', 'features', 'note'])
+
 /* Kiểu chữ / màu / căn lề đã định dạng của một ô */
 function fmtStyle(f) {
   if (!f) return undefined
@@ -127,7 +130,11 @@ export default function SheetGrid({
                   } else if (!isItem) content = entryText(e, c.key)
                   else if (c.key === 'image') content = e.r.tone && <PaintThumb tone={e.r.tone} size={62} />
                   else if (c.key === 'docs') content = e.r.docs > 0 && <span className="qs-bd-doc"><Icon name="fileText" size={13} />{e.r.docs}</span>
-                  else content = live ?? entryText(e, c.key)
+                  else {
+                    content = live ?? entryText(e, c.key)
+                    /* Ô mô tả dài: rút gọn vài dòng (rê chuột xem đủ); dòng đang chọn thì mở hết */
+                    if (LONG_TEXT.has(c.key) && content && anchor.r !== r) content = <div className="qs-bd-clamp" title={content}>{content}</div>
+                  }
                   return (
                     <td
                       key={c.key}

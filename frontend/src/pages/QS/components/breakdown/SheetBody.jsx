@@ -32,7 +32,7 @@ export default function SheetBody({
   full, onFull, dropMark, flash, onClearMark, dropHint, fileName,
   /* Tuỳ biến cho bảng khác (tab Chi phí): bộ cột, cách trải dòng, lọc thêm, ô chọn ban đầu, lớp CSS của dòng… */
   columns = SHEET_COLUMNS, flatten = flattenSheet, extraPred = null, initialSel = null, rowClass = null, onToggleGroupOverride = null,
-  footer = true, toolbarOpen = true, colCount = null, letters = true,
+  footer = true, colCount = null, letters = true,
 }) {
   const { groups, commit } = sheet
   const [fontSize, setFontSize] = useState(13)
@@ -451,7 +451,7 @@ export default function SheetBody({
 
   return (
     <>
-      <SheetToolbar s={s} a={a} formula={formula} defaultOpen={toolbarOpen} />
+      <SheetToolbar s={s} a={a} formula={formula} />
       <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" hidden onChange={onImport} />
 
       {panel && (

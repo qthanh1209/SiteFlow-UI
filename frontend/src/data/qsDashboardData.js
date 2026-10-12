@@ -102,3 +102,62 @@ export function createProject(form) {
     }],
   }
 }
+
+/* ---------- Đồng bộ phiếu yêu cầu báo giá từ trang Kinh doanh ---------- */
+/* Chỉ lấy phiếu báo giá gửi đến Phòng QS (HANDOFF_CONFIG: bao-gia, bao-gia-thi-cong) */
+const KD_QUOTE_STAGES = ['bao-gia', 'bao-gia-thi-cong']
+
+/* Nhãn trạng thái giống thẻ phiếu trong Chat (RequestCard) */
+export const KD_REQUEST_STATUS = {
+  pending: 'Chờ xác nhận',
+  dispatch: 'Chờ điều phối',
+  assigned: 'Đã điều phối',
+  review: 'Chờ quản lý duyệt',
+  approved: 'Đã duyệt',
+}
+
+/* Mỗi khách hàng (lead) là một dự án; gửi nhiều phiếu thì lấy phiếu mới nhất. Phiếu bị từ chối thì bỏ qua. */
+export function kdQuoteProjects(requests) {
+  const byLead = new Map()
+  requests
+    .filter(r => r.dept === 'QS' && KD_QUOTE_STAGES.includes(r.stageKey) && r.status !== 'rejected')
+    .forEach(r => {
+      const prev = byLead.get(r.leadId)
+      if (!prev || prev.createdAt < r.createdAt) byLead.set(r.leadId, r)
+    })
+  return [...byLead.values()]
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .map(r => {
+      const at = new Date(r.createdAt)
+      const p = n => String(n).padStart(2, '0')
+      const code = `DA-${at.getFullYear()}${p(at.getMonth() + 1)}${p(at.getDate())}-${p(at.getHours())}${p(at.getMinutes())}${p(at.getSeconds())}`
+      return {
+        id: `kd-${r.leadId}`,
+        name: r.leadName,
+        client: r.leadName,
+        linked: false,
+        request: {
+          id: r.id, title: r.title, info: r.leadInfo, status: r.status,
+          sender: r.sender, senderDept: r.senderDept,
+          requestedAt: r.requestedAt, assignee: (r.assignee && r.assignee.name) || r.suggestedAssignee || null,
+        },
+        drafts: [{
+          id: code, name: 'Bản nháp 1', code, status: 'Bản nháp',
+          date: `${p(at.getDate())}/${p(at.getMonth() + 1)}/${at.getFullYear()}`,
+          vat: 0, lines: 0, cost: 0, groups: [],
+        }],
+      }
+    })
+}
+
+/* Bản nháp trống mới cho dự án (nút "Thêm bản nháp") */
+export function createDraft(project) {
+  const now = new Date()
+  const p = n => String(n).padStart(2, '0')
+  const code = `DA-${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`
+  return {
+    id: `${code}-${project.drafts.length + 1}`, name: `Bản nháp ${project.drafts.length + 1}`, code, status: 'Bản nháp',
+    date: `${p(now.getDate())}/${p(now.getMonth() + 1)}/${now.getFullYear()}`,
+    vat: 0, lines: 0, cost: 0, groups: [],
+  }
+}

@@ -5,6 +5,7 @@ import ProductInfo from './breakdown/ProductInfo'
 import PaymentPlan, { newStep } from './purchase/PaymentPlan'
 import { CATALOG, COST_CATEGORIES, formatTable, rowValues } from '../../../data/qsBreakdownData'
 import { PO_OTHER, PO_SEED_ORDERS, paymentPlan, supplierOf } from '../../../data/qsPurchaseData'
+import CategoryBar from './cost/CategoryBar'
 
 const money = n => Math.round(n).toLocaleString('vi-VN')
 const pct = v => Math.max(0, Math.min(100, Number(v) || 0))
@@ -121,36 +122,14 @@ export default function PurchaseTab({ sheet, vat, onGoto }) {
 
   return (
     <>
-      <div className="qs-card qs-ct-top">
-        <Icon name="history" size={15} className="qs-ct-top-icon" />
-        <div className="qs-ct-cats">
-          {COST_CATEGORIES.map(c => (
-            <button key={c.code} className={`qs-ct-cat-chip${c.code === catCode ? ' on' : ''}`} onClick={() => setCatCode(c.code)}>
-              <small>{c.code}</small>{c.name}
-              {(c.live || c.count) && <span>{c.live ? groups.reduce((s, g) => s + g.rows.length, 0) : c.count}</span>}
-            </button>
-          ))}
-        </div>
-        <span style={{ flex: 1 }} />
-        <div className="qs-ct-search wide">
-          <Icon name="search" size={15} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm sản phẩm, công tác, dòng trong bảng, hạng mục…" />
-        </div>
-        <button className="qs-ct-btn" onClick={() => onGoto('quote')}><Icon name="download" size={14} />Xuất báo giá</button>
-      </div>
-
-      <div className="qs-card qs-ct-bar">
-        <span className="qs-ct-title">Hạng mục đã bóc</span>
-        <span className="qs-bd-count">[{rowCount}]</span>
-        <button className="qs-bd-category">
-          <b>{category.code}.{category.name}</b>
-          <span className="qs-bd-count">[{rowCount}]</span>
-          <span style={{ flex: 1 }} />
-          <span className="qs-bd-acc-plus"><Icon name="plus" size={10} stroke={3} /></span>
-        </button>
-        <span style={{ flex: 1 }} />
+      <CategoryBar
+        categories={COST_CATEGORIES} catCode={catCode} onCat={setCatCode}
+        liveCount={groups.reduce((s, g) => s + g.rows.length, 0)}
+        q={q} onQ={setQ}
+        onExport={() => onGoto('quote')}
+      >
         <button className="qs-bd-round-btn accent" title={sentOpen ? 'Thu gọn đơn đã gửi' : 'Mở đơn đã gửi'} onClick={() => setSentOpen(v => !v)}><Icon name={sentOpen ? 'chevronDown' : 'chevronUp'} size={14} /></button>
-      </div>
+      </CategoryBar>
 
       <div className="qs-po-main">
         <div className="qs-po-list">

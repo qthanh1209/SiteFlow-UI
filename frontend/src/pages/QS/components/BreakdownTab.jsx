@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
-import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../../data/qsDashboardData'
+import { DASH_PROJECTS } from '../../../data/qsDashboardData'
 import { INITIAL_GROUPS, SHEET_COLUMNS, makeRow, rowValues } from '../../../data/qsBreakdownData'
-import ProjectBar from './breakdown/ProjectBar'
 import CatalogPanel from './breakdown/CatalogPanel'
 import SheetHeader from './breakdown/SheetHeader'
 import ProductInfo from './breakdown/ProductInfo'
@@ -13,8 +12,7 @@ const CATALOG_MIN = 300
 const CATALOG_MAX = 760
 
 /* Tab "Bóc tách": cột sản phẩm bên trái + bảng tính bóc tách bên phải */
-export default function BreakdownTab({ sheet, vat, onVat }) {
-  const [projectId, setProjectId] = useState(DASH_DEFAULT_ACTIVE.projectId)
+export default function BreakdownTab({ projectId, sheet, vat, onVat }) {
   const { groups, commit } = sheet
   const [targetId, setTargetId] = useState(INITIAL_GROUPS[0].id)
   const [view, setView] = useState('sheet')
@@ -147,7 +145,6 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
 
   return (
     <>
-      <ProjectBar projects={DASH_PROJECTS} projectId={projectId} onSelect={setProjectId} />
       <div className="qs-bd-body">
         {catalogOpen && (
           <>
@@ -173,7 +170,7 @@ export default function BreakdownTab({ sheet, vat, onVat }) {
             />
           </>
         )}
-        {catalogOpen && detail && <ProductInfo product={detail} onClose={() => setDetail(null)} onAdd={product => addProduct(product)} />}
+        {catalogOpen && detail && <ProductInfo width={catalogW} product={detail} onClose={() => setDetail(null)} onAdd={product => addProduct(product)} />}
         <div className="qs-bd-right">
           <SheetHeader
             count={rows.length} subtotal={subtotal} vat={vat} onVat={onVat}

@@ -389,28 +389,31 @@ export function matchTopic(text) {
 /* ---------- Chi tiết mua hàng (kanban) cho các công việc thuộc giai đoạn "Mua hàng & cung ứng" ---------- */
 export const PURCHASE_PHASE_ID = 'p6'
 export const PO_STAGES = [
-  { key: 'request', label: 'Đề xuất', color: 'var(--notstarted)' },
-  { key: 'ordered', label: 'Đã đặt hàng', color: 'var(--accent)' },
-  { key: 'shipping', label: 'Đang giao', color: 'var(--progress)' },
-  { key: 'received', label: 'Đã nhận', color: 'var(--done)' },
+  { key: 'request', label: 'Gửi yêu cầu mua hàng', color: 'var(--notstarted)' },
+  { key: 'purchasing', label: 'Mua hàng', color: 'var(--accent)' },
+  { key: 'approval', label: 'Quản lý duyệt', color: 'var(--progress)' },
+  { key: 'accounting', label: 'Kế toán', color: '#8b6fd6' },
+  { key: 'received', label: 'Nhận hàng', color: '#2a9bb0', received: true },
+  { key: 'complete', label: 'Đủ hồ sơ', color: 'var(--done)', received: true },
+  { key: 'cancelled', label: 'Hủy', color: 'var(--overdue)', closed: true },
 ]
 
 export const INITIAL_PURCHASE_ITEMS = {
   pu1: [
-    { id: 'pu1-1', code: 'PO-0811', item: 'Thép CB300 Φ16–Φ25', supplier: 'Thép Hòa Phát', qty: '42 tấn', value: 756, due: '2026-08-30', owner: 'Lý Thu Trang', stage: 'received' },
-    { id: 'pu1-2', code: 'PO-0812', item: 'Xi măng PCB40', supplier: 'Xi măng Hà Tiên', qty: '1.200 bao', value: 108, due: '2026-09-02', owner: 'Lý Thu Trang', stage: 'received' },
+    { id: 'pu1-1', code: 'PO-0811', item: 'Thép CB300 Φ16–Φ25', supplier: 'Thép Hòa Phát', qty: '42 tấn', value: 756, due: '2026-08-30', owner: 'Lý Thu Trang', stage: 'complete' },
+    { id: 'pu1-2', code: 'PO-0812', item: 'Xi măng PCB40', supplier: 'Xi măng Hà Tiên', qty: '1.200 bao', value: 108, due: '2026-09-02', owner: 'Lý Thu Trang', stage: 'complete' },
     { id: 'pu1-3', code: 'PO-0813', item: 'Thép buộc 1mm', supplier: 'Thép Hòa Phát', qty: '600 kg', value: 14, due: '2026-09-04', owner: 'Lý Thu Trang', stage: 'received' },
   ],
   pu2: [
-    { id: 'pu2-1', code: 'PO-0901', item: 'Bê tông thương phẩm M300', supplier: 'Bê tông Việt Đức', qty: '320 m³', value: 448, due: '2026-09-06', owner: 'Lý Thu Trang', stage: 'received' },
-    { id: 'pu2-2', code: 'PO-0902', item: 'Cát vàng & đá 1x2', supplier: 'VLXD Phú Mỹ', qty: '180 m³', value: 62, due: '2026-09-08', owner: 'Lý Thu Trang', stage: 'received' },
-    { id: 'pu2-3', code: 'PO-0903', item: 'Ván khuôn phủ phim', supplier: 'Gỗ An Cường', qty: '450 tấm', value: 135, due: '2026-09-09', owner: 'Lý Thu Trang', stage: 'received' },
+    { id: 'pu2-1', code: 'PO-0901', item: 'Bê tông thương phẩm M300', supplier: 'Bê tông Việt Đức', qty: '320 m³', value: 448, due: '2026-09-06', owner: 'Lý Thu Trang', stage: 'complete' },
+    { id: 'pu2-2', code: 'PO-0902', item: 'Cát vàng & đá 1x2', supplier: 'VLXD Phú Mỹ', qty: '180 m³', value: 62, due: '2026-09-08', owner: 'Lý Thu Trang', stage: 'complete' },
+    { id: 'pu2-3', code: 'PO-0903', item: 'Ván khuôn phủ phim', supplier: 'Gỗ An Cường', qty: '450 tấm', value: 135, due: '2026-09-09', owner: 'Lý Thu Trang', stage: 'complete' },
   ],
   pu3: [
-    { id: 'pu3-1', code: 'PO-0951', item: 'Thép CB400 Φ28–Φ32 (cột)', supplier: 'Thép Hòa Phát', qty: '58 tấn', value: 1102, due: '2026-09-30', owner: 'Cao Nhật Tân', stage: 'received' },
-    { id: 'pu3-2', code: 'PO-0952', item: 'Thép sàn CB300 Φ10–Φ14', supplier: 'Thép Pomina', qty: '36 tấn', value: 612, due: '2026-10-03', owner: 'Cao Nhật Tân', stage: 'shipping' },
-    { id: 'pu3-3', code: 'PO-0953', item: 'Coupler nối thép Φ32', supplier: 'Dextra VN', qty: '2.400 bộ', value: 96, due: '2026-10-05', owner: 'Lý Thu Trang', stage: 'ordered' },
-    { id: 'pu3-4', code: 'PO-0954', item: 'Thép hình I300 (dầm chuyển)', supplier: 'Thép Pomina', qty: '12 tấn', value: 240, due: '2026-10-08', owner: 'Cao Nhật Tân', stage: 'ordered' },
+    { id: 'pu3-1', code: 'PO-0951', item: 'Thép CB400 Φ28–Φ32 (cột)', supplier: 'Thép Hòa Phát', qty: '58 tấn', value: 1102, due: '2026-09-30', owner: 'Cao Nhật Tân', stage: 'complete' },
+    { id: 'pu3-2', code: 'PO-0952', item: 'Thép sàn CB300 Φ10–Φ14', supplier: 'Thép Pomina', qty: '36 tấn', value: 612, due: '2026-10-03', owner: 'Cao Nhật Tân', stage: 'accounting' },
+    { id: 'pu3-3', code: 'PO-0953', item: 'Coupler nối thép Φ32', supplier: 'Dextra VN', qty: '2.400 bộ', value: 96, due: '2026-10-05', owner: 'Lý Thu Trang', stage: 'approval' },
+    { id: 'pu3-4', code: 'PO-0954', item: 'Thép hình I300 (dầm chuyển)', supplier: 'Thép Pomina', qty: '12 tấn', value: 240, due: '2026-10-08', owner: 'Cao Nhật Tân', stage: 'purchasing' },
     { id: 'pu3-5', code: 'PR-0955', item: 'Thép dự phòng tầng 6–10', supplier: 'Chưa chọn NCC', qty: '20 tấn', value: 360, due: '2026-10-08', owner: 'Cao Nhật Tân', stage: 'request' },
   ],
   pu4: [

@@ -63,14 +63,28 @@ export default function CatalogPanel({ onAdd, onOpen, activeId, width, favorites
   }
 
   const favoriteCount = FAVORITE_BASE + favorites.size
+  /* Số bộ lọc đang có giá trị (hiện trên nút "Lọc") */
+  const activeFilters = ['cat', 'finish', 'size', 'combo'].filter(k => filters[k].length).length
+    + (filters.brand ? 1 : 0) + (filters.priceFrom || filters.priceTo ? 1 : 0)
   return (
     <div className="qs-card qs-bd-catalog" style={{ width }}>
       <div className="qs-bd-catalog-head">
-        <span className="qs-bd-h">Hạng mục</span>
-        <span className="qs-bd-badge">{CATALOG_TOTAL} SP</span>
+        <span className="qs-bd-h">Sản phẩm</span>
+        <span className="qs-bd-badge" title="Đang hiện / tổng số sản phẩm">{shown.length < CATALOG.length ? `${shown.length}/` : ''}{CATALOG_TOTAL}</span>
         <span style={{ flex: 1 }} />
-        <button className={`qs-bd-pill-btn${popOpen ? ' on' : ''}`} onClick={() => setPopOpen(o => !o)}><Icon name="filter" size={14} />Bộ lọc<Caret up={popOpen} /></button>
-        <span className="qs-bd-fav-count"><Icon name="heart" size={15} />{favoriteCount}</span>
+        <button className={`qs-bd-pill-btn${popOpen || activeFilters ? ' on' : ''}`} title="Chọn bộ lọc hiển thị" onClick={() => setPopOpen(o => !o)}>
+          <Icon name="filter" size={14} /><span>Lọc</span>{activeFilters > 0 && <b>{activeFilters}</b>}<Caret up={popOpen} />
+        </button>
+        <button
+          className={`qs-bd-fav-count${filters.fav ? ' on' : ''}`}
+          title={filters.fav ? 'Đang chỉ hiện sản phẩm yêu thích · bấm để hiện tất cả' : 'Chỉ hiện sản phẩm yêu thích'}
+          onClick={() => setFilters(f => ({ ...f, fav: !f.fav }))}
+        ><Icon name="heart" size={14} />{favoriteCount}</button>
+      </div>
+      <div className="qs-bd-search">
+        <Icon name="search" size={14} />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm tên, mã, thương hiệu…" />
+        {query && <button className="qs-bd-search-clear" title="Xoá từ khoá" onClick={() => setQuery('')}><Icon name="x" size={12} /></button>}
       </div>
       {popOpen && (
         <FilterPopover
@@ -92,8 +106,6 @@ export default function CatalogPanel({ onAdd, onOpen, activeId, width, favorites
         {open.devices && <div className="qs-bd-acc-body">Chưa có thiết bị nào được gắn với dự án.</div>}
 
         <FilterSections visible={visible} filters={filters} onChange={setFilters} favoriteCount={favoriteCount} />
-        {/* Khi bộ lọc Kích thước đang bật thì dòng gợi ý đã nằm ngay sau nó */}
-        {!visible.size && <p className="qs-bd-hint">Chọn 1 hạng mục để lọc theo thông số riêng của hạng mục đó.</p>}
       </div>
       <div
         className={`qs-bd-grip${dragging ? ' dragging' : ''}`}
@@ -105,36 +117,34 @@ export default function CatalogPanel({ onAdd, onOpen, activeId, width, favorites
         onDoubleClick={() => setFilterH(h => (h === 0 ? null : 0))}
       ><span /></div>
 
-      <div className="qs-bd-search">
-        <Icon name="search" size={14} />
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Gõ tên, mã hoặc thương hiệu..." />
-      </div>
-
       <div className="qs-bd-products">
+        {shown.length > 0 && <div className="qs-bd-products-hint"><Icon name="arrowRight" size={12} /><span>Kéo thả vào bảng, hoặc bấm <b>+</b> để thêm vào tầng đang chọn</span></div>}
         {shown.map(c => (
           <div
             key={c.id}
             className={`qs-bd-product${dragId === c.id ? ' dragging' : ''}${activeId === c.id ? ' active' : ''}`}
             onClick={() => onOpen(c)}
             draggable
-            title="Bấm để xem thông tin · kéo thả vào bảng để bóc sản phẩm này"
+            title={`${c.name}\nBấm để xem thông tin · kéo thả vào bảng để bóc sản phẩm này`}
             onDragStart={e => { e.dataTransfer.setData('text/plain', c.id); e.dataTransfer.effectAllowed = 'copy'; onDragProduct(c) }}
             onDragEnd={onDragEnd}
           >
-            <span className="qs-bd-product-no">{c.no}</span>
-            <div className="qs-bd-product-thumb"><PaintThumb tone={c.tone} /></div>
+            <span className="qs-bd-product-grip" aria-hidden="true" />
+            <div className="qs-bd-product-thumb"><PaintThumb tone={c.tone} size={40} /></div>
             <div className="qs-bd-product-main">
               <div className="qs-bd-product-name">{c.name}</div>
-              <div className="qs-bd-product-price">{formatDong(c.price)}</div>
-              <div className="qs-bd-chips">
+              <div className="qs-bd-product-meta">
                 <span className="qs-bd-chip brand">{c.brand}</span>
-                {c.combo > 0 && <span className="qs-bd-chip combo"><Icon name="layers" size={11} />Combo {c.combo}<Caret /></span>}
-                <span className="qs-bd-chip variant"><Icon name="copy" size={11} />Biến thể {c.variants}<Caret /></span>
+                {c.combo > 0 && <span className="qs-bd-chip combo" title={`${c.combo} combo đi kèm`}><Icon name="layers" size={10} />{c.combo}</span>}
+                {c.variants > 0 && <span className="qs-bd-chip variant" title={`${c.variants} biến thể`}><Icon name="copy" size={10} />{c.variants}</span>}
               </div>
             </div>
-            <div className="qs-bd-product-actions">
-              <button className={`qs-bd-heart${favorites.has(c.id) ? ' on' : ''}`} title="Yêu thích" onClick={e => { e.stopPropagation(); onToggleFav(c.id) }}><Icon name="heart" size={18} /></button>
-              <button className="qs-bd-add" title="Thêm vào bảng bóc tách" onClick={e => { e.stopPropagation(); onAdd(c) }}><Icon name="plus" size={14} /></button>
+            <div className="qs-bd-product-side">
+              <span className="qs-bd-product-price">{formatDong(c.price)}</span>
+              <span className="qs-bd-product-actions">
+                <button className={`qs-bd-heart${favorites.has(c.id) ? ' on' : ''}`} title={favorites.has(c.id) ? 'Bỏ yêu thích' : 'Yêu thích'} onClick={e => { e.stopPropagation(); onToggleFav(c.id) }}><Icon name="heart" size={15} /></button>
+                <button className="qs-bd-add" title="Thêm vào bảng bóc tách" onClick={e => { e.stopPropagation(); onAdd(c) }}><Icon name="plus" size={13} /></button>
+              </span>
             </div>
           </div>
         ))}
