@@ -7,6 +7,7 @@ export const QS_TABS = [
   { key: 'quote', label: 'Xuất báo giá', icon: 'fileText' },
   { key: 'po', label: 'Mua hàng', icon: 'cart' },
   { key: 'projects', label: 'Dự án', icon: 'scan' },
+  { key: 'nhansu', label: 'Cơ cấu phòng ban', icon: 'users' },
 ]
 
 /* status: doing | draft | done */

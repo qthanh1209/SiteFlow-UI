@@ -26,6 +26,7 @@ export const INITIAL_ORG_UNITS = [
   { key: 'it', label: 'IT', name: 'IT', type: 'dept', parent: 'coo', tone: 'muted', desc: 'Hạ tầng CNTT, phần mềm nội bộ, bảo mật' },
   { key: 'kdda', label: 'Kinh doanh dự án', name: 'Kinh doanh dự án', type: 'dept', parent: 'coo', tone: 'sales', desc: 'Đấu thầu & kinh doanh các dự án lớn (B2B)' },
   { key: 'thicong', label: 'Bộ phận thi công', name: 'Bộ phận thi công', type: 'dept', parent: 'cco', tone: 'danger', desc: 'Chỉ huy & các đội thi công tại công trường' },
+  { key: 'xuong', label: 'Xưởng sản xuất', name: 'Xưởng sản xuất (mộc)', type: 'dept', parent: 'cco', tone: 'finance', desc: 'Sản xuất đồ gỗ nội thất: đo vẽ, cắt tấm, gia công, lắp ráp, sơn hoàn thiện' },
   { key: 'haumai', label: 'Bộ phận hậu mãi', name: 'Bộ phận hậu mãi', type: 'dept', parent: 'cco', tone: 'success', desc: 'Bảo hành, bảo trì & chăm sóc sau bàn giao' },
   /* Công ty trong tập đoàn — parent '__holding' (= HOLDING_KEY): công ty thành viên của D Holdings
      · '__mother' (= MOTHER_KEY): công ty con trực thuộc Decox · null: độc lập, không trực thuộc tập đoàn */
@@ -38,7 +39,7 @@ export const INITIAL_ORG_UNITS = [
   { key: 'icc', label: 'ICC', name: 'ICC', type: 'subsidiary', parent: null, tone: 'primary', desc: 'Công ty liên kết — không trực thuộc tập đoàn' },
 ]
 /* Trưởng đơn vị mặc định (id nhân viên) */
-export const INITIAL_UNIT_HEADS = { ceo: 1, coo: 22, cco: 2, kddd: 23, marketing: 5, rnd: 26, hcns: 4, tckt: 3, thietke: 24, muahang: 8, qs: 25, it: 17, kdda: 7, thicong: 6, haumai: 27, bod: 1, bks: 3, bcl: 1, hdqt: 1, dzvn: 38, dzvn_op: 39, dzapp: 41, dzag: 42, dzag_ct: 43, dxbasic: 45, icc: 46 }
+export const INITIAL_UNIT_HEADS = { ceo: 1, coo: 22, cco: 2, kddd: 23, marketing: 5, rnd: 26, hcns: 4, tckt: 3, thietke: 24, muahang: 8, qs: 25, it: 17, kdda: 7, thicong: 6, haumai: 27, xuong: 47, bod: 1, bks: 3, bcl: 1, hdqt: 1, dzvn: 38, dzvn_op: 39, dzapp: 41, dzag: 42, dzag_ct: 43, dxbasic: 45, icc: 46 }
 export const UNIT_TYPE_LABEL = { governance: 'Quản trị', board: 'Ban trực thuộc', exec: 'Khối điều hành', dept: 'Phòng ban', subsidiary: 'Công ty con' }
 /* Công ty (pháp nhân) chứa 1 đơn vị: công ty con gần nhất phía trên, hoặc 'root' = công ty mẹ */
 export function companyOf(units, key) {
@@ -130,6 +131,13 @@ const BASE = [
   [43, 'NV043', 'Vũ Ngọc Mai', 'Nữ', '1989-03-27', 'dzag_ct', 'Trưởng phòng Content & Ads', 'Trưởng phòng', 'active', '2021-11-15', 42, 'Văn phòng HCM', 'Không xác định thời hạn', 32000000],
   [44, 'NV044', 'Phan Đức Huy', 'Nam', '1997-06-18', 'dzag_ct', 'Chuyên viên quảng cáo', 'Chuyên viên', 'active', '2024-01-08', 43, 'Văn phòng HCM', 'Xác định thời hạn', 15000000],
   [45, 'NV045', 'Tôn Nữ Bích Ngân', 'Nữ', '1987-04-09', 'dxbasic', 'Giám đốc Decox Basic', 'Giám đốc', 'active', '2023-02-01', 1, 'Văn phòng HCM', 'Không xác định thời hạn', 45000000],
+  // Xưởng sản xuất — tổ thợ trùng với trang Sản xuất (Nhân công)
+  [47, 'NV047', 'Huỳnh Tấn Phát', 'Nam', '1982-02-14', 'xuong', 'Quản đốc xưởng mộc', 'Quản lý', 'active', '2021-03-01', 2, 'Kho vật tư Bình Chánh', 'Không xác định thời hạn', 24000000],
+  [48, 'NV048', 'Lê Văn Thanh', 'Nam', '1990-07-09', 'xuong', 'Thợ lắp ráp (Tổ lắp ráp)', 'Trưởng nhóm', 'active', '2022-01-10', 47, 'Kho vật tư Bình Chánh', 'Không xác định thời hạn', 13000000],
+  [49, 'NV049', 'Trần Minh Hải', 'Nam', '1993-11-21', 'xuong', 'Thợ cắt & gia công CNC', 'Trưởng nhóm', 'active', '2022-05-16', 47, 'Kho vật tư Bình Chánh', 'Không xác định thời hạn', 12500000],
+  [50, 'NV050', 'Phạm Thành Huy', 'Nam', '1995-04-02', 'xuong', 'Thợ hoàn thiện', 'Nhân viên', 'active', '2023-02-20', 48, 'Kho vật tư Bình Chánh', 'Xác định thời hạn', 10500000],
+  [51, 'NV051', 'Đỗ Quốc Bảo', 'Nam', '1994-08-30', 'xuong', 'Thợ sơn PU', 'Nhân viên', 'active', '2023-06-05', 48, 'Kho vật tư Bình Chánh', 'Xác định thời hạn', 10500000],
+  [52, 'NV052', 'Hồ Đình Phong', 'Nam', '1998-12-12', 'xuong', 'Thợ cắt & gia công', 'Nhân viên', 'probation', '2026-08-03', 49, 'Kho vật tư Bình Chánh', 'Thử việc', 9000000],
   [46, 'NV046', 'Kiều Anh Dũng', 'Nam', '1983-09-14', 'icc', 'Giám đốc ICC', 'Giám đốc', 'active', '2022-10-03', null, 'Văn phòng Hà Nội', 'Không xác định thời hạn', 50000000],
   [21, 'NV012', 'Lê Thị Kim', 'Nữ', '1996-09-09', 'tckt', 'Kế toán thanh toán', 'Nhân viên', 'left', '2023-01-01', 19, 'Văn phòng HCM', 'Xác định thời hạn', 13000000],
 ]

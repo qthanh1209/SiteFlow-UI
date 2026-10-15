@@ -136,14 +136,28 @@ export default function CatalogPanel({ onAdd, onOpen, activeId, width, favorites
   )
 
   const favoriteCount = FAVORITE_BASE + favorites.size
+  /* Số bộ lọc đang có giá trị (hiện trên nút "Lọc") */
+  const activeFilters = ['cat', 'finish', 'size', 'combo'].filter(k => filters[k].length).length
+    + (filters.brand ? 1 : 0) + (filters.priceFrom || filters.priceTo ? 1 : 0)
   return (
     <div className="qs-card qs-bd-catalog" style={{ width }} ref={catalogRef}>
       <div className="qs-bd-catalog-head">
-        <span className="qs-bd-h">Hạng mục</span>
-        <span className="qs-bd-badge">{CATALOG_TOTAL} SP</span>
+        <span className="qs-bd-h">Sản phẩm</span>
+        <span className="qs-bd-badge" title="Đang hiện / tổng số sản phẩm">{shown.length < CATALOG.length ? `${shown.length}/` : ''}{CATALOG_TOTAL}</span>
         <span style={{ flex: 1 }} />
-        <button className={`qs-bd-pill-btn${popOpen ? ' on' : ''}`} onClick={() => setPopOpen(o => !o)}><Icon name="filter" size={14} />Bộ lọc<Caret up={popOpen} /></button>
-        <span className="qs-bd-fav-count"><Icon name="heart" size={15} />{favoriteCount}</span>
+        <button className={`qs-bd-pill-btn${popOpen || activeFilters ? ' on' : ''}`} title="Chọn bộ lọc hiển thị" onClick={() => setPopOpen(o => !o)}>
+          <Icon name="filter" size={14} /><span>Lọc</span>{activeFilters > 0 && <b>{activeFilters}</b>}<Caret up={popOpen} />
+        </button>
+        <button
+          className={`qs-bd-fav-count${filters.fav ? ' on' : ''}`}
+          title={filters.fav ? 'Đang chỉ hiện sản phẩm yêu thích · bấm để hiện tất cả' : 'Chỉ hiện sản phẩm yêu thích'}
+          onClick={() => setFilters(f => ({ ...f, fav: !f.fav }))}
+        ><Icon name="heart" size={14} />{favoriteCount}</button>
+      </div>
+      <div className="qs-bd-search">
+        <Icon name="search" size={14} />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm tên, mã, thương hiệu…" />
+        {query && <button className="qs-bd-search-clear" title="Xoá từ khoá" onClick={() => setQuery('')}><Icon name="x" size={12} /></button>}
       </div>
       {popOpen && (
         <FilterPopover
@@ -165,8 +179,6 @@ export default function CatalogPanel({ onAdd, onOpen, activeId, width, favorites
         </button>
 
         <FilterSections visible={visible} filters={filters} onChange={setFilters} favoriteCount={favoriteCount} />
-        {/* Khi bộ lọc Kích thước đang bật thì dòng gợi ý đã nằm ngay sau nó */}
-        {!visible.size && <p className="qs-bd-hint">Chọn 1 hạng mục để lọc theo thông số riêng của hạng mục đó.</p>}
       </div>
       <div
         className={`qs-bd-grip${dragging ? ' dragging' : ''}`}

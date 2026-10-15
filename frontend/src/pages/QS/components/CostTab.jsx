@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '../../../components/ui/Icon'
-import { DASH_PROJECTS, DASH_DEFAULT_ACTIVE } from '../../../data/qsDashboardData'
 import {
   COST_BASIC_KEYS, COST_CATEGORIES, COST_COLUMNS, COST_DEFAULT_HIDDEN, NO_SUPPLIER,
   entryText, formatMoney, formatTable, rowValues,
@@ -40,7 +39,7 @@ function marginOf(r) {
 
 /* Tab "Chi phí": tổng quan giá vốn / giá bán / lợi nhuận và bảng chi phí.
    Dùng chung dữ liệu (và lịch sử hoàn tác) với bảng ở tab Bóc tách. */
-export default function CostTab({ sheet, vat, onGoto }) {
+export default function CostTab({ project, sheet, vat, onGoto }) {
   const { groups } = sheet
   const [catCode, setCatCode] = useState(COST_CATEGORIES[0].code)
   /* Dải hạng mục dùng gần đây ở đầu tab; chọn trong hộp "Chọn hạng mục" thì đưa hạng mục đó lên đầu dải */
@@ -67,7 +66,6 @@ export default function CostTab({ sheet, vat, onGoto }) {
     if (code === ALL_SECTIONS) return
     setRecent(list => [list.find(c => c.code === code) || PRODUCT_SECTIONS.find(s => s.code === code), ...list.filter(c => c.code !== code)].slice(0, RECENT_MAX))
   }
-  const project = DASH_PROJECTS.find(p => p.id === DASH_DEFAULT_ACTIVE.projectId)
   const rows = useMemo(() => (live ? groups.flatMap(g => g.rows) : []), [groups, live])
 
   const isLow = useCallback(r => { const m = marginOf(r); return m !== null && m < minMargin }, [minMargin])
@@ -149,6 +147,7 @@ export default function CostTab({ sheet, vat, onGoto }) {
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
+
   /* Bộ cột đang áp dụng (null = người dùng đã tự bật / tắt cột) */
   const activePreset = COL_PRESETS.find(p => p.hidden.length === hiddenCols.size && p.hidden.every(k => hiddenCols.has(k))) || null
   const shownCount = COUNTED.filter(c => !hiddenCols.has(c.key)).length
@@ -221,10 +220,6 @@ export default function CostTab({ sheet, vat, onGoto }) {
 
       <div className="qs-card qs-ct-filters">
         <div className="qs-ct-filters-main">
-        <div className="qs-ct-search">
-          <Icon name="search" size={15} />
-          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Tìm tên · mã · thương hiệu · phòng…" />
-        </div>
         {[['all', 'Tất cả'], ['low', `Biên < ${minMargin}%`], ['noPrice', 'Chưa giá bán'], ['noCost', 'Chưa giá vốn']].map(([key, label]) => (
           <button key={key} className={`qs-ct-chip${chip === key ? ' on' : ''}${key === 'low' ? ' red' : ''}`} onClick={() => setChip(key)}>{label}<span>{counts[key]}</span></button>
         ))}
@@ -272,7 +267,7 @@ export default function CostTab({ sheet, vat, onGoto }) {
           fileName={fileName}
           columns={COST_COLUMNS} flatten={flatten} extraPred={extraPred} initialSel={INITIAL_SEL}
           rowClass={rowClass} onToggleGroupOverride={toggleSynthetic}
-          footer={false} toolbarOpen={false} letters={false}
+          footer={false} letters={false}
           colCount={{ shown: shownCount, total: COUNTED.length }}
         />
       </div>

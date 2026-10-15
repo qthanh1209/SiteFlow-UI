@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import './ChamCong.css'
 import './hr/hr.css'
@@ -6,7 +6,7 @@ import { useTheme } from '../../hooks/useTheme'
 import Icon from '../../components/ui/Icon'
 import {
   INITIAL_HR_EMPLOYEES, INITIAL_SHIFTS, TODAY_LOGS, INITIAL_HR_REQUESTS, HR_TODAY, initialSchedule, EMPTY_EMPLOYEE,
-  INITIAL_ORG_UNITS, INITIAL_UNIT_HEADS, syncDepts, monthlySummary, MONTHS, MOTHER_KEY, PARENT_COMPANY, HOLDING, HOLDING_KEY } from '../../data/hrData'
+  INITIAL_ORG_UNITS, INITIAL_UNIT_HEADS, syncDepts, deptOf, monthlySummary, MONTHS, MOTHER_KEY, PARENT_COMPANY, HOLDING, HOLDING_KEY } from '../../data/hrData'
 import {
   ROLES, DEFAULT_PERMS, SECURITY_SETTINGS, INITIAL_AUDIT, DEFAULT_PAYROLL_CONFIG, INITIAL_ADJUSTMENTS, INITIAL_FIXED_COSTS,
   INITIAL_JOBS, INITIAL_JDS, INITIAL_CANDIDATES, INITIAL_INTERVIEWS, INITIAL_OKRS, INITIAL_REVIEWS, INITIAL_ENROLL,
@@ -29,13 +29,13 @@ import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
 
 /* Các phân hệ HR — perm: khoá quyền tương ứng trong ma trận phân quyền */
 const MODULES = [
-  { key: 'employees', label: 'Hồ sơ nhân sự', icon: 'users', perm: 'employees' },
-  { key: 'org', label: 'Sơ đồ tổ chức', icon: 'sitemap' },
-  { key: 'attendance', label: 'Chấm công & phép', icon: 'clock', perm: 'attendance' },
-  { key: 'payroll', label: 'Lương & bảo hiểm', icon: 'wallet', perm: 'payroll' },
+  { key: 'employees', label: 'Hồ sơ nhân sự', short: 'Hồ sơ', icon: 'users', perm: 'employees' },
+  { key: 'org', label: 'Sơ đồ tổ chức', short: 'Sơ đồ', icon: 'sitemap' },
+  { key: 'attendance', label: 'Chấm công & phép', short: 'Chấm công', icon: 'clock', perm: 'attendance' },
+  { key: 'payroll', label: 'Lương & bảo hiểm', short: 'Lương', icon: 'wallet', perm: 'payroll' },
   { key: 'recruit', label: 'Tuyển dụng', icon: 'userPlus', perm: 'recruit' },
-  { key: 'performance', label: 'Hiệu suất & đào tạo', icon: 'trending', perm: 'performance' },
-  { key: 'security', label: 'Phân quyền & bảo mật', icon: 'shield', perm: 'security' },
+  { key: 'performance', label: 'Hiệu suất & đào tạo', short: 'Hiệu suất', icon: 'trending', perm: 'performance' },
+  { key: 'security', label: 'Phân quyền & bảo mật', short: 'Phân quyền', icon: 'shield', perm: 'security' },
   { key: 'admin', label: 'Hành chính', icon: 'building' },
 ]
 const ATT_TABS = [
@@ -291,30 +291,57 @@ export default function ChamCong() {
   }
 
   /* Ứng viên trúng tuyển → hồ sơ nhân viên thử việc */
-  function hireCandidate(c, job) {
+  /* Mã NV kế tiếp + quản lý trực tiếp mặc định của một phòng ban (dùng cho bước Nhận việc) */
+  const nextEmpCode = () => 'NV' + String(Math.max(...employees.map(e => Number(e.code.slice(2)) || 0)) + 1).padStart(3, '0')
+  const defaultManagerOf = dept => employees.find(e => e.id === heads[dept] && e.status !== 'left') || employees.find(e => e.dept === dept && ['Trưởng phòng', 'Giám đốc'].includes(e.level) && e.status !== 'left')
+  function hireCandidate(c, job, opt = {}) {
     const id = Math.max(...employees.map(e => e.id)) + 1
-    const code = 'NV' + String(Math.max(...employees.map(e => Number(e.code.slice(2)) || 0)) + 1).padStart(3, '0')
-    const manager = employees.find(e => e.dept === job.dept && ['Trưởng phòng', 'Giám đốc'].includes(e.level))
-    const salary = (Number((job.salary.match(/\d+/) || [12])[0]) || 12) * 1000000
+    const code = opt.code || nextEmpCode()
+    job = { ...job, dept: opt.dept || job.dept, title: opt.position || job.title, site: opt.site || job.site }
+    const joinDate = opt.joinDate || '2026-10-01'
+    const endProbation = (() => { const d = new Date(joinDate); d.setMonth(d.getMonth() + (opt.probationMonths || 2)); return d.toISOString().slice(0, 10) })()
+    const manager = opt.managerId ? employees.find(e => e.id === Number(opt.managerId)) : defaultManagerOf(job.dept)
+    const salary = opt.salary || (Number(((job.salary || '').match(/\d+/) || [12])[0]) || 12) * 1000000
     const rec = {
       ...JSON.parse(JSON.stringify(EMPTY_EMPLOYEE)), id, code, name: c.name, email: c.email, phone: c.phone, dept: job.dept, position: job.title,
-      site: job.site, joinDate: '2026-10-01', status: 'probation', contractType: 'Thử việc', salary, managerId: manager?.id ?? null,
-      contracts: [{ no: `HĐTV-${code}`, type: 'Thử việc', start: '2026-10-01', end: '2026-12-01', salary: Math.round(salary * 0.85), status: 'active' }],
-      promotions: [{ date: '2026-10-01', note: `Gia nhập — ${job.title} (tuyển dụng từ ${c.source})` }],
+      site: job.site, joinDate, status: 'probation', contractType: 'Thử việc', salary, managerId: manager?.id ?? null, level: opt.level || 'Nhân viên',
+      contracts: [{ no: `HĐTV-${code}`, type: 'Thử việc', start: joinDate, end: endProbation, salary: Math.round(salary * (opt.probationRate || 85) / 100), status: 'active' }],
+      promotions: [{ date: joinDate, note: `Gia nhập — ${job.title} (tuyển dụng từ ${c.source})` }],
       attachments: [{ name: c.cv }],
+      // hồ sơ đầy đủ nhập ở trang Nhận việc (cá nhân, liên hệ, BHXH, thuế, học vấn, giấy tờ đính kèm)
+      ...(opt.record || {}),
     }
     setEmployees(prev => [...prev, rec])
     setSchedule(prev => ({ ...prev, [id]: job.site === 'Văn phòng HCM' ? ['HC', 'HC', 'HC', 'HC', 'HC', 'off', 'off'] : ['CT', 'CT', 'CT', 'CT', 'CT', 'CT', 'off'] }))
     setSecurity(s => ({ ...s, userRoles: { ...s.userRoles, [id]: { role: 'employee', branches: [] } } }))
     setPerf(p => ({ ...p, enroll: { ...p.enroll, [id]: { 4: 0, ...(job.dept === 'thicong' ? { 1: 0 } : {}) } } }))
-    log('recruit', 'approve', `Trúng tuyển ${c.name} → tạo hồ sơ ${code} (thử việc từ 01/10/2026)`)
-    toast(`Đã tạo hồ sơ ${code} cho ${c.name} & ghi danh khoá hội nhập`)
-    setOpenEmp(id)
-    setModule('employees')
+    log('recruit', 'approve', `Nhận việc ${c.name} → tạo hồ sơ ${code} · ${deptOf(job.dept).name} (thử việc từ ${joinDate.split('-').reverse().join('/')})`)
+    toast(`Đã tạo hồ sơ ${code} cho ${c.name} — ${deptOf(job.dept).name} · đã ghi danh khoá hội nhập`)
+    return { id, code }
   }
+  const openEmployee = id => { setOpenEmp(id); setModule('employees') }
 
   const current = MODULES.find(m => m.key === module)
   const allowed = m => !m.perm || access.can(m.perm, 'view')
+
+  /* Hàng phân hệ trên header: tự thu gọn theo chỗ trống thật (không cắt mất tab cuối) */
+  const modNavRef = useRef(null)
+  const [navFit, setNavFit] = useState(0)
+  const [navTick, setNavTick] = useState(0)
+  useLayoutEffect(() => {
+    const n = modNavRef.current
+    if (n && navFit < 3 && n.scrollWidth > n.clientWidth + 1) setNavFit(f => f + 1)
+  }, [navFit, navTick])
+  useEffect(() => {
+    const n = modNavRef.current
+    if (!n) return undefined
+    let w = 0
+    const ro = new ResizeObserver(([e]) => { const cw = Math.round(e.contentRect.width); if (cw !== w) { w = cw; setNavFit(0); setNavTick(t => t + 1) } })
+    ro.observe(n.parentElement)
+    // phông chữ tải xong làm chữ rộng ra → đo lại
+    document.fonts?.ready.then(() => { setNavFit(0); setNavTick(t => t + 1) })
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <AccessContext.Provider value={access}>
@@ -322,32 +349,29 @@ export default function ChamCong() {
         className={`cc-page${aiOpen ? ' cc-ai-open' : ''}${aiResizing ? ' cc-ai-resizing' : ''}`}
         style={{ '--ai-panel-width': `${aiWidth}px` }}
       >
-        <div className="cc-header">
+        <div className={`cc-header fit-${navFit}`}>
           <div className="cc-header-icon"><Icon name="users" size={16} /></div>
           <span className="cc-header-title">Nhân sự (HR)</span>
-          <span className="cc-header-sub">Hồ sơ, tổ chức, chấm công, lương, tuyển dụng, hiệu suất</span>
-          <span style={{ flex: 1 }} />
-          <label className={`cc-role-switch cc-tone-${ROLES[role].tone}`} title="Mô phỏng đăng nhập với vai trò khác">
+          <nav className="hdr-tabs cc-hdr-mods" aria-label="Phân hệ HR" ref={modNavRef}>
+            {MODULES.map(m => (
+              <button key={m.key} className={`cc-mod${module === m.key ? ' active' : ''}${allowed(m) ? '' : ' locked'}`} onClick={() => setModule(m.key)} title={allowed(m) ? '' : 'Vai trò hiện tại không có quyền'}>
+                <Icon name={allowed(m) ? m.icon : 'lock'} size={15} /><span className="cc-mod-full">{m.label}</span><span className="cc-mod-short">{m.short || m.label}</span>
+                {m.key === 'attendance' && pending > 0 && access.can('attendance', 'approve') && <span className="cc-mod-badge">{pending}</span>}
+              </button>
+            ))}
+          </nav>
+          <label className={`cc-role-switch cc-tone-${ROLES[role].tone}`} title={`${user.name} — mô phỏng đăng nhập với vai trò khác`}>
             <Icon name="shield" size={14} />
             <span className="cc-role-who">{user.name}</span>
             <select value={role} onChange={e => switchRole(e.target.value)} aria-label="Vai trò">
               {Object.entries(ROLES).map(([k, r]) => <option key={k} value={k}>{r.label}</option>)}
             </select>
           </label>
-          <Link to="/cham-cong-mobile" className="cc-mobile-link"><Icon name="smartphone" size={13} />Mobile</Link>
+          <Link to="/cham-cong-mobile" className="cc-mobile-link" title="Giao diện Mobile"><Icon name="smartphone" size={13} />Mobile</Link>
           <button className="cc-theme-toggle" title="Chuyển giao diện sáng/tối" onClick={toggleTheme}>
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
           </button>
         </div>
-
-        <nav className="cc-modnav" aria-label="Phân hệ HR">
-          {MODULES.map(m => (
-            <button key={m.key} className={`cc-mod${module === m.key ? ' active' : ''}${allowed(m) ? '' : ' locked'}`} onClick={() => setModule(m.key)} title={allowed(m) ? '' : 'Vai trò hiện tại không có quyền'}>
-              <Icon name={allowed(m) ? m.icon : 'lock'} size={15} />{m.label}
-              {m.key === 'attendance' && pending > 0 && access.can('attendance', 'approve') && <span className="cc-mod-badge">{pending}</span>}
-            </button>
-          ))}
-        </nav>
 
         <div className="cc-body">
           {current.perm && !allowed(current) ? <NoAccess /> : <>
@@ -370,7 +394,7 @@ export default function ChamCong() {
               </div>
             )}
             {module === 'payroll' && <PayrollModule employees={scoped} units={units} concurrentOf={concurrentOf} payroll={payroll} setPayroll={setPayroll} toast={toast} maskDefault={security.settings.maskSalary.value} />}
-            {module === 'recruit' && <RecruitModule recruit={recruit} setRecruit={setRecruit} onHire={hireCandidate} toast={toast} />}
+            {module === 'recruit' && <RecruitModule recruit={recruit} setRecruit={setRecruit} onHire={hireCandidate} toast={toast} nextEmpCode={nextEmpCode} defaultManagerOf={defaultManagerOf} employees={employees} onOpenEmployee={openEmployee} />}
             {module === 'performance' && <PerformanceModule employees={employees} perf={perf} setPerf={setPerf} toast={toast} />}
             {module === 'security' && <SecurityModule employees={employees} security={security} setSecurity={setSecurity} audit={audit} toast={toast} />}
             {module === 'admin' && <div className="cc-legacy"><HanhChinhTab /></div>}

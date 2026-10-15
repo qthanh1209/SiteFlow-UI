@@ -87,7 +87,7 @@ export const STAGES = [
   { key: 'screening', label: 'Sàng lọc CV', tone: 'primary' },
   { key: 'interview', label: 'Phỏng vấn', tone: 'finance' },
   { key: 'offer', label: 'Đề nghị (Offer)', tone: 'qs' },
-  { key: 'hired', label: 'Trúng tuyển', tone: 'success' },
+  { key: 'hired', label: 'Nhận việc', tone: 'success' },
   { key: 'rejected', label: 'Loại', tone: 'danger' },
 ]
 export const SOURCES = ['LinkedIn', 'TopCV', 'VietnamWorks', 'Giới thiệu nội bộ', 'Website công ty', 'Facebook']

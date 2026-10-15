@@ -10,6 +10,7 @@ import TasksTab from './components/TasksTab'
 import CampaignModal from './components/CampaignModal'
 import CreateTaskModal from './components/CreateTaskModal'
 import Dezbot, { loadAiPanelWidth } from './components/Dezbot'
+import DeptStaff from '../../components/hr/DeptStaff'
 
 const plusIcon = (size, stroke = 'currentColor') => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
@@ -186,8 +187,38 @@ export default function Marketing() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z" /><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg>
         </div>
         <span style={{ fontSize: 14.5, fontWeight: 700 }}>Marketing</span>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Khởi tạo chiến dịch → chọn hạng mục chi phí vào gói → ra báo giá</span>
-        <span style={{ flex: 1 }} />
+        <div className="hdr-tabs plain">
+          <div className={`mk-tab-list${editingTabs ? ' editing' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0, overflowX: 'auto' }}>
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                className={`mk-tab${panel === t.id ? ' active' : ''}`}
+                style={t.hidden ? { display: 'none' } : undefined}
+                onClick={() => handleTabClick(t)}
+              >
+                {renaming && renaming.id === t.id
+                  ? <TabRenameInput value={renaming.value} onChange={v => setRenaming({ id: t.id, value: v })} onCommit={commitRename} />
+                  : t.label}
+                <span className="mk-tab-remove" title="Ẩn tab này" onClick={e => { e.stopPropagation(); removeTab(t.id) }}>×</span>
+              </button>
+            ))}
+          </div>
+          <span style={{ display: showHiddenChips ? 'flex' : 'none', alignItems: 'center', gap: 6, marginRight: 8 }}>
+            {showHiddenChips && hiddenTabs.map(id => (
+              <span className="mk-hidden-tab-chip" key={id} onClick={() => restoreTab(id)}>
+                {tabLabel(id)}
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+              </span>
+            ))}
+          </span>
+          <button className="mk-tab-add-btn" title="Thêm tab mới" style={{ display: editingTabs ? 'flex' : 'none' }} onClick={addTab}>
+            {plusIcon(14)}
+          </button>
+          <button className={`mk-edit-tabs-btn${editingTabs ? ' active' : ''}`} title="Chỉnh sửa menu — thêm hoặc bớt tab" onClick={() => setEditingTabs(v => !v)}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+            <span>{editingTabs ? 'Xong' : 'Chỉnh sửa menu'}</span>
+          </button>
+        </div>
         <button onClick={() => setCampModal(m => ({ open: true, seq: m.seq + 1 }))} style={{ display: 'flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', background: 'var(--marketing)', color: '#fff', padding: '8px 14px', borderRadius: 9, fontSize: 12.5, fontWeight: 600, fontFamily: 'inherit' }}>
           {plusIcon(14, '#fff')}
           Tạo chiến dịch
@@ -196,40 +227,6 @@ export default function Marketing() {
           {theme === 'dark'
             ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
             : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>}
-        </button>
-      </div>
-
-      {/* ---------- Thanh tab ---------- */}
-      <div style={{ height: 52, flex: 'none', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 var(--page-gutter)', boxSizing: 'border-box', background: 'var(--surface)', gap: 4 }}>
-        <div className={`mk-tab-list${editingTabs ? ' editing' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, minWidth: 0, overflowX: 'auto' }}>
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              className={`mk-tab${panel === t.id ? ' active' : ''}`}
-              style={t.hidden ? { display: 'none' } : undefined}
-              onClick={() => handleTabClick(t)}
-            >
-              {renaming && renaming.id === t.id
-                ? <TabRenameInput value={renaming.value} onChange={v => setRenaming({ id: t.id, value: v })} onCommit={commitRename} />
-                : t.label}
-              <span className="mk-tab-remove" title="Ẩn tab này" onClick={e => { e.stopPropagation(); removeTab(t.id) }}>×</span>
-            </button>
-          ))}
-        </div>
-        <span style={{ display: showHiddenChips ? 'flex' : 'none', alignItems: 'center', gap: 6, marginRight: 8 }}>
-          {showHiddenChips && hiddenTabs.map(id => (
-            <span className="mk-hidden-tab-chip" key={id} onClick={() => restoreTab(id)}>
-              {tabLabel(id)}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-            </span>
-          ))}
-        </span>
-        <button className="mk-tab-add-btn" title="Thêm tab mới" style={{ display: editingTabs ? 'flex' : 'none' }} onClick={addTab}>
-          {plusIcon(14)}
-        </button>
-        <button className={`mk-edit-tabs-btn${editingTabs ? ' active' : ''}`} title="Chỉnh sửa menu — thêm hoặc bớt tab" onClick={() => setEditingTabs(v => !v)}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-          <span>{editingTabs ? 'Xong' : 'Chỉnh sửa menu'}</span>
         </button>
       </div>
 
@@ -252,6 +249,7 @@ export default function Marketing() {
           onCheckSubtask={checkSubtask}
           onOpenCreateTask={() => setTaskModal(m => ({ open: true, seq: m.seq + 1 }))}
         />
+        <div style={{ display: panel === 'staff' ? 'block' : 'none' }}><DeptStaff units={['marketing']} /></div>
         {/* Tab tuỳ chỉnh do người dùng thêm — nội dung giữ tên lúc tạo, kể cả khi tab được đổi tên sau đó */}
         {tabs.filter(t => t.custom).map(t => (
           <div key={t.id} style={{ display: panel === t.id ? 'flex' : 'none', flexDirection: 'column', gap: 16 }}>

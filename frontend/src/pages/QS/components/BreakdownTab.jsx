@@ -204,7 +204,7 @@ export default function BreakdownTab({ sheet, vat, onVat, projects, active, onAc
             />
           </>
         )}
-        {catalogOpen && detail && <ProductInfo product={detail} onClose={() => setDetail(null)} onAdd={product => addProduct(product)} />}
+        {catalogOpen && detail && <ProductInfo width={catalogW} product={detail} onClose={() => setDetail(null)} onAdd={product => addProduct(product)} />}
         <div className="qs-bd-right">
           <SheetHeader
             count={rows.length} subtotal={subtotal} vat={vat} onVat={onVat}

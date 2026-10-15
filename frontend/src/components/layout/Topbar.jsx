@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useTheme } from '../../hooks/useTheme'
 import { useSidebar } from '../../hooks/useSidebar'
+import NotificationBell from './NotificationBell'
 
 export default function Topbar({ title, subtitle, icon, children }) {
   const { theme, toggleTheme } = useTheme()
@@ -77,48 +78,8 @@ export default function Topbar({ title, subtitle, icon, children }) {
         />
       </div>
 
-      {/* 2. Nút chuông thông báo có chấm đỏ */}
-      <button
-        type="button"
-        title="Thông báo"
-        style={{
-          position: 'relative',
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-muted)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          padding: '6px',
-          flex: 'none',
-        }}
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        {/* Chấm tròn đỏ thông báo mới */}
-        <span style={{
-          position: 'absolute',
-          top: 3,
-          right: 3,
-          width: 8.5,
-          height: 8.5,
-          borderRadius: '50%',
-          background: '#ef4444',
-          border: '1.5px solid var(--surface)',
-        }} />
-      </button>
+      {/* 2. Chuông thông báo (mở bảng thông báo) */}
+      <NotificationBell color="currentColor" />
 
       {/* 3. Theme toggle */}
       <button
